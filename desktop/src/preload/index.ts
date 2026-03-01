@@ -4,6 +4,8 @@ export interface AppSettings {
   firebaseProjectId?: string
   serviceAccountJson?: string
   isProvisioned?: boolean
+  cloudFunctionVersion?: string
+  cloudFunctionUrl?: string
 }
 
 const api = {
@@ -69,6 +71,11 @@ const api = {
       display_id?: string
     }>
   > => ipcRenderer.invoke('get-desktop-sources'),
+  deployCloudFunction: (): Promise<{
+    ok: boolean
+    error?: string
+    enableUrls?: { label: string; url: string }[]
+  }> => ipcRenderer.invoke('deploy-cloud-function'),
 }
 
 contextBridge.exposeInMainWorld('api', api)

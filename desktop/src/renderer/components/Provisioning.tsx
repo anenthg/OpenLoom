@@ -13,7 +13,9 @@ function StatusIcon({ status }: { status: StepStatus }) {
     case 'pending':
       return <span className="text-zinc-500">○</span>
     case 'running':
-      return <span className="text-blue-400 animate-pulse">◉</span>
+      return (
+        <span className="text-yellow-400 inline-block animate-spin">⟳</span>
+      )
     case 'done':
       return <span className="text-green-400">✓</span>
     case 'error':
@@ -21,11 +23,14 @@ function StatusIcon({ status }: { status: StepStatus }) {
   }
 }
 
+const INITIAL_STEPS: ProvisioningStep[] = [
+  { id: 'firestore', label: 'Verifying Firestore access...', status: 'pending' },
+  { id: 'storage', label: 'Verifying Storage bucket...', status: 'pending' },
+  { id: 'deploy-api', label: 'Deploying API...', status: 'pending' },
+]
+
 export default function Provisioning({ settings, onComplete, onDisconnect }: Props) {
-  const [steps, setSteps] = useState<ProvisioningStep[]>([
-    { id: 'firestore', label: 'Verifying Firestore access...', status: 'pending' },
-    { id: 'storage', label: 'Verifying Storage bucket...', status: 'pending' },
-  ])
+  const [steps, setSteps] = useState<ProvisioningStep[]>(INITIAL_STEPS)
   const [finished, setFinished] = useState(false)
   const [hasError, setHasError] = useState(false)
   const [expandedError, setExpandedError] = useState<string | null>(null)
@@ -34,12 +39,7 @@ export default function Provisioning({ settings, onComplete, onDisconnect }: Pro
     setFinished(false)
     setHasError(false)
     setExpandedError(null)
-
-    // Reset steps to pending
-    setSteps([
-      { id: 'firestore', label: 'Verifying Firestore access...', status: 'pending' },
-      { id: 'storage', label: 'Verifying Storage bucket...', status: 'pending' },
-    ])
+    setSteps(INITIAL_STEPS.map((s) => ({ ...s })))
 
     const ok = await runProvisioning(settings, (updatedSteps) => {
       setSteps(updatedSteps)
@@ -82,13 +82,33 @@ export default function Provisioning({ settings, onComplete, onDisconnect }: Pro
                     : step.status === 'error'
                       ? 'text-red-400'
                       : step.status === 'running'
-                        ? 'text-white'
+                        ? 'text-yellow-400'
                         : 'text-zinc-500'
                 }
               >
                 {step.label}
               </span>
             </div>
+
+            {step.status === 'error' && step.actions && step.actions.length > 0 && (
+              <div className="ml-7 mt-2 space-y-2">
+                <p className="text-xs text-zinc-400">
+                  Enable the required APIs in GCP Console, then click Retry:
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {step.actions.map((action) => (
+                    <button
+                      key={action.url}
+                      onClick={() => window.open(action.url)}
+                      className="px-3 py-1.5 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded font-medium transition-colors"
+                    >
+                      {action.label} →
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {step.status === 'error' && step.error && (
               <div className="ml-7 mt-1">
                 <button

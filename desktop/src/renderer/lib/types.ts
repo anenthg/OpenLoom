@@ -2,6 +2,8 @@ export interface AppSettings {
   firebaseProjectId?: string
   serviceAccountJson?: string // stringified service account key
   isProvisioned?: boolean
+  cloudFunctionVersion?: string
+  cloudFunctionUrl?: string
 }
 
 export interface Video {
@@ -89,6 +91,11 @@ export interface IElectronAPI {
   getPermissionStatus: () => Promise<PermissionStatuses>
   requestCameraAccess: () => Promise<boolean>
   openScreenRecordingSettings: () => Promise<void>
+  deployCloudFunction: () => Promise<{
+    ok: boolean
+    error?: string
+    enableUrls?: { label: string; url: string }[]
+  }>
 }
 
 declare global {

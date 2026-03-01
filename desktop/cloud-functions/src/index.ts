@@ -1,32 +1,38 @@
+import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
-import { onRequest } from "firebase-functions/v2/https";
+import { getFirestore } from "firebase-admin/firestore";
 
 admin.initializeApp();
-const db = admin.firestore();
 
-const corsHeaders: Record<string, string> = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
-};
+const DB_ID = process.env.FIRESTORE_DB_ID || "(default)";
 
-function json(res: import("firebase-functions/v2/https").Response, data: unknown, status = 200) {
-  Object.entries(corsHeaders).forEach(([k, v]) => res.set(k, v));
+function getDb(): admin.firestore.Firestore {
+  if (DB_ID && DB_ID !== "(default)") {
+    return getFirestore(admin.app(), DB_ID);
+  }
+  return admin.firestore();
+}
+
+function cors(res: functions.Response): void {
+  res.set("Access-Control-Allow-Origin", "*");
+  res.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.set("Access-Control-Allow-Headers", "Content-Type");
+}
+
+function json(res: functions.Response, data: unknown, status = 200) {
+  cors(res);
   res.status(status).json(data);
 }
 
-export const thari = onRequest(async (req, res) => {
-  // CORS preflight
+export const thari = functions.https.onRequest(async (req, res) => {
   if (req.method === "OPTIONS") {
-    Object.entries(corsHeaders).forEach(([k, v]) => res.set(k, v));
+    cors(res);
     res.status(204).send("");
     return;
   }
 
-  // Strip the Cloud Functions function-name prefix from the path.
-  // In production the URL is /<project>/<region>/thari/v/{code}/...
-  // req.path already strips /<project>/<region> but still includes /thari.
-  const path = req.path.replace(/^\/thari/, "");
+  const db = getDb();
+  const path = req.path;
 
   // GET /v/:code — video metadata
   const videoMatch = path.match(/^\/v\/([\w-]+)$/);

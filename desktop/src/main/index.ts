@@ -10,6 +10,7 @@ import {
 } from 'electron'
 import { join } from 'path'
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs'
+import { deployCloudFunction, CLOUD_FUNCTION_VERSION } from './deploy-cloud-function'
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const admin = require('firebase-admin') as typeof import('firebase-admin')
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -151,7 +152,7 @@ async function createFirestoreNativeDB(
   serviceAccount: { project_id: string; client_email: string; private_key: string },
   databaseId: string,
 ): Promise<void> {
-  const credential = admin.credential.cert(serviceAccount)
+  const credential = admin.credential.cert(serviceAccount as unknown as string)
   const { access_token } = await credential.getAccessToken()
 
   const projectId = serviceAccount.project_id
@@ -503,6 +504,49 @@ ipcMain.handle('get-desktop-sources', async () => {
     appIcon: s.appIcon?.toDataURL() || undefined,
     display_id: s.display_id || undefined,
   }))
+})
+
+// IPC handler: Deploy Cloud Function
+ipcMain.handle('deploy-cloud-function', async () => {
+  try {
+    const currentVersion = settings.cloudFunctionVersion as string | undefined
+    if (currentVersion === CLOUD_FUNCTION_VERSION) {
+      return { ok: true } // Already deployed at current version
+    }
+
+    const serviceAccountJson = settings.serviceAccountJson as string | undefined
+    if (!serviceAccountJson) {
+      return { ok: false, error: 'No service account configured' }
+    }
+
+    const sa = JSON.parse(serviceAccountJson)
+    const projectId = sa.project_id
+    const firestoreDbId = settings.firestoreDbId as string | undefined
+
+    const bucket = (settings.resolvedBucket as string | undefined) || `${projectId}.firebasestorage.app`
+
+    const result = await deployCloudFunction({
+      serviceAccountJson,
+      projectId,
+      firestoreDbId,
+      storageBucket: bucket,
+    })
+
+    if (result.ok) {
+      settings.cloudFunctionVersion = CLOUD_FUNCTION_VERSION
+      if (result.functionUrl) {
+        settings.cloudFunctionUrl = result.functionUrl
+      }
+      saveSettings(settings)
+    }
+
+    return result
+  } catch (e) {
+    return {
+      ok: false,
+      error: `Deploy failed: ${e instanceof Error ? e.message : String(e)}`,
+    }
+  }
 })
 
 // IPC handlers for settings
