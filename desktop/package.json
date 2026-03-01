@@ -1,0 +1,48 @@
+{
+  "name": "thari-video",
+  "version": "0.1.0",
+  "description": "Screen recorder with camera PiP — federated architecture",
+  "main": "./out/main/index.js",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "test:e2e": "npx playwright test",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.0",
+    "pg": "^8.19.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0",
+    "@tailwindcss/vite": "^4.0.0",
+    "@types/pg": "^8.16.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.0.0",
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0",
+    "electron-vite": "^3.0.0",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.7.0",
+    "vite": "^6.0.0"
+  },
+  "build": {
+    "appId": "video.thari.desktop",
+    "productName": "Thari.video",
+    "mac": {
+      "target": "dmg",
+      "extendInfo": {
+        "NSMicrophoneUsageDescription": "Thari.video needs microphone access to record audio with your screen capture.",
+        "NSCameraUsageDescription": "Thari.video needs camera access to include a camera overlay in your recording.",
+        "NSScreenCaptureUsageDescription": "Thari.video needs screen recording access to capture your screen."
+      }
+    },
+    "directories": {
+      "output": "release"
+    }
+  }
+}

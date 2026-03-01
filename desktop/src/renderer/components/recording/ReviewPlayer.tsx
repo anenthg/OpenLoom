@@ -1,0 +1,178 @@
+import { useMemo, useState, useRef, useEffect, useCallback } from 'react'
+
+interface ReviewPlayerProps {
+  blob: Blob
+  duration: number
+  onDiscard: () => void
+  onUpload: (title: string) => void
+}
+
+function formatTime(seconds: number): string {
+  const m = Math.floor(seconds / 60)
+    .toString()
+    .padStart(2, '0')
+  const s = Math.floor(seconds % 60)
+    .toString()
+    .padStart(2, '0')
+  return `${m}:${s}`
+}
+
+export default function ReviewPlayer({
+  blob,
+  duration,
+  onDiscard,
+  onUpload,
+}: ReviewPlayerProps) {
+  const [title, setTitle] = useState('')
+  const blobUrl = useMemo(() => URL.createObjectURL(blob), [blob])
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const progressRef = useRef<HTMLDivElement>(null)
+
+  const [ready, setReady] = useState(false)
+  const [currentTime, setCurrentTime] = useState(0)
+  const [realDuration, setRealDuration] = useState(duration)
+  const [hoverProgress, setHoverProgress] = useState<number | null>(null)
+
+  // Fix WebM duration bug: MediaRecorder blobs lack duration metadata,
+  // so the browser reports Infinity. Seeking to the end forces the browser
+  // to calculate the real duration, then we seek back to 0.
+  useEffect(() => {
+    const v = videoRef.current
+    if (!v) return
+
+    const fixDuration = () => {
+      if (v.duration && isFinite(v.duration)) {
+        setRealDuration(v.duration)
+        setReady(true)
+        return
+      }
+      // Seek to a very large time to force duration calculation
+      v.currentTime = 1e10
+    }
+
+    const onSeeked = () => {
+      if (v.duration && isFinite(v.duration)) {
+        setRealDuration(v.duration)
+      }
+      v.currentTime = 0
+      setReady(true)
+      v.removeEventListener('seeked', onSeeked)
+    }
+
+    v.addEventListener('loadedmetadata', fixDuration)
+    v.addEventListener('seeked', onSeeked)
+
+    return () => {
+      v.removeEventListener('loadedmetadata', fixDuration)
+      v.removeEventListener('seeked', onSeeked)
+    }
+  }, [])
+
+  const onTimeUpdate = useCallback(() => {
+    const v = videoRef.current
+    if (v) setCurrentTime(v.currentTime)
+  }, [])
+
+  const seek = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      const v = videoRef.current
+      const bar = progressRef.current
+      if (!v || !bar) return
+      const rect = bar.getBoundingClientRect()
+      const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width))
+      v.currentTime = ratio * realDuration
+    },
+    [realDuration],
+  )
+
+  const onProgressHover = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      const bar = progressRef.current
+      if (!bar) return
+      const rect = bar.getBoundingClientRect()
+      const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width))
+      setHoverProgress(ratio * realDuration)
+    },
+    [realDuration],
+  )
+
+  const progress = realDuration > 0 ? (currentTime / realDuration) * 100 : 0
+
+  return (
+    <div className="flex flex-col h-full p-6">
+      <h2 className="text-lg font-semibold text-zinc-200 mb-4">Review Recording</h2>
+
+      <div className="flex-1 bg-black rounded-lg overflow-hidden mb-4 flex flex-col min-h-0">
+        {/* Video with native controls for reliable audio playback */}
+        <div className="flex-1 min-h-0 relative">
+          <video
+            ref={videoRef}
+            src={blobUrl}
+            controls
+            className="w-full h-full object-contain"
+            onTimeUpdate={onTimeUpdate}
+            style={{ opacity: ready ? 1 : 0 }}
+          />
+          {!ready && (
+            <div className="absolute inset-0 flex items-center justify-center text-zinc-500">
+              Loading…
+            </div>
+          )}
+        </div>
+
+        {/* Custom progress bar overlay — more visible than native */}
+        <div
+          ref={progressRef}
+          className="group relative h-1.5 bg-zinc-700 cursor-pointer hover:h-2.5 transition-all shrink-0"
+          onClick={seek}
+          onMouseMove={onProgressHover}
+          onMouseLeave={() => setHoverProgress(null)}
+        >
+          {hoverProgress !== null && (
+            <div
+              className="absolute -top-7 -translate-x-1/2 bg-zinc-800 text-zinc-300 text-[10px] px-1.5 py-0.5 rounded pointer-events-none z-10"
+              style={{ left: `${(hoverProgress / realDuration) * 100}%` }}
+            >
+              {formatTime(hoverProgress)}
+            </div>
+          )}
+          <div
+            className="absolute inset-y-0 left-0 bg-blue-500 rounded-r-full"
+            style={{ width: `${progress}%` }}
+          />
+          <div
+            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3.5 h-3.5 bg-blue-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow"
+            style={{ left: `${progress}%` }}
+          />
+        </div>
+      </div>
+
+      <div className="text-sm text-zinc-400 mb-4">
+        Duration: {formatTime(realDuration)}
+      </div>
+
+      <input
+        type="text"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        placeholder="Recording title (optional)"
+        className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-blue-500 mb-4"
+      />
+
+      <div className="flex gap-3">
+        <button
+          onClick={onDiscard}
+          className="flex-1 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg transition-colors"
+        >
+          Discard
+        </button>
+        <button
+          onClick={() => onUpload(title)}
+          className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+        >
+          Upload
+        </button>
+      </div>
+    </div>
+  )
+}

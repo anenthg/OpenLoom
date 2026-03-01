@@ -1,0 +1,121 @@
+import { useState } from 'react'
+import type { DesktopSource } from '../../lib/types'
+
+interface SourcePickerProps {
+  sources: DesktopSource[]
+  enableCamera: boolean
+  enableMic: boolean
+  onToggleCamera: () => void
+  onToggleMic: () => void
+  onSelect: (sourceId: string) => void
+}
+
+type Tab = 'screens' | 'windows'
+
+export default function SourcePicker({
+  sources,
+  enableCamera,
+  enableMic,
+  onToggleCamera,
+  onToggleMic,
+  onSelect,
+}: SourcePickerProps) {
+  const screens = sources.filter((s) => s.id.startsWith('screen:'))
+  const windows = sources.filter((s) => s.id.startsWith('window:'))
+  const [tab, setTab] = useState<Tab>(screens.length > 0 ? 'screens' : 'windows')
+
+  const items = tab === 'screens' ? screens : windows
+
+  return (
+    <div className="flex flex-col h-full p-6">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-semibold text-zinc-200">Choose a source</h2>
+        <div className="flex gap-2">
+          <button
+            onClick={onToggleCamera}
+            className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
+              enableCamera
+                ? 'bg-blue-600 text-white'
+                : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+            }`}
+          >
+            Camera {enableCamera ? 'ON' : 'OFF'}
+          </button>
+          <button
+            onClick={onToggleMic}
+            className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
+              enableMic
+                ? 'bg-blue-600 text-white'
+                : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+            }`}
+          >
+            Mic {enableMic ? 'ON' : 'OFF'}
+          </button>
+        </div>
+      </div>
+
+      <div className="flex gap-1 mb-4 border-b border-zinc-800">
+        {screens.length > 0 && (
+          <button
+            onClick={() => setTab('screens')}
+            className={`px-4 py-2 text-sm font-medium transition-colors relative ${
+              tab === 'screens'
+                ? 'text-zinc-100'
+                : 'text-zinc-500 hover:text-zinc-300'
+            }`}
+          >
+            Screens
+            {tab === 'screens' && (
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500 rounded-full" />
+            )}
+          </button>
+        )}
+        {windows.length > 0 && (
+          <button
+            onClick={() => setTab('windows')}
+            className={`px-4 py-2 text-sm font-medium transition-colors relative ${
+              tab === 'windows'
+                ? 'text-zinc-100'
+                : 'text-zinc-500 hover:text-zinc-300'
+            }`}
+          >
+            Windows
+            {tab === 'windows' && (
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500 rounded-full" />
+            )}
+          </button>
+        )}
+      </div>
+
+      <div className="flex-1 overflow-y-auto">
+        <div className="grid grid-cols-3 gap-2">
+          {items.map((source) => (
+            <button
+              key={source.id}
+              onClick={() => onSelect(source.id)}
+              className="rounded-lg border border-zinc-700 hover:border-blue-500 overflow-hidden transition-colors bg-zinc-900"
+            >
+              <img
+                src={source.thumbnail}
+                alt={source.name}
+                className="w-full aspect-video object-cover"
+              />
+              <div className="px-2 py-1.5 text-xs text-zinc-300 truncate flex items-center gap-1.5">
+                {tab === 'windows' && source.appIcon && (
+                  <img src={source.appIcon} alt="" className="w-3.5 h-3.5" />
+                )}
+                {source.name}
+              </div>
+            </button>
+          ))}
+        </div>
+        {tab === 'windows' && (
+          <p className="text-xs text-zinc-600 mt-3">
+            Some apps (e.g. Chrome) hide their windows from capture. Use the Screens tab to
+            record them.
+          </p>
+        )}
+      </div>
+    </div>
+  )
+}
