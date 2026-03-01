@@ -277,13 +277,17 @@ test.describe('Record Flow', () => {
     await page.getByPlaceholder('Recording title (optional)').fill('Test Recording')
     await page.getByRole('button', { name: /Upload/ }).click()
 
-    // Upload progress → complete
+    // Upload progress → complete with share URL
     await expect(page.getByText('Upload Complete!')).toBeVisible({ timeout: 10_000 })
-    await expect(page.getByText(/thari\.video/)).toBeVisible()
+    await expect(page.getByText(/thari\.video/)).toBeVisible({ timeout: 5_000 })
 
     // Share URL stays visible with copy and new recording buttons
     await expect(page.getByRole('button', { name: /Copy Link/ })).toBeVisible()
     await expect(page.getByRole('button', { name: /New Recording/ })).toBeVisible()
+
+    // Clicking "New Recording" returns to idle
+    await page.getByRole('button', { name: /New Recording/ }).click()
+    await expect(page.getByRole('button', { name: 'Start Recording' })).toBeVisible()
   })
 
   // ---- Discard ----
