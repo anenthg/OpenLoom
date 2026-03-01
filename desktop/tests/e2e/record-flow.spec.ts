@@ -237,6 +237,26 @@ test.describe('Record Flow', () => {
     await expect(page.getByRole('button', { name: 'Mic off' })).toBeVisible()
   })
 
+  // ---- HD toggle ----
+
+  test('HD toggle in source picker defaults on and can be toggled', async () => {
+    await page.getByTestId('tab-record').click()
+    await page.getByRole('button', { name: 'Start Recording' }).click()
+    await expect(page.getByText('Choose a source')).toBeVisible()
+
+    // HD defaults to ON
+    const hdBtn = page.getByRole('button', { name: 'HD on' })
+    await expect(hdBtn).toBeVisible()
+
+    // Toggle HD OFF
+    await hdBtn.click()
+    await expect(page.getByRole('button', { name: 'HD off' })).toBeVisible()
+
+    // Toggle HD back ON
+    await page.getByRole('button', { name: 'HD off' }).click()
+    await expect(page.getByRole('button', { name: 'HD on' })).toBeVisible()
+  })
+
   // ---- Full record → review → upload flow ----
 
   test('full flow: record, review, upload', async () => {

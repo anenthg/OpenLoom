@@ -19,7 +19,11 @@ export function useMediaCapture() {
       sourceId: string,
       enableCamera: boolean,
       enableMic: boolean,
+      enableHD: boolean = true,
     ): Promise<MediaStreams> => {
+      const maxWidth = enableHD ? 1920 : 1280
+      const maxHeight = enableHD ? 1080 : 720
+
       // Screen capture using Electron's desktopCapturer source ID
       const screen = await navigator.mediaDevices
         .getUserMedia({
@@ -35,8 +39,8 @@ export function useMediaCapture() {
             mandatory: {
               chromeMediaSource: 'desktop',
               chromeMediaSourceId: sourceId,
-              maxWidth: 1920,
-              maxHeight: 1080,
+              maxWidth,
+              maxHeight,
             },
           },
         })
@@ -49,8 +53,8 @@ export function useMediaCapture() {
               mandatory: {
                 chromeMediaSource: 'desktop',
                 chromeMediaSourceId: sourceId,
-                maxWidth: 1920,
-                maxHeight: 1080,
+                maxWidth,
+                maxHeight,
               },
             },
           })

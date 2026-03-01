@@ -7,14 +7,15 @@ export interface CanvasCompositor {
 export function createCanvasCompositor(
   screenStream: MediaStream,
   cameraStream: MediaStream | null,
+  maxW: number = 1920,
+  maxH: number = 1080,
 ): CanvasCompositor {
   const screenTrack = screenStream.getVideoTracks()[0]
   const screenSettings = screenTrack.getSettings()
 
-  // Cap at 1920x1080
-  const srcW = screenSettings.width || 1920
-  const srcH = screenSettings.height || 1080
-  const scale = Math.min(1, 1920 / srcW, 1080 / srcH)
+  const srcW = screenSettings.width || maxW
+  const srcH = screenSettings.height || maxH
+  const scale = Math.min(1, maxW / srcW, maxH / srcH)
   const w = Math.round(srcW * scale)
   const h = Math.round(srcH * scale)
 

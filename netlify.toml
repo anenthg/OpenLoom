@@ -1,0 +1,7 @@
+[build]
+  base = "webviewer"
+  command = "npm run build"
+  publish = "webviewer/.next"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"

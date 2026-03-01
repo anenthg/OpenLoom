@@ -7,6 +7,7 @@ export interface Recorder {
 export function createRecorder(
   videoStream: MediaStream,
   audioDestination: MediaStreamAudioDestinationNode | null,
+  videoBitsPerSecond: number = 2_500_000,
 ): Recorder {
   // Combine video and audio tracks
   const tracks = [...videoStream.getVideoTracks()]
@@ -24,7 +25,7 @@ export function createRecorder(
 
   const mediaRecorder = new MediaRecorder(combinedStream, {
     mimeType,
-    videoBitsPerSecond: 2_500_000,
+    videoBitsPerSecond,
   })
 
   const chunks: Blob[] = []

@@ -79,8 +79,10 @@ function RecordingInner() {
           sources={state.sources}
           enableCamera={state.enableCamera}
           enableMic={state.enableMic}
+          enableHD={state.enableHD}
           onToggleCamera={state.toggleCamera}
           onToggleMic={state.toggleMic}
+          onToggleHD={state.toggleHD}
           onSelect={state.selectSource}
         />
       )

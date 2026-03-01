@@ -10,6 +10,7 @@ export interface RecordingState {
   sources: DesktopSource[]
   enableCamera: boolean
   enableMic: boolean
+  enableHD: boolean
   countdownValue: number
   elapsedSeconds: number
   recordedBlob: Blob | null
@@ -25,6 +26,7 @@ export interface RecordingActions {
   startSourceSelect: () => Promise<void>
   toggleCamera: () => void
   toggleMic: () => void
+  toggleHD: () => void
   selectSource: (sourceId: string) => void
   stopRecording: () => void
   discard: () => void
@@ -38,6 +40,7 @@ export function useRecordingMachine(): RecordingState & RecordingActions {
   const [sources, setSources] = useState<DesktopSource[]>([])
   const [enableCamera, setEnableCamera] = useState(true)
   const [enableMic, setEnableMic] = useState(true)
+  const [enableHD, setEnableHD] = useState(true)
   const [countdownValue, setCountdownValue] = useState(3)
   const [elapsedSeconds, setElapsedSeconds] = useState(0)
   const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null)
@@ -84,15 +87,18 @@ export function useRecordingMachine(): RecordingState & RecordingActions {
 
   const toggleCamera = useCallback(() => setEnableCamera((v) => !v), [])
   const toggleMic = useCallback(() => setEnableMic((v) => !v), [])
+  const toggleHD = useCallback(() => setEnableHD((v) => !v), [])
 
   const selectSource = useCallback(
     async (sourceId: string) => {
       try {
-        const mediaStreams = await acquire(sourceId, enableCamera, enableMic)
+        const mediaStreams = await acquire(sourceId, enableCamera, enableMic, enableHD)
         setHasLiveAudio(mediaStreams.hasLiveAudio)
 
         // Create compositor
-        const comp = createCanvasCompositor(mediaStreams.screen, mediaStreams.camera)
+        const maxW = enableHD ? 1920 : 1280
+        const maxH = enableHD ? 1080 : 720
+        const comp = createCanvasCompositor(mediaStreams.screen, mediaStreams.camera, maxW, maxH)
         compositorRef.current = comp
         setCanvas(comp.canvas)
 
@@ -101,7 +107,8 @@ export function useRecordingMachine(): RecordingState & RecordingActions {
         mixerRef.current = mixer
 
         // Create recorder
-        const rec = createRecorder(comp.stream, mixer.destination)
+        const bitrate = enableHD ? 5_000_000 : 2_500_000
+        const rec = createRecorder(comp.stream, mixer.destination, bitrate)
         recorderRef.current = rec
 
         // Start countdown
@@ -133,7 +140,7 @@ export function useRecordingMachine(): RecordingState & RecordingActions {
         setPhase('idle')
       }
     },
-    [acquire, enableCamera, enableMic, cleanup],
+    [acquire, enableCamera, enableMic, enableHD, cleanup],
   )
 
   const stopRecording = useCallback(async () => {
@@ -218,6 +225,7 @@ export function useRecordingMachine(): RecordingState & RecordingActions {
     setUploadProgress(0)
     setShareURL(null)
     setHasLiveAudio(true)
+    setEnableHD(true)
     setElapsedSeconds(0)
     setCountdownValue(3)
   }, [cleanup])
@@ -227,6 +235,7 @@ export function useRecordingMachine(): RecordingState & RecordingActions {
     sources,
     enableCamera,
     enableMic,
+    enableHD,
     countdownValue,
     elapsedSeconds,
     recordedBlob,
@@ -238,6 +247,7 @@ export function useRecordingMachine(): RecordingState & RecordingActions {
     startSourceSelect,
     toggleCamera,
     toggleMic,
+    toggleHD,
     selectSource,
     stopRecording,
     discard,

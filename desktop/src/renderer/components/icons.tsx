@@ -127,6 +127,25 @@ export function CheckIcon({ className }: IconProps) {
   )
 }
 
+export function HDIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className}>
+      <rect x="1" y="4" width="22" height="16" rx="3" stroke="currentColor" strokeWidth={1.5} />
+      <text
+        x="12"
+        y="15"
+        textAnchor="middle"
+        fill="currentColor"
+        fontSize="9"
+        fontWeight="bold"
+        fontFamily="system-ui, sans-serif"
+      >
+        HD
+      </text>
+    </svg>
+  )
+}
+
 export function GearIcon({ className }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" className={className}>

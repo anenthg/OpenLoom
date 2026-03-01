@@ -1,0 +1,314 @@
+@import "tailwindcss";
+@import "plyr/dist/plyr.css";
+
+:root {
+  --warp-indigo: #1A1A2E;
+  --cotton: #F5F5E8;
+  --crimson: #D92B2B;
+  --mustard: #F5C518;
+  --emerald: #0E9A57;
+  --deep-black: #0A0A12;
+  --background: #1A1A2E;
+  --foreground: #F5F5E8;
+
+  /* Plyr player theming */
+  --plyr-color-main: #D92B2B;
+  --plyr-video-background: #0A0A12;
+  --plyr-video-control-color: #F5F5E8;
+  --plyr-video-control-color-hover: #fff;
+  --plyr-video-control-background-hover: #D92B2B;
+  --plyr-range-fill-background: #D92B2B;
+  --plyr-range-thumb-background: #F5F5E8;
+  --plyr-range-thumb-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --plyr-badge-background: #D92B2B;
+  --plyr-badge-text-color: #fff;
+  --plyr-tooltip-background: #1A1A2E;
+  --plyr-tooltip-color: #F5F5E8;
+  --plyr-tooltip-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --plyr-menu-background: #1A1A2E;
+  --plyr-menu-color: #F5F5E8;
+  --plyr-menu-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  --plyr-font-family: var(--font-space-grotesk), sans-serif;
+  --plyr-control-radius: 8px;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-space-grotesk);
+  --font-mono: var(--font-jetbrains-mono);
+}
+
+body {
+  background: var(--warp-indigo);
+  color: var(--cotton);
+  font-family: var(--font-space-grotesk), sans-serif;
+}
+
+/* ------------------------------------------------------------------ */
+/* Jamakkalam striped pattern                                          */
+/* ------------------------------------------------------------------ */
+
+/*
+ * Pattern based on authentic Bhavani Jamakkalam:
+ * Symmetrical stripe clusters flanking a wide indigo field.
+ * Left cluster: cotton | emerald | mustard | crimson | black | mustard
+ * Center: wide indigo field
+ * Right cluster: mustard | black | crimson | mustard | emerald | cotton
+ */
+.jamakkalam-stripes {
+  background: repeating-linear-gradient(
+    90deg,
+    /* ---- left cluster ---- */
+    var(--cotton)      0px,
+    var(--cotton)      5px,
+    var(--warp-indigo) 5px,
+    var(--warp-indigo) 8px,
+    var(--emerald)     8px,
+    var(--emerald)     28px,
+    var(--warp-indigo) 28px,
+    var(--warp-indigo) 31px,
+    var(--mustard)     31px,
+    var(--mustard)     38px,
+    var(--warp-indigo) 38px,
+    var(--warp-indigo) 41px,
+    var(--crimson)     41px,
+    var(--crimson)     60px,
+    var(--warp-indigo) 60px,
+    var(--warp-indigo) 63px,
+    var(--deep-black)  63px,
+    var(--deep-black)  68px,
+    var(--warp-indigo) 68px,
+    var(--warp-indigo) 71px,
+    var(--mustard)     71px,
+    var(--mustard)     78px,
+    /* ---- center indigo field ---- */
+    var(--warp-indigo) 78px,
+    var(--warp-indigo) 210px,
+    /* ---- right cluster (mirror) ---- */
+    var(--mustard)     210px,
+    var(--mustard)     217px,
+    var(--warp-indigo) 217px,
+    var(--warp-indigo) 220px,
+    var(--deep-black)  220px,
+    var(--deep-black)  225px,
+    var(--warp-indigo) 225px,
+    var(--warp-indigo) 228px,
+    var(--crimson)     228px,
+    var(--crimson)     247px,
+    var(--warp-indigo) 247px,
+    var(--warp-indigo) 250px,
+    var(--mustard)     250px,
+    var(--mustard)     257px,
+    var(--warp-indigo) 257px,
+    var(--warp-indigo) 260px,
+    var(--emerald)     260px,
+    var(--emerald)     280px,
+    var(--warp-indigo) 280px,
+    var(--warp-indigo) 283px,
+    var(--cotton)      283px,
+    var(--cotton)      288px,
+    var(--warp-indigo) 288px,
+    var(--warp-indigo) 290px
+  );
+}
+
+/* Thin stripe divider for section breaks and viewer header */
+.stripe-divider,
+.stripe-divider-slow {
+  height: 4px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--cotton)      0px,
+    var(--cotton)      3px,
+    var(--emerald)     3px,
+    var(--emerald)     12px,
+    var(--mustard)     12px,
+    var(--mustard)     16px,
+    var(--crimson)     16px,
+    var(--crimson)     26px,
+    var(--deep-black)  26px,
+    var(--deep-black)  29px,
+    var(--mustard)     29px,
+    var(--mustard)     33px,
+    var(--emerald)     33px,
+    var(--emerald)     60px,
+    var(--mustard)     60px,
+    var(--mustard)     64px,
+    var(--deep-black)  64px,
+    var(--deep-black)  67px,
+    var(--crimson)     67px,
+    var(--crimson)     77px,
+    var(--mustard)     77px,
+    var(--mustard)     81px,
+    var(--emerald)     81px,
+    var(--emerald)     90px,
+    var(--cotton)      90px,
+    var(--cotton)      93px,
+    var(--emerald)     93px,
+    var(--emerald)     96px
+  );
+}
+
+.stripe-divider-slow {
+  animation: stripe-divider-scroll 20s linear infinite;
+}
+
+@keyframes stripe-divider-scroll {
+  0%   { background-position: 0 0; }
+  100% { background-position: 96px 0; }
+}
+
+/* ------------------------------------------------------------------ */
+/* Glassmorphism terminal                                              */
+/* ------------------------------------------------------------------ */
+
+.glass-terminal {
+  background: rgba(26, 26, 46, 0.88);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(245, 245, 232, 0.08);
+  box-shadow:
+    0 25px 60px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(245, 245, 232, 0.04);
+}
+
+/* ------------------------------------------------------------------ */
+/* Cursor blink animation                                              */
+/* ------------------------------------------------------------------ */
+
+@keyframes cursor-blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.animate-cursor-blink {
+  animation: cursor-blink 1s step-end infinite;
+}
+
+/* ------------------------------------------------------------------ */
+/* Scroll-reveal animations                                            */
+/* ------------------------------------------------------------------ */
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+[data-reveal][data-visible] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ------------------------------------------------------------------ */
+/* Stripe hover effect for cards                                       */
+/* ------------------------------------------------------------------ */
+
+.stripe-hover-border {
+  position: relative;
+  overflow: hidden;
+}
+
+.stripe-hover-border::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--crimson) 0px,
+    var(--crimson) 8px,
+    var(--mustard) 8px,
+    var(--mustard) 16px,
+    var(--emerald) 16px,
+    var(--emerald) 24px
+  );
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.stripe-hover-border:hover::after {
+  transform: scaleX(1);
+}
+
+/* ------------------------------------------------------------------ */
+/* Stripe slide-in animation for hero                                  */
+/* ------------------------------------------------------------------ */
+
+@keyframes stripe-shimmer {
+  0%   { background-position: 0 0; }
+  100% { background-position: 290px 0; }
+}
+
+.jamakkalam-stripes-animated {
+  animation: stripe-shimmer 30s linear infinite;
+}
+
+/* ------------------------------------------------------------------ */
+/* Plyr / reaction styles                                              */
+/* ------------------------------------------------------------------ */
+
+@keyframes float-up {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-300px) scale(1.3);
+  }
+}
+
+.animate-float-up {
+  animation: float-up 1.5s ease-out forwards;
+}
+
+.reaction-marker {
+  position: relative;
+}
+
+.reaction-tooltip {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--warp-indigo);
+  color: var(--cotton);
+  font-size: 13px;
+  line-height: 1;
+  padding: 5px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.reaction-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-top-color: var(--warp-indigo);
+}
+
+.reaction-marker:hover .reaction-tooltip {
+  display: block;
+}

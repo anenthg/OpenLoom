@@ -1,13 +1,15 @@
 import { useState } from 'react'
 import type { DesktopSource } from '../../lib/types'
-import { CameraIcon, CameraOffIcon, MicIcon, MicOffIcon } from '../icons'
+import { CameraIcon, CameraOffIcon, MicIcon, MicOffIcon, HDIcon } from '../icons'
 
 interface SourcePickerProps {
   sources: DesktopSource[]
   enableCamera: boolean
   enableMic: boolean
+  enableHD: boolean
   onToggleCamera: () => void
   onToggleMic: () => void
+  onToggleHD: () => void
   onSelect: (sourceId: string) => void
 }
 
@@ -17,8 +19,10 @@ export default function SourcePicker({
   sources,
   enableCamera,
   enableMic,
+  enableHD,
   onToggleCamera,
   onToggleMic,
+  onToggleHD,
   onSelect,
 }: SourcePickerProps) {
   const screens = sources.filter((s) => s.id.startsWith('screen:'))
@@ -53,6 +57,17 @@ export default function SourcePicker({
             }`}
           >
             {enableMic ? <MicIcon className="w-5 h-5" /> : <MicOffIcon className="w-5 h-5" />}
+          </button>
+          <button
+            onClick={onToggleHD}
+            title={enableHD ? 'HD on' : 'HD off'}
+            className={`p-2 rounded-lg transition-colors ${
+              enableHD
+                ? 'bg-[var(--emerald)]/20 text-[var(--emerald)]'
+                : 'bg-zinc-800 text-zinc-500'
+            }`}
+          >
+            <HDIcon className="w-5 h-5" />
           </button>
         </div>
       </div>
