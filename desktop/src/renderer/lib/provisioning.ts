@@ -45,17 +45,20 @@ async function verifyStorage(): Promise<StepResult> {
   }
 }
 
-async function deployApi(): Promise<StepResult> {
-  try {
-    const result = await window.api.deployCloudFunction()
-    return {
-      ok: result.ok,
-      error: result.error,
-      actions: result.enableUrls,
-    }
-  } catch (e) {
-    return { ok: false, error: `API deployment failed: ${e instanceof Error ? e.message : String(e)}` }
-  }
+const DEPLOY_STEP_IDS = [
+  'deploy-enable-apis',
+  'deploy-check-access',
+  'deploy-upload',
+  'deploy-create',
+  'deploy-public',
+] as const
+
+const stageMap: Record<string, string> = {
+  'enable-apis': 'deploy-enable-apis',
+  'check-access': 'deploy-check-access',
+  'upload-source': 'deploy-upload',
+  'create-function': 'deploy-create',
+  'set-public-access': 'deploy-public',
 }
 
 export type StepUpdateCallback = (steps: ProvisioningStep[]) => void
@@ -67,7 +70,11 @@ export async function runProvisioning(
   const steps: ProvisioningStep[] = [
     { id: 'firestore', label: 'Verifying Firestore access...', status: 'pending' },
     { id: 'storage', label: 'Verifying Storage bucket...', status: 'pending' },
-    { id: 'deploy-api', label: 'Deploying API...', status: 'pending' },
+    { id: 'deploy-enable-apis', label: 'Enabling required GCP APIs...', status: 'pending' },
+    { id: 'deploy-check-access', label: 'Checking Cloud Functions access...', status: 'pending' },
+    { id: 'deploy-upload', label: 'Uploading function source...', status: 'pending' },
+    { id: 'deploy-create', label: 'Creating Cloud Function...', status: 'pending' },
+    { id: 'deploy-public', label: 'Configuring public access...', status: 'pending' },
   ]
 
   function updateStep(id: string, update: Partial<ProvisioningStep>) {
@@ -94,18 +101,68 @@ export async function runProvisioning(
   }
   updateStep('storage', { status: 'done' })
 
-  // Step 3: Deploy API
-  updateStep('deploy-api', { status: 'running', label: 'Deploying API (this may take a few minutes)...' })
-  const deployResult = await deployApi()
-  if (!deployResult.ok) {
-    updateStep('deploy-api', {
-      status: 'error',
-      error: deployResult.error,
-      actions: deployResult.actions,
-    })
+  // Step 3: Deploy API (5 sub-steps streamed via IPC progress events)
+  let currentDeployStep: string | null = null
+
+  window.api.onDeployProgress((stage: string) => {
+    const stepId = stageMap[stage]
+    if (!stepId) return
+
+    // Mark previous deploy step as done
+    if (currentDeployStep && currentDeployStep !== stepId) {
+      updateStep(currentDeployStep, { status: 'done' })
+    }
+
+    // Mark current step as running
+    currentDeployStep = stepId
+    updateStep(stepId, { status: 'running' })
+  })
+
+  try {
+    const result = await window.api.deployCloudFunction()
+
+    window.api.offDeployProgress()
+
+    if (result.ok) {
+      if (result.skipped) {
+        // Version already matches — mark all deploy steps done immediately
+        for (const id of DEPLOY_STEP_IDS) {
+          updateStep(id, { status: 'done' })
+        }
+      } else {
+        // Mark all deploy steps done (including any that didn't get a progress event)
+        for (const id of DEPLOY_STEP_IDS) {
+          updateStep(id, { status: 'done' })
+        }
+      }
+      return true
+    } else {
+      // Mark the currently-running deploy step as error
+      if (currentDeployStep) {
+        updateStep(currentDeployStep, {
+          status: 'error',
+          error: result.error,
+          actions: result.enableUrls,
+        })
+      } else {
+        // No progress was received — mark the first deploy step as error
+        updateStep('deploy-enable-apis', {
+          status: 'error',
+          error: result.error,
+          actions: result.enableUrls,
+        })
+      }
+      return false
+    }
+  } catch (e) {
+    window.api.offDeployProgress()
+
+    const errorMsg = `API deployment failed: ${e instanceof Error ? e.message : String(e)}`
+    if (currentDeployStep) {
+      updateStep(currentDeployStep, { status: 'error', error: errorMsg })
+    } else {
+      updateStep('deploy-enable-apis', { status: 'error', error: errorMsg })
+    }
     return false
   }
-  updateStep('deploy-api', { status: 'done', label: 'API deployed' })
-
-  return true
 }

@@ -93,9 +93,12 @@ export interface IElectronAPI {
   openScreenRecordingSettings: () => Promise<void>
   deployCloudFunction: () => Promise<{
     ok: boolean
+    skipped?: boolean
     error?: string
     enableUrls?: { label: string; url: string }[]
   }>
+  onDeployProgress: (callback: (stage: string) => void) => void
+  offDeployProgress: () => void
 }
 
 declare global {

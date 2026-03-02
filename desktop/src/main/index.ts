@@ -512,11 +512,11 @@ ipcMain.handle('get-desktop-sources', async () => {
 })
 
 // IPC handler: Deploy Cloud Function
-ipcMain.handle('deploy-cloud-function', async () => {
+ipcMain.handle('deploy-cloud-function', async (event) => {
   try {
     const currentVersion = settings.cloudFunctionVersion as string | undefined
     if (currentVersion === CLOUD_FUNCTION_VERSION) {
-      return { ok: true } // Already deployed at current version
+      return { ok: true, skipped: true } // Already deployed at current version
     }
 
     const serviceAccountJson = settings.serviceAccountJson as string | undefined
@@ -530,12 +530,17 @@ ipcMain.handle('deploy-cloud-function', async () => {
 
     const bucket = (settings.resolvedBucket as string | undefined) || `${projectId}.firebasestorage.app`
 
-    const result = await deployCloudFunction({
-      serviceAccountJson,
-      projectId,
-      firestoreDbId,
-      storageBucket: bucket,
-    })
+    const result = await deployCloudFunction(
+      {
+        serviceAccountJson,
+        projectId,
+        firestoreDbId,
+        storageBucket: bucket,
+      },
+      (stage) => {
+        event.sender.send('deploy-progress', stage)
+      },
+    )
 
     if (result.ok) {
       settings.cloudFunctionVersion = CLOUD_FUNCTION_VERSION

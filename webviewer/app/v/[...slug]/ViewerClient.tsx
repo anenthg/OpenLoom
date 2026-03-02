@@ -70,6 +70,29 @@ function parseSlug(): { projectId: string; code: string } | null {
 // Sub-components
 // ---------------------------------------------------------------------------
 
+function BrandLoader({ label = "Loading video..." }: { label?: string }) {
+  return (
+    <div className="flex flex-col items-center gap-3">
+      <div className="brand-loader-icon">
+        <div className="jamakkalam-stripes brand-loader-stripes absolute inset-0" />
+        <div className="brand-loader-window">
+          <div className="brand-loader-dots">
+            <span />
+            <span />
+            <span />
+          </div>
+          <div className="brand-loader-play">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="12" height="12">
+              <path d="M8 5.14v13.72a1 1 0 001.5.86l11-6.86a1 1 0 000-1.72l-11-6.86A1 1 0 008 5.14z" />
+            </svg>
+          </div>
+        </div>
+      </div>
+      <span className="brand-loader-label text-gray-400">{label}</span>
+    </div>
+  );
+}
+
 interface FloatingEmojiItem {
   id: number;
   emoji: string;
@@ -411,13 +434,7 @@ export default function VideoViewerPage() {
       <>
         {stripe}
         <main className="flex flex-1 items-center justify-center bg-white py-20">
-          <div className="flex items-center gap-3 text-sm text-gray-400">
-            <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" opacity="0.25" />
-              <path d="M12 2a10 10 0 019.95 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-            Loading recording...
-          </div>
+          <BrandLoader />
         </main>
       </>
     );
@@ -491,7 +508,7 @@ export default function VideoViewerPage() {
           {videoSrc && (
             <video
               ref={videoRef}
-              className={`block aspect-video w-full ${playerReady ? "" : "invisible"}`}
+              className={`block aspect-video w-full ${playerReady ? "" : "absolute inset-0 invisible"}`}
               src={videoSrc}
               playsInline
               preload="auto"
@@ -499,9 +516,7 @@ export default function VideoViewerPage() {
           )}
           {!playerReady && (
             <div className="loom-loader flex aspect-video items-center justify-center">
-              <div className="loom-loader-threads">
-                <span /><span /><span /><span /><span /><span /><span /><span /><span /><span /><span /><span /><span /><span /><span /><span /><span />
-              </div>
+              <BrandLoader />
             </div>
           )}
           <FloatingEmojis items={floatingEmojis} />

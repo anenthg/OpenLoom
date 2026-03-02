@@ -27,7 +27,11 @@ function StatusIcon({ status }: { status: StepStatus }) {
 const INITIAL_STEPS: ProvisioningStep[] = [
   { id: 'firestore', label: 'Verifying Firestore access...', status: 'pending' },
   { id: 'storage', label: 'Verifying Storage bucket...', status: 'pending' },
-  { id: 'deploy-api', label: 'Deploying API...', status: 'pending' },
+  { id: 'deploy-enable-apis', label: 'Enabling required GCP APIs...', status: 'pending' },
+  { id: 'deploy-check-access', label: 'Checking Cloud Functions access...', status: 'pending' },
+  { id: 'deploy-upload', label: 'Uploading function source...', status: 'pending' },
+  { id: 'deploy-create', label: 'Creating Cloud Function...', status: 'pending' },
+  { id: 'deploy-public', label: 'Configuring public access...', status: 'pending' },
 ]
 
 export default function Provisioning({ settings, onComplete, onDisconnect }: Props) {

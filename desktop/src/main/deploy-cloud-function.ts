@@ -5,6 +5,13 @@ const admin = require('firebase-admin') as typeof import('firebase-admin')
 
 export const CLOUD_FUNCTION_VERSION = '1.0.2'
 
+export type DeployStage =
+  | 'enable-apis'
+  | 'check-access'
+  | 'upload-source'
+  | 'create-function'
+  | 'set-public-access'
+
 // ---------------------------------------------------------------------------
 // Embedded Cloud Function source (v1 SDK — works on both 1st & 2nd gen)
 // ---------------------------------------------------------------------------
@@ -784,7 +791,10 @@ async function setPublicAccess(
 // Main deployment function
 // ---------------------------------------------------------------------------
 
-export async function deployCloudFunction(params: DeployParams): Promise<DeployResult> {
+export async function deployCloudFunction(
+  params: DeployParams,
+  onProgress?: (stage: DeployStage) => void,
+): Promise<DeployResult> {
   const { serviceAccountJson, projectId, firestoreDbId, storageBucket } = params
 
   const sa = JSON.parse(serviceAccountJson)
@@ -797,16 +807,19 @@ export async function deployCloudFunction(params: DeployParams): Promise<DeployR
     const token = await getAccessToken(serviceAccountJson)
 
     // Best-effort: try to enable APIs (SA likely lacks permission, that's OK)
+    onProgress?.('enable-apis')
     log('Step 1/5: Attempting to enable APIs (best-effort)...')
     await tryEnableApis(token, projectId)
     log('Step 1/5: Done')
 
     // Pre-check: verify the SA can actually access Cloud Functions v2 API
+    onProgress?.('check-access')
     log('Step 2/5: Checking Cloud Functions v2 access...')
     await checkCloudFunctionsAccess(token, projectId, saEmail)
     log('Step 2/5: Cloud Functions v2 access confirmed')
 
     // Build ZIP and upload source to GCS
+    onProgress?.('upload-source')
     log('Step 3/5: Building ZIP and uploading source to GCS...')
     const zipBuffer = createZipBuffer([
       { name: 'index.js', content: Buffer.from(FUNCTION_INDEX_JS, 'utf-8') },
@@ -819,6 +832,7 @@ export async function deployCloudFunction(params: DeployParams): Promise<DeployR
 
     // Create or update the function (v2 API)
     // Retry on "unable to queue" — GCP rejects concurrent operations on the same function
+    onProgress?.('create-function')
     log('Step 4/5: Creating/updating function (v2)...')
     let operationName: string | undefined
     for (let attempt = 1; attempt <= 5; attempt++) {
@@ -855,6 +869,7 @@ export async function deployCloudFunction(params: DeployParams): Promise<DeployR
 
     // Set public access on the Cloud Run service (required for unauthenticated web viewer)
     // Retry a few times — Cloud Run service may not be ready immediately after deployment
+    onProgress?.('set-public-access')
     log('Step 5/5: Setting public access on Cloud Run service...')
     let publicAccessSet = false
     for (let attempt = 1; attempt <= 5; attempt++) {

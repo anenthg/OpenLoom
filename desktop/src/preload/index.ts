@@ -73,9 +73,16 @@ const api = {
   > => ipcRenderer.invoke('get-desktop-sources'),
   deployCloudFunction: (): Promise<{
     ok: boolean
+    skipped?: boolean
     error?: string
     enableUrls?: { label: string; url: string }[]
   }> => ipcRenderer.invoke('deploy-cloud-function'),
+  onDeployProgress: (callback: (stage: string) => void) => {
+    ipcRenderer.on('deploy-progress', (_event, stage) => callback(stage))
+  },
+  offDeployProgress: () => {
+    ipcRenderer.removeAllListeners('deploy-progress')
+  },
 }
 
 contextBridge.exposeInMainWorld('api', api)
