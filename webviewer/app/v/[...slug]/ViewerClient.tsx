@@ -636,7 +636,15 @@ export default function VideoViewerPage() {
     <footer className="border-t border-[var(--cotton)]/5 bg-[var(--warp-indigo)] px-6 py-8">
       <div className="mx-auto flex max-w-screen-xl items-center justify-between text-sm text-[var(--cotton)]/40">
         <span className="font-mono text-xs text-[var(--cotton)]/25">
-          OpenLoom — inspired by the thari (தறி), Tamil for loom. Design from Bhavani Jamakkalam
+          OpenLoom — inspired by the thari (தறி), Tamil for loom. Design from{" "}
+          <a
+            href="https://en.wikipedia.org/wiki/Bhavani_Jamakkalam"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="transition-colors hover:text-[var(--cotton)]/40"
+          >
+            Bhavani Jamakkalam
+          </a>
         </span>
         <span className="font-mono text-xs text-[var(--cotton)]/25">git init ~{" "}
           <a

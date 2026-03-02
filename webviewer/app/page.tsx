@@ -73,7 +73,14 @@ export default function LandingPage() {
           <div className="mt-6 mb-6 font-mono text-sm leading-relaxed">
             <div className="text-[var(--mustard)]">
               <span className="text-[var(--emerald)]">$</span> Open-source alternative to Loom. Your screen recordings live on your
-              own Firebase — no third-party servers, no vendor lock-in.
+              own hosted{" "}
+              <span className="relative group cursor-default border-b border-dotted border-[var(--mustard)]/50">
+                backend infra
+                <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 whitespace-nowrap rounded bg-[var(--deep-black)] px-3 py-1.5 text-xs text-[var(--cotton)] opacity-0 transition-opacity group-hover:opacity-100 border border-[var(--cotton)]/10">
+                  Firebase — and soon Supabase
+                </span>
+              </span>
+              {" "}— no third-party servers, no vendor lock-in.
             </div>
           </div>
 
@@ -166,7 +173,7 @@ export default function LandingPage() {
               {
                 icon: "selfhost",
                 title: "Self-hosted",
-                desc: "Recordings live on your own Firebase project. 5 GB storage included in the free tier",
+                desc: "Recordings live on your own Firebase project. 5 GB storage included in the free tier. Supabase is coming soon.",
               },
               {
                 icon: "screen",
@@ -267,7 +274,7 @@ export default function LandingPage() {
             Built in the open
           </h2>
           <p className="mt-4 text-lg text-[var(--cotton)]/50">
-            OpenLoom is fully open source. Found a bug? Want a feature? Open an
+            OpenLoom is fully open sourced. Found a bug? Want a feature? Open an
             issue. Want to contribute? PRs are always welcome.
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
@@ -297,9 +304,19 @@ export default function LandingPage() {
       <footer className="border-t border-[var(--cotton)]/5 bg-[var(--warp-indigo)] px-6 py-8">
         <div className="mx-auto flex max-w-screen-xl items-center justify-between text-sm text-[var(--cotton)]/40">
           <span className="font-mono text-xs text-[var(--cotton)]/25">
-            OpenLoom — inspired by the thari (தறி), Tamil for loom. Design from Bhavani Jamakkalam
+            Design is inspired by enduring heritage of the{" "}
+            <a
+              href="https://en.wikipedia.org/wiki/Bhavani_Jamakkalam"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-colors hover:text-[var(--cotton)]/40"
+            >
+              Bhavani Jamakkalam
+            </a>
+            .
           </span>
-          <span className="font-mono text-xs text-[var(--cotton)]/25">git init ~{" "}
+          <span className="font-mono text-xs text-[var(--cotton)]/25">
+            A weekend project by{" "}
             <a
               href="https://x.com/anenth"
               target="_blank"
@@ -308,6 +325,7 @@ export default function LandingPage() {
             >
               @anenth
             </a>
+            , pair-programmed with Claude Code.
           </span>
         </div>
       </footer>
