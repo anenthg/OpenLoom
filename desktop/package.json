@@ -8,7 +8,8 @@
     "build": "electron-vite build",
     "preview": "electron-vite preview",
     "test:e2e": "npx playwright test",
-    "postinstall": "electron-builder install-app-deps"
+    "postinstall": "electron-builder install-app-deps",
+    "release": "electron-vite build && electron-builder --mac --arm64 --x64"
   },
   "dependencies": {
     "firebase-admin": "^12.0.0",
@@ -33,7 +34,7 @@
     "productName": "Thari.video",
     "icon": "resources/icon.png",
     "mac": {
-      "target": "dmg",
+      "target": ["dmg", "zip"],
       "icon": "resources/icon.icns",
       "extendInfo": {
         "NSMicrophoneUsageDescription": "Thari.video needs microphone access to record audio with your screen capture.",

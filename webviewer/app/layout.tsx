@@ -16,12 +16,20 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Thari",
+  title: "Thari — Open Source Video Messaging",
   description: "Open-source Loom alternative you self-host. Own your threads.",
+  metadataBase: new URL("https://thari.video"),
   openGraph: {
     title: "Thari — Open Source Video Messaging",
     description: "Open-source Loom alternative you self-host. Own your threads.",
+    url: "https://thari.video",
+    siteName: "Thari",
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Thari — Open Source Video Messaging",
+    description: "Open-source Loom alternative you self-host. Own your threads.",
   },
 };
 

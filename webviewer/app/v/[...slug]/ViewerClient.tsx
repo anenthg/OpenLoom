@@ -291,50 +291,58 @@ export default function VideoViewerPage() {
     if (!videoSrc || !videoRef.current) return;
 
     let destroyed = false;
+    const videoEl = videoRef.current;
 
-    import("plyr").then((mod) => {
-      if (destroyed || !videoRef.current) return;
-      const PlyrConstructor = mod.default ?? mod;
-      const player = new PlyrConstructor(videoRef.current, {
-        controls: [
-          "play-large",
-          "play",
-          "progress",
-          "current-time",
-          "duration",
-          "mute",
-          "volume",
-          "settings",
-          "pip",
-          "fullscreen",
-        ],
-        settings: ["speed"],
-        speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2] },
-      });
-      plyrRef.current = player;
+    // Fix WebM duration (browsers report Infinity/NaN) BEFORE initializing
+    // Plyr so the player never displays a garbage time value.
+    const fixDurationThenInitPlyr = () => {
+      if (destroyed) return;
 
-      const videoEl = videoRef.current!;
-      const fixDuration = () => {
-        if (!Number.isFinite(videoEl.duration) || videoEl.duration === 0) {
-          videoEl.currentTime = 1e101;
-          videoEl.addEventListener("timeupdate", function onSeek() {
-            videoEl.removeEventListener("timeupdate", onSeek);
-            videoEl.currentTime = 0;
-            setPlayerReady(true);
+      const initPlyr = () => {
+        if (destroyed || !videoRef.current) return;
+        import("plyr").then((mod) => {
+          if (destroyed || !videoRef.current) return;
+          const PlyrConstructor = mod.default ?? mod;
+          const player = new PlyrConstructor(videoRef.current, {
+            controls: [
+              "play-large",
+              "play",
+              "progress",
+              "current-time",
+              "duration",
+              "mute",
+              "volume",
+              "settings",
+              "pip",
+              "fullscreen",
+            ],
+            settings: ["speed"],
+            speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2] },
           });
-        } else {
+          plyrRef.current = player;
           setPlayerReady(true);
-        }
+        });
       };
 
-      if (videoEl.readyState >= 1) {
-        fixDuration();
-      } else {
-        videoEl.addEventListener("loadedmetadata", fixDuration, {
-          once: true,
+      if (!Number.isFinite(videoEl.duration) || videoEl.duration === 0) {
+        videoEl.currentTime = 1e101;
+        videoEl.addEventListener("timeupdate", function onSeek() {
+          videoEl.removeEventListener("timeupdate", onSeek);
+          videoEl.currentTime = 0;
+          initPlyr();
         });
+      } else {
+        initPlyr();
       }
-    });
+    };
+
+    if (videoEl.readyState >= 1) {
+      fixDurationThenInitPlyr();
+    } else {
+      videoEl.addEventListener("loadedmetadata", fixDurationThenInitPlyr, {
+        once: true,
+      });
+    }
 
     return () => {
       destroyed = true;
@@ -478,22 +486,22 @@ export default function VideoViewerPage() {
         {/* Video player */}
         <div
           ref={playerContainerRef}
-          className="relative overflow-hidden rounded-xl bg-black shadow-xl"
+          className="relative overflow-hidden rounded-xl shadow-xl"
         >
-          {videoSrc ? (
+          {videoSrc && (
             <video
               ref={videoRef}
-              className="block aspect-video w-full"
+              className={`block aspect-video w-full ${playerReady ? "" : "invisible"}`}
               src={videoSrc}
               playsInline
               preload="auto"
             />
-          ) : (
-            <div className="flex aspect-video items-center justify-center">
-              <svg className="h-8 w-8 animate-spin text-white/20" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" opacity="0.25" />
-                <path d="M12 2a10 10 0 019.95 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-              </svg>
+          )}
+          {!playerReady && (
+            <div className="loom-loader flex aspect-video items-center justify-center">
+              <div className="loom-loader-threads">
+                <span /><span /><span /><span /><span /><span /><span /><span /><span /><span /><span /><span /><span /><span /><span /><span /><span />
+              </div>
             </div>
           )}
           <FloatingEmojis items={floatingEmojis} />
