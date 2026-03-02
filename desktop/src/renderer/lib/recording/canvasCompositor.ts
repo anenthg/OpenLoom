@@ -43,12 +43,13 @@ export function createCanvasCompositor(
   const pipY = h - pipDiameter - pipMargin
   const pipRadius = pipDiameter / 2
 
-  // Use captureStream(0) so frames are only emitted when we explicitly call
-  // requestFrame(). This avoids relying on the browser's internal
-  // "canvas-was-modified" heuristic which can silently produce 0 frames when
-  // the canvas or its source videos are offscreen.
-  const stream = canvas.captureStream(0)
-  const captureTrack = stream.getVideoTracks()[0] as MediaStreamTrack & { requestFrame(): void }
+  // Use captureStream(30) so MediaRecorder gets a steady frame cadence.
+  // captureStream(0) (manual requestFrame mode) prevents the WebM muxer from
+  // properly interleaving Opus audio packets because video frames arrive at
+  // unpredictable intervals, causing audio to be silently dropped.
+  // The setInterval drawing loop at ~30fps ensures the canvas is continuously
+  // modified, so captureStream(30) always has fresh frames to capture.
+  const stream = canvas.captureStream(30)
 
   // Use setInterval (not rAF) so drawing continues when window is unfocused
   const interval = setInterval(() => {
@@ -86,9 +87,6 @@ export function createCanvasCompositor(
       ctx.lineWidth = 2
       ctx.stroke()
     }
-
-    // Explicitly push this frame to the capture stream
-    captureTrack.requestFrame()
   }, 33)
 
   return {

@@ -61,13 +61,12 @@ export default function SetupWizard({ onConnect }: Props) {
 
   return (
     <div className="flex flex-col items-center justify-center h-screen px-10">
-      <div className="text-5xl mb-4">🎥</div>
-
-      <h1 className="text-3xl font-bold mb-2">Welcome to Thari.video</h1>
-
-      <p className="text-zinc-400 mb-8">
-        Connect your Firebase project to get started.
-      </p>
+      <div className="font-mono text-3xl font-bold tracking-tight mb-2">
+        <span className="text-[var(--cotton)]">thari</span>
+        <span className="text-[var(--cotton)]/40">.video</span>
+      </div>
+      <p className="text-zinc-400 mb-2">Connect your Firebase project to get started.</p>
+      <div className="stripe-divider-slow h-[3px] w-32 mb-8 rounded-full" />
 
       <div className="w-full max-w-md space-y-4">
         <div>
@@ -80,7 +79,7 @@ export default function SetupWizard({ onConnect }: Props) {
             value={serviceAccountJson}
             onChange={(e) => setServiceAccountJson(e.target.value)}
             rows={8}
-            className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500 font-mono text-xs resize-none"
+            className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-[var(--crimson)] font-mono text-xs resize-none"
           />
           <p className="text-xs text-zinc-500 mt-1">
             Firebase Console → Project Settings → Service Accounts → Generate New Private Key
@@ -97,7 +96,7 @@ export default function SetupWizard({ onConnect }: Props) {
           data-testid="connect-button"
           onClick={handleConnect}
           disabled={!isFormValid || connecting}
-          className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-700 disabled:text-zinc-500 rounded-lg font-medium transition-colors"
+          className="w-full py-2 px-4 bg-[var(--crimson)] hover:brightness-110 hover:shadow-[0_0_20px_rgba(217,43,43,0.25)] active:scale-[0.97] disabled:bg-zinc-700 disabled:text-zinc-500 rounded-lg font-medium transition-all"
         >
           {connecting ? 'Connecting...' : 'Connect'}
         </button>

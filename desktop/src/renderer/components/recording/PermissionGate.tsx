@@ -35,7 +35,7 @@ function PermissionRow({
       {!granted && (
         <button
           onClick={onRequest}
-          className="px-3 py-1.5 text-xs rounded-lg transition-colors bg-zinc-800 text-zinc-300 hover:bg-zinc-700 whitespace-nowrap"
+          className="px-3 py-1.5 text-xs rounded-lg transition-all duration-200 bg-zinc-800 text-zinc-300 hover:bg-zinc-700 whitespace-nowrap"
         >
           {entry.requestable ? 'Grant Access' : 'Open Settings'}
         </button>
@@ -77,7 +77,7 @@ export default function PermissionGate({ onContinue }: PermissionGateProps) {
         <button
           disabled={!allMandatoryGranted}
           onClick={onContinue}
-          className="mt-5 w-full py-2.5 rounded-lg font-medium text-sm transition-colors bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed"
+          className="mt-5 w-full py-2.5 rounded-lg font-medium text-sm transition-all bg-[var(--crimson)] text-white hover:brightness-110 hover:shadow-[0_0_20px_rgba(217,43,43,0.25)] active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed"
         >
           Continue
         </button>

@@ -35,7 +35,7 @@ export default function Settings({ settings, onDisconnect, onReprovision }: Prop
         <button
           data-testid="reprovision-button"
           onClick={onReprovision}
-          className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 rounded-lg text-sm font-medium transition-colors"
+          className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 rounded-lg text-sm font-medium transition-all duration-200"
         >
           Re-provision
         </button>
@@ -43,7 +43,7 @@ export default function Settings({ settings, onDisconnect, onReprovision }: Prop
         <button
           data-testid="disconnect-button"
           onClick={onDisconnect}
-          className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm font-medium transition-colors"
+          className="px-4 py-2 bg-red-600 hover:bg-red-700 hover:shadow-[0_0_15px_rgba(220,38,38,0.2)] rounded-lg text-sm font-medium transition-all duration-200"
         >
           Disconnect
         </button>

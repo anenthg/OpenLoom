@@ -14,12 +14,12 @@ function StatusIcon({ status }: { status: StepStatus }) {
       return <span className="text-zinc-500">○</span>
     case 'running':
       return (
-        <span className="text-yellow-400 inline-block animate-spin">⟳</span>
+        <span className="text-[var(--mustard)] inline-block animate-spin">⟳</span>
       )
     case 'done':
-      return <span className="text-green-400">✓</span>
+      return <span className="text-[var(--emerald)]">✓</span>
     case 'error':
-      return <span className="text-red-400">✗</span>
+      return <span className="text-[var(--crimson)]">✗</span>
   }
 }
 
@@ -61,7 +61,7 @@ export default function Provisioning({ settings, onComplete, onDisconnect }: Pro
       data-testid="provisioning-screen"
       className="flex flex-col items-center justify-center h-screen px-10"
     >
-      <div className="text-5xl mb-4">⚙️</div>
+      <div className="stripe-divider-slow h-[3px] w-24 mb-6 rounded-full" />
       <h1 className="text-2xl font-bold mb-2">Setting up your project</h1>
       <p className="text-zinc-400 mb-8">
         Verifying Firebase services...
@@ -78,11 +78,11 @@ export default function Provisioning({ settings, onComplete, onDisconnect }: Pro
               <span
                 className={
                   step.status === 'done'
-                    ? 'text-green-400'
+                    ? 'text-[var(--emerald)]'
                     : step.status === 'error'
-                      ? 'text-red-400'
+                      ? 'text-[var(--crimson)]'
                       : step.status === 'running'
-                        ? 'text-yellow-400'
+                        ? 'text-[var(--mustard)]'
                         : 'text-zinc-500'
                 }
               >
@@ -100,7 +100,7 @@ export default function Provisioning({ settings, onComplete, onDisconnect }: Pro
                     <button
                       key={action.url}
                       onClick={() => window.open(action.url)}
-                      className="px-3 py-1.5 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded font-medium transition-colors"
+                      className="px-3 py-1.5 text-xs bg-[var(--crimson)] hover:brightness-110 text-white rounded font-medium transition-all"
                     >
                       {action.label} →
                     </button>
@@ -137,7 +137,7 @@ export default function Provisioning({ settings, onComplete, onDisconnect }: Pro
         <button
           data-testid="provisioning-continue"
           onClick={onComplete}
-          className="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium transition-colors"
+          className="px-6 py-2 bg-[var(--crimson)] hover:brightness-110 hover:shadow-[0_0_20px_rgba(217,43,43,0.25)] active:scale-[0.97] rounded-lg font-medium transition-all"
         >
           Continue
         </button>

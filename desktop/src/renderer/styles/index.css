@@ -1,4 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import 'tailwindcss';
+
+@theme inline {
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
 
 :root {
   --crimson: #D92B2B;
@@ -6,13 +11,96 @@
   --mustard: #F5C518;
   --cotton: #F5F5E8;
   --warp-indigo: #1A1A2E;
+  --deep-black: #0A0A12;
 }
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
-    Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-font-smoothing: antialiased;
   background-color: #0a0a0a;
   color: #ededed;
+}
+
+/* ------------------------------------------------------------------ */
+/* Jamakkalam stripe divider                                           */
+/* ------------------------------------------------------------------ */
+
+.stripe-divider,
+.stripe-divider-slow {
+  height: 4px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--cotton)      0px,
+    var(--cotton)      3px,
+    var(--emerald)     3px,
+    var(--emerald)     12px,
+    var(--mustard)     12px,
+    var(--mustard)     16px,
+    var(--crimson)     16px,
+    var(--crimson)     26px,
+    var(--deep-black)  26px,
+    var(--deep-black)  29px,
+    var(--mustard)     29px,
+    var(--mustard)     33px,
+    var(--emerald)     33px,
+    var(--emerald)     60px,
+    var(--mustard)     60px,
+    var(--mustard)     64px,
+    var(--deep-black)  64px,
+    var(--deep-black)  67px,
+    var(--crimson)     67px,
+    var(--crimson)     77px,
+    var(--mustard)     77px,
+    var(--mustard)     81px,
+    var(--emerald)     81px,
+    var(--emerald)     90px,
+    var(--cotton)      90px,
+    var(--cotton)      93px,
+    var(--emerald)     93px,
+    var(--emerald)     96px
+  );
+}
+
+.stripe-divider-slow {
+  animation: stripe-divider-scroll 20s linear infinite;
+}
+
+@keyframes stripe-divider-scroll {
+  0%   { background-position: 0 0; }
+  100% { background-position: 96px 0; }
+}
+
+/* ------------------------------------------------------------------ */
+/* Stripe hover effect for cards                                       */
+/* ------------------------------------------------------------------ */
+
+.stripe-hover-border {
+  position: relative;
+  overflow: hidden;
+}
+
+.stripe-hover-border::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--crimson) 0px,
+    var(--crimson) 8px,
+    var(--mustard) 8px,
+    var(--mustard) 16px,
+    var(--emerald) 16px,
+    var(--emerald) 24px
+  );
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.stripe-hover-border:hover::after {
+  transform: scaleX(1);
 }

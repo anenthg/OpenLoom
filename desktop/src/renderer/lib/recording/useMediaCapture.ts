@@ -1,5 +1,20 @@
 import { useState, useCallback, useRef } from 'react'
 
+async function acquireMic(micDeviceId: string | null): Promise<MediaStream | null> {
+  try {
+    const audioConstraints: MediaTrackConstraints = micDeviceId
+      ? { deviceId: { exact: micDeviceId }, echoCancellation: true, noiseSuppression: true }
+      : { echoCancellation: true, noiseSuppression: true }
+    return await navigator.mediaDevices.getUserMedia({ audio: audioConstraints })
+  } catch {
+    try {
+      return await navigator.mediaDevices.getUserMedia({ audio: true })
+    } catch {
+      return null
+    }
+  }
+}
+
 export interface MediaStreams {
   screen: MediaStream
   camera: MediaStream | null
@@ -26,52 +41,29 @@ export function useMediaCapture() {
       const maxWidth = enableHD ? 1920 : 1280
       const maxHeight = enableHD ? 1080 : 720
 
-      // Screen capture using Electron's desktopCapturer source ID
-      const screen = await navigator.mediaDevices
-        .getUserMedia({
-          audio: {
-            // @ts-expect-error Electron-specific constraint
-            mandatory: {
-              chromeMediaSource: 'desktop',
-              chromeMediaSourceId: sourceId,
-            },
+      // Screen capture — video only. Requesting system audio via
+      // desktopCapturer corrupts Chromium's audio subsystem on macOS,
+      // causing subsequently-acquired mic tracks to die asynchronously.
+      // System audio is silent on macOS without BlackHole anyway.
+      const screen = await navigator.mediaDevices.getUserMedia({
+        audio: false,
+        video: {
+          // @ts-expect-error Electron-specific constraint
+          mandatory: {
+            chromeMediaSource: 'desktop',
+            chromeMediaSourceId: sourceId,
+            maxWidth,
+            maxHeight,
           },
-          video: {
-            // @ts-expect-error Electron-specific constraint
-            mandatory: {
-              chromeMediaSource: 'desktop',
-              chromeMediaSourceId: sourceId,
-              maxWidth,
-              maxHeight,
-            },
-          },
-        })
-        .catch(async () => {
-          // Audio capture may fail on macOS — retry without audio
-          return navigator.mediaDevices.getUserMedia({
-            audio: false,
-            video: {
-              // @ts-expect-error Electron-specific constraint
-              mandatory: {
-                chromeMediaSource: 'desktop',
-                chromeMediaSourceId: sourceId,
-                maxWidth,
-                maxHeight,
-              },
-            },
-          })
-        })
+        },
+      })
 
-      // Check if system audio track is alive — on macOS it often arrives
-      // with readyState=ended because loopback audio isn't natively supported
-      const screenAudioTracks = screen.getAudioTracks()
-      const systemAudioDead = screenAudioTracks.length > 0 &&
-        screenAudioTracks.every((t) => t.readyState === 'ended')
-
-      // Remove dead audio tracks from the screen stream so the mixer
-      // doesn't try to use them
-      if (systemAudioDead) {
-        screenAudioTracks.forEach((t) => screen.removeTrack(t))
+      // Acquire mic AFTER screen capture. Safe because we skipped system
+      // audio above — Chromium's audio subsystem stays clean.
+      let mic: MediaStream | null = null
+      if (enableMic) {
+        await window.api.requestMicAccess()
+        mic = await acquireMic(micDeviceId)
       }
 
       let camera: MediaStream | null = null
@@ -88,35 +80,10 @@ export function useMediaCapture() {
         }
       }
 
-      // Always attempt mic capture when enabled — this is the primary audio
-      // source on macOS since system audio capture is unreliable
-      let mic: MediaStream | null = null
-      if (enableMic) {
-        try {
-          await window.api.requestMicAccess()
-          const audioConstraints: MediaTrackConstraints = micDeviceId
-            ? { deviceId: { exact: micDeviceId }, echoCancellation: true, noiseSuppression: true }
-            : { echoCancellation: true, noiseSuppression: true }
-          mic = await navigator.mediaDevices.getUserMedia({
-            audio: audioConstraints,
-          })
-        } catch (e) {
-          // Retry with bare constraints — NotFoundError can occur intermittently
-          // when Chromium doesn't enumerate devices fast enough
-          console.warn('[media-capture] Mic attempt 1 failed, retrying with {audio:true}:', e)
-          try {
-            mic = await navigator.mediaDevices.getUserMedia({ audio: true })
-          } catch (e2) {
-            console.warn('[media-capture] Mic attempt 2 failed:', e2)
-          }
-        }
-      }
-
       const hasLiveAudio =
-        (!systemAudioDead && screenAudioTracks.length > 0) ||
-        (mic !== null && mic.getAudioTracks().some((t) => t.readyState === 'live'))
+        mic !== null && mic.getAudioTracks().some((t) => t.readyState === 'live')
 
-      const result: MediaStreams = { screen, camera, mic, systemAudioDead, hasLiveAudio }
+      const result: MediaStreams = { screen, camera, mic, systemAudioDead: false, hasLiveAudio }
       streamsRef.current = result
       setStreams(result)
       return result

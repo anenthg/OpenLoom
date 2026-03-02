@@ -32,9 +32,9 @@ function formatRelativeDate(dateStr: string): string {
 }
 
 const captureModeConfig: Record<string, { label: string; color: string }> = {
-  screen: { label: 'S', color: 'bg-blue-600' },
-  window: { label: 'W', color: 'bg-purple-600' },
-  tab: { label: 'T', color: 'bg-green-600' },
+  screen: { label: 'S', color: 'bg-[var(--crimson)]' },
+  window: { label: 'W', color: 'bg-[var(--mustard)]' },
+  tab: { label: 'T', color: 'bg-[var(--emerald)]' },
 }
 
 export default function Library({ settings }: Props) {
@@ -104,7 +104,7 @@ export default function Library({ settings }: Props) {
         <p className="text-sm text-red-400">{error}</p>
         <button
           onClick={refresh}
-          className="px-3 py-1.5 text-sm rounded-lg bg-zinc-700 text-zinc-200 hover:bg-zinc-600 transition-colors"
+          className="px-3 py-1.5 text-sm rounded-lg bg-zinc-700 text-zinc-200 hover:bg-zinc-600 transition-all duration-200"
         >
           Retry
         </button>
@@ -139,7 +139,7 @@ export default function Library({ settings }: Props) {
           return (
             <div
               key={video.id}
-              className={`flex items-center gap-3 p-3 rounded-lg bg-zinc-800/50 hover:bg-zinc-800 transition-colors ${
+              className={`stripe-hover-border flex items-center gap-3 p-3 rounded-lg bg-zinc-800/50 hover:bg-zinc-800 transition-all duration-200 ${
                 isDeleting ? 'opacity-50 pointer-events-none' : ''
               }`}
             >
@@ -174,7 +174,7 @@ export default function Library({ settings }: Props) {
                 <button
                   onClick={() => handleCopyLink(video)}
                   title="Copy link"
-                  className="p-1.5 rounded-md text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700 transition-colors"
+                  className="p-1.5 rounded-md text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700 transition-all duration-200"
                 >
                   {isCopied ? (
                     <CheckIcon className="w-4 h-4 text-green-400" />
@@ -185,7 +185,7 @@ export default function Library({ settings }: Props) {
                 <button
                   onClick={() => handleDelete(video)}
                   title="Delete"
-                  className="p-1.5 rounded-md text-zinc-400 hover:text-red-400 hover:bg-zinc-700 transition-colors"
+                  className="p-1.5 rounded-md text-zinc-400 hover:text-red-400 hover:bg-zinc-700 transition-all duration-200 hover:shadow-[0_0_10px_rgba(248,113,113,0.15)]"
                 >
                   <TrashIcon className="w-4 h-4" />
                 </button>

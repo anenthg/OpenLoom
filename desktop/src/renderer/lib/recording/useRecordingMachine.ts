@@ -149,7 +149,7 @@ export function useRecordingMachine(): RecordingState & RecordingActions {
 
         // Create recorder
         const bitrate = enableHD ? 5_000_000 : 2_500_000
-        const rec = createRecorder(comp.stream, mixer.destination, bitrate)
+        const rec = createRecorder(comp.stream, mixer.audioStream, bitrate)
         recorderRef.current = rec
 
         // Start countdown

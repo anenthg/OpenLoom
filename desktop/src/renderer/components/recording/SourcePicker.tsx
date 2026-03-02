@@ -47,43 +47,6 @@ export default function SourcePicker({
 
   return (
     <div className="flex flex-col h-full p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-zinc-200">Choose a source</h2>
-        <div className="flex gap-2 items-center">
-          <DeviceDropdown
-            enabled={enableCamera}
-            devices={cameras}
-            selectedDeviceId={selectedCameraId}
-            onToggle={onToggleCamera}
-            onSelectDevice={onSelectCamera}
-            icon={<CameraIcon className="w-4 h-4" />}
-            offIcon={<CameraOffIcon className="w-5 h-5" />}
-            label="Camera"
-          />
-          <DeviceDropdown
-            enabled={enableMic}
-            devices={microphones}
-            selectedDeviceId={selectedMicId}
-            onToggle={onToggleMic}
-            onSelectDevice={onSelectMic}
-            icon={<MicIcon className="w-4 h-4" />}
-            offIcon={<MicOffIcon className="w-5 h-5" />}
-            label="Microphone"
-          />
-          <button
-            onClick={onToggleHD}
-            title={enableHD ? 'HD on' : 'HD off'}
-            className={`p-2 rounded-lg transition-colors ${
-              enableHD
-                ? 'bg-[var(--emerald)]/20 text-[var(--emerald)]'
-                : 'bg-zinc-800 text-zinc-500'
-            }`}
-          >
-            <HDIcon className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
-
       <div className="flex gap-1 mb-4 border-b border-zinc-800">
         {screens.length > 0 && (
           <button
@@ -123,13 +86,19 @@ export default function SourcePicker({
             <button
               key={source.id}
               onClick={() => onSelect(source.id)}
-              className="rounded-lg border border-zinc-700 hover:border-[var(--crimson)] overflow-hidden transition-colors bg-zinc-900"
+              className="stripe-hover-border rounded-lg border border-zinc-700 hover:border-[var(--crimson)] overflow-hidden transition-all duration-200 bg-zinc-900 hover:bg-zinc-800"
             >
-              <img
-                src={source.thumbnail}
-                alt={source.name}
-                className="w-full aspect-video object-cover"
-              />
+              {source.thumbnail ? (
+                <img
+                  src={source.thumbnail}
+                  alt={source.name}
+                  className="w-full aspect-video object-cover"
+                />
+              ) : (
+                <div className="w-full aspect-video bg-zinc-800 flex items-center justify-center text-zinc-500 text-xs">
+                  No preview
+                </div>
+              )}
               <div className="px-2 py-1.5 text-xs text-zinc-300 truncate flex items-center gap-1.5">
                 {tab === 'windows' && source.appIcon && (
                   <img src={source.appIcon} alt="" className="w-3.5 h-3.5" />
@@ -145,6 +114,43 @@ export default function SourcePicker({
             record them.
           </p>
         )}
+      </div>
+
+      <div className="flex items-center justify-between mt-4 pt-4 border-t border-zinc-800">
+        <h2 className="text-lg font-semibold text-zinc-200">Choose a source</h2>
+        <div className="flex gap-2 items-center">
+          <DeviceDropdown
+            enabled={enableCamera}
+            devices={cameras}
+            selectedDeviceId={selectedCameraId}
+            onToggle={onToggleCamera}
+            onSelectDevice={onSelectCamera}
+            icon={<CameraIcon className="w-4 h-4" />}
+            offIcon={<CameraOffIcon className="w-5 h-5" />}
+            label="Camera"
+          />
+          <DeviceDropdown
+            enabled={enableMic}
+            devices={microphones}
+            selectedDeviceId={selectedMicId}
+            onToggle={onToggleMic}
+            onSelectDevice={onSelectMic}
+            icon={<MicIcon className="w-4 h-4" />}
+            offIcon={<MicOffIcon className="w-5 h-5" />}
+            label="Microphone"
+          />
+          <button
+            onClick={onToggleHD}
+            title={enableHD ? 'HD on' : 'HD off'}
+            className={`p-2 rounded-lg transition-colors ${
+              enableHD
+                ? 'bg-[var(--emerald)]/20 text-[var(--emerald)]'
+                : 'bg-zinc-800 text-zinc-500'
+            }`}
+          >
+            <HDIcon className="w-5 h-5" />
+          </button>
+        </div>
       </div>
     </div>
   )

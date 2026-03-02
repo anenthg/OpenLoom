@@ -66,7 +66,7 @@ export default function DeviceDropdown({
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-1 z-50 min-w-[200px] bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl overflow-hidden">
+        <div className="absolute right-0 top-full mt-1 z-50 min-w-[200px] bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl overflow-hidden transition-all duration-200">
           {devices.map((device) => (
             <button
               key={device.deviceId}

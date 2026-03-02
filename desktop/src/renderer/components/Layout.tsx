@@ -35,7 +35,7 @@ export default function Layout({ settings, onDisconnect, onReprovision }: Props)
             onClick={() => setActiveTab(tab.id)}
             className={`flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm transition-colors ${
               activeTab === tab.id
-                ? 'bg-zinc-700 text-[var(--crimson)]'
+                ? 'bg-zinc-800/80 text-[var(--crimson)] border-l-2 border-[var(--crimson)]'
                 : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
             }`}
           >
@@ -46,6 +46,7 @@ export default function Layout({ settings, onDisconnect, onReprovision }: Props)
       </nav>
 
       <main className="flex-1 overflow-auto">
+        <div className="stripe-divider-slow h-[3px]" />
         {activeTab === 'library' && <Library settings={settings} />}
         {activeTab === 'record' && <Recording />}
         {activeTab === 'settings' && (

@@ -43,54 +43,27 @@ export default function ReviewPlayer({
     const v = videoRef.current
     if (!v) return
     let revoke: string | null = null
-    let cancelled = false
-
-    console.log('[review-player] Blob received:', { size: blob.size, type: blob.type })
 
     const onCanPlay = () => {
-      console.log('[review-player] canplay fired, duration:', v.duration, 'readyState:', v.readyState)
       if (v.duration && isFinite(v.duration)) {
         setRealDuration(v.duration)
       }
       setReady(true)
     }
 
-    const onError = () => {
-      const e = v.error
-      console.error('[review-player] Video error:', e?.code, e?.message)
-      // If loading fails, still mark ready so UI isn't stuck on "Loading…"
-      setReady(true)
-    }
-
-    const onLoadedData = () => {
-      console.log('[review-player] loadeddata fired, readyState:', v.readyState, 'duration:', v.duration)
-    }
+    const onError = () => setReady(true)
 
     v.addEventListener('canplay', onCanPlay)
     v.addEventListener('error', onError)
-    v.addEventListener('loadeddata', onLoadedData)
 
-    // Read blob into ArrayBuffer to create a contiguous blob.
-    // MediaRecorder's chunked blobs can cause range request failures.
-    blob.arrayBuffer().then((buffer) => {
-      if (cancelled) return
-      console.log('[review-player] ArrayBuffer read, size:', buffer.byteLength)
-      const fresh = new Blob([buffer], { type: blob.type || 'video/webm' })
-      const url = URL.createObjectURL(fresh)
-      revoke = url
-      console.log('[review-player] Setting video src:', url)
-      v.src = url
-      v.load()
-    }).catch((err) => {
-      console.error('[review-player] Failed to read blob:', err)
-      setReady(true)
-    })
+    const url = URL.createObjectURL(blob)
+    revoke = url
+    v.src = url
+    v.load()
 
     return () => {
-      cancelled = true
       v.removeEventListener('canplay', onCanPlay)
       v.removeEventListener('error', onError)
-      v.removeEventListener('loadeddata', onLoadedData)
       if (revoke) URL.revokeObjectURL(revoke)
     }
   }, [blob])
@@ -323,7 +296,7 @@ export default function ReviewPlayer({
         </button>
         <button
           onClick={() => onUpload(title)}
-          className="flex-1 px-4 py-2 bg-[var(--crimson)] hover:brightness-110 text-white rounded-lg font-medium transition-all flex items-center justify-center gap-2"
+          className="flex-1 px-4 py-2 bg-[var(--crimson)] hover:brightness-110 hover:shadow-[0_0_20px_rgba(217,43,43,0.25)] active:scale-[0.97] text-white rounded-lg font-medium transition-all flex items-center justify-center gap-2"
         >
           <UploadIcon className="w-4 h-4" />
           Upload
