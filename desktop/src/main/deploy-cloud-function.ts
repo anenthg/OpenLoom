@@ -3,7 +3,7 @@ import { deflateRawSync } from 'zlib'
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const admin = require('firebase-admin') as typeof import('firebase-admin')
 
-export const CLOUD_FUNCTION_VERSION = '1.0.1'
+export const CLOUD_FUNCTION_VERSION = '1.0.2'
 
 // ---------------------------------------------------------------------------
 // Embedded Cloud Function source (v1 SDK — works on both 1st & 2nd gen)
@@ -320,6 +320,10 @@ function apiNotEnabledError(projectId: string): DeployActionError {
         label: 'Enable Artifact Registry API',
         url: `https://console.cloud.google.com/apis/library/artifactregistry.googleapis.com?project=${projectId}`,
       },
+      {
+        label: 'Enable Cloud Run API',
+        url: `https://console.cloud.google.com/apis/library/run.googleapis.com?project=${projectId}`,
+      },
     ],
   )
 }
@@ -342,6 +346,7 @@ async function tryEnableApis(token: string, projectId: string): Promise<void> {
     'cloudfunctions.googleapis.com',
     'cloudbuild.googleapis.com',
     'artifactregistry.googleapis.com',
+    'run.googleapis.com',
   ]
 
   // Best-effort: try to enable via Service Usage API.
@@ -696,6 +701,85 @@ async function getFunctionUrl(
   return fnUrl
 }
 
+async function setPublicAccess(
+  token: string,
+  projectId: string,
+  functionName: string,
+): Promise<void> {
+  // v2 functions are backed by Cloud Run — we need to set allUsers → roles/run.invoker
+  // on the underlying Cloud Run service for unauthenticated access.
+
+  // Step 1: Get function details to find the Cloud Run service
+  const fnUrl = `https://cloudfunctions.googleapis.com/v2/${functionName}`
+  log(`Fetching function details for Cloud Run service: ${fnUrl}`)
+  const fnRes = await net.fetch(fnUrl, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  if (!fnRes.ok) {
+    throw new Error(`Failed to get function details: ${fnRes.status}`)
+  }
+  const fn = (await fnRes.json()) as {
+    serviceConfig?: { service?: string; uri?: string }
+  }
+
+  let serviceName = fn.serviceConfig?.service
+  log(`Cloud Run service from function: ${serviceName}`)
+
+  if (!serviceName) {
+    throw new Error('Could not determine Cloud Run service name from function')
+  }
+
+  // Expand short service name to full resource path if needed
+  // Short name example: "thari" → full: "projects/{p}/locations/us-central1/services/thari"
+  if (!serviceName.startsWith('projects/')) {
+    serviceName = `projects/${projectId}/locations/us-central1/services/${serviceName}`
+    log(`Expanded service name: ${serviceName}`)
+  }
+
+  // Step 2: Set IAM policy on the Cloud Run service
+  const iamUrl = `https://run.googleapis.com/v2/${serviceName}:setIamPolicy`
+  log(`Setting public access on Cloud Run service: ${iamUrl}`)
+  const iamRes = await net.fetch(iamUrl, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      policy: {
+        bindings: [
+          {
+            role: 'roles/run.invoker',
+            members: ['allUsers'],
+          },
+        ],
+      },
+    }),
+  })
+
+  if (!iamRes.ok) {
+    const body = await iamRes.text()
+    log(`setIamPolicy on Cloud Run failed: ${iamRes.status}`, body)
+
+    if (iamRes.status === 403) {
+      throw new DeployActionError(
+        `The service account lacks permission to make the function publicly accessible. ` +
+        `Grant the "Cloud Run Admin" role to the service account, then retry.`,
+        [
+          {
+            label: 'Open IAM Settings',
+            url: `https://console.cloud.google.com/iam-admin/iam?project=${projectId}`,
+          },
+        ],
+      )
+    }
+
+    throw new Error(`Failed to set public access: ${body}`)
+  }
+
+  log('Public access set successfully — allUsers can invoke the function')
+}
+
 // ---------------------------------------------------------------------------
 // Main deployment function
 // ---------------------------------------------------------------------------
@@ -713,17 +797,17 @@ export async function deployCloudFunction(params: DeployParams): Promise<DeployR
     const token = await getAccessToken(serviceAccountJson)
 
     // Best-effort: try to enable APIs (SA likely lacks permission, that's OK)
-    log('Step 1/4: Attempting to enable APIs (best-effort)...')
+    log('Step 1/5: Attempting to enable APIs (best-effort)...')
     await tryEnableApis(token, projectId)
-    log('Step 1/4: Done')
+    log('Step 1/5: Done')
 
     // Pre-check: verify the SA can actually access Cloud Functions v2 API
-    log('Step 2/4: Checking Cloud Functions v2 access...')
+    log('Step 2/5: Checking Cloud Functions v2 access...')
     await checkCloudFunctionsAccess(token, projectId, saEmail)
-    log('Step 2/4: Cloud Functions v2 access confirmed')
+    log('Step 2/5: Cloud Functions v2 access confirmed')
 
     // Build ZIP and upload source to GCS
-    log('Step 3/4: Building ZIP and uploading source to GCS...')
+    log('Step 3/5: Building ZIP and uploading source to GCS...')
     const zipBuffer = createZipBuffer([
       { name: 'index.js', content: Buffer.from(FUNCTION_INDEX_JS, 'utf-8') },
       { name: 'package.json', content: Buffer.from(FUNCTION_PACKAGE_JSON, 'utf-8') },
@@ -731,10 +815,10 @@ export async function deployCloudFunction(params: DeployParams): Promise<DeployR
     log(`ZIP built (${zipBuffer.length} bytes)`)
 
     const source = await uploadSourceToGCS(token, projectId, storageBucket, zipBuffer)
-    log('Step 3/4: Source uploaded to GCS')
+    log('Step 3/5: Source uploaded to GCS')
 
     // Create or update the function (v2 API)
-    log('Step 4/4: Creating/updating function (v2)...')
+    log('Step 4/5: Creating/updating function (v2)...')
     const operationName = await createOrUpdateFunction(
       token,
       projectId,
@@ -743,15 +827,36 @@ export async function deployCloudFunction(params: DeployParams): Promise<DeployR
     )
 
     // Poll until deployment completes — returns function URL if available
-    log('Step 4/4: Waiting for deployment to complete...')
+    log('Step 4/5: Waiting for deployment to complete...')
     let functionUrl = await pollOperation(token, operationName)
-    log('Step 4/4: Deployment complete')
+    log('Step 4/5: Deployment complete')
 
     // If URL wasn't in the operation response, fetch it from the function
     const functionName = `projects/${projectId}/locations/us-central1/functions/thari`
     if (!functionUrl) {
       functionUrl = await getFunctionUrl(token, functionName)
     }
+
+    // Set public access on the Cloud Run service (required for unauthenticated web viewer)
+    // Retry a few times — Cloud Run service may not be ready immediately after deployment
+    log('Step 5/5: Setting public access on Cloud Run service...')
+    let publicAccessSet = false
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        await setPublicAccess(token, projectId, functionName)
+        publicAccessSet = true
+        break
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e)
+        if (msg.includes('unable to queue') && attempt < 3) {
+          log(`Step 5/5: Attempt ${attempt} failed (service not ready), retrying in 10s...`)
+          await new Promise((r) => setTimeout(r, 10_000))
+        } else {
+          throw e // re-throw on final attempt or non-retryable errors
+        }
+      }
+    }
+    if (publicAccessSet) log('Step 5/5: Public access configured')
 
     log('=== Cloud Function deployment finished (v2) ===')
     if (functionUrl) log(`Function URL: ${functionUrl}`)

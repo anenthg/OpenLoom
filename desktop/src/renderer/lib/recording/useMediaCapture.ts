@@ -88,18 +88,39 @@ export function useMediaCapture() {
       let mic: MediaStream | null = null
       if (enableMic) {
         try {
-          await window.api.requestMicAccess()
+          const micPermission = await window.api.requestMicAccess()
+          console.log('[media-capture] requestMicAccess result:', micPermission)
           mic = await navigator.mediaDevices.getUserMedia({
             audio: { echoCancellation: true, noiseSuppression: true },
           })
-        } catch {
-          /* mic not available */
+        } catch (e) {
+          // Retry with bare constraints — NotFoundError can occur intermittently
+          // when Chromium doesn't enumerate devices fast enough
+          console.warn('[media-capture] Mic attempt 1 failed, retrying with {audio:true}:', e)
+          try {
+            mic = await navigator.mediaDevices.getUserMedia({ audio: true })
+          } catch (e2) {
+            console.warn('[media-capture] Mic attempt 2 failed:', e2)
+          }
         }
+        if (mic) {
+          const micTracks = mic.getAudioTracks()
+          console.log('[media-capture] Mic tracks:', micTracks.length, micTracks.map((t) => ({ label: t.label, readyState: t.readyState })))
+        }
+      } else {
+        console.log('[media-capture] Mic disabled by user toggle')
       }
 
       const hasLiveAudio =
         (!systemAudioDead && screenAudioTracks.length > 0) ||
         (mic !== null && mic.getAudioTracks().some((t) => t.readyState === 'live'))
+
+      console.log('[media-capture] Summary:', {
+        systemAudioDead,
+        screenAudioTracks: screenAudioTracks.length,
+        micAvailable: mic !== null,
+        hasLiveAudio,
+      })
 
       const result: MediaStreams = { screen, camera, mic, systemAudioDead, hasLiveAudio }
       streamsRef.current = result

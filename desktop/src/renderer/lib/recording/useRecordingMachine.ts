@@ -102,8 +102,8 @@ export function useRecordingMachine(): RecordingState & RecordingActions {
         compositorRef.current = comp
         setCanvas(comp.canvas)
 
-        // Create audio mixer
-        const mixer = createAudioMixer(mediaStreams.screen, mediaStreams.mic)
+        // Create audio mixer (async — must await AudioContext.resume())
+        const mixer = await createAudioMixer(mediaStreams.screen, mediaStreams.mic)
         mixerRef.current = mixer
 
         // Create recorder

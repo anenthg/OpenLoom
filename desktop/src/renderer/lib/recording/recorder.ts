@@ -11,10 +11,15 @@ export function createRecorder(
 ): Recorder {
   // Combine video and audio tracks
   const tracks = [...videoStream.getVideoTracks()]
-  if (audioDestination) {
-    tracks.push(...audioDestination.stream.getAudioTracks())
-  }
+  const audioTracks = audioDestination ? audioDestination.stream.getAudioTracks() : []
+  tracks.push(...audioTracks)
   const combinedStream = new MediaStream(tracks)
+
+  console.log('[recorder] Video tracks:', videoStream.getVideoTracks().length)
+  console.log('[recorder] Audio tracks from destination:', audioTracks.length, audioTracks.map((t) => ({ label: t.label, readyState: t.readyState })))
+  console.log('[recorder] Combined stream tracks:', combinedStream.getTracks().length,
+    '(video:', combinedStream.getVideoTracks().length,
+    'audio:', combinedStream.getAudioTracks().length, ')')
 
   // Prefer VP9, fall back to VP8
   const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')
@@ -22,6 +27,8 @@ export function createRecorder(
     : MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')
       ? 'video/webm;codecs=vp8,opus'
       : 'video/webm'
+
+  console.log('[recorder] Using mimeType:', mimeType)
 
   const mediaRecorder = new MediaRecorder(combinedStream, {
     mimeType,

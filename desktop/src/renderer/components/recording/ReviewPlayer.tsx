@@ -34,38 +34,31 @@ export default function ReviewPlayer({
   const [realDuration, setRealDuration] = useState(duration)
   const [hoverProgress, setHoverProgress] = useState<number | null>(null)
 
-  // Fix WebM duration bug: MediaRecorder blobs lack duration metadata,
-  // so the browser reports Infinity. Seeking to the end forces the browser
-  // to calculate the real duration, then we seek back to 0.
+  // WebM blobs from MediaRecorder lack duration metadata, so
+  // video.duration is often Infinity. We already know the duration from
+  // the recording timer, so use that as the default and just mark ready
+  // once the video can play. No seek-to-end hack needed here (unlike the
+  // web viewer which doesn't know the duration upfront).
   useEffect(() => {
     const v = videoRef.current
     if (!v) return
 
-    const fixDuration = () => {
-      if (v.duration && isFinite(v.duration)) {
-        setRealDuration(v.duration)
-        setReady(true)
-        return
-      }
-      // Seek to a very large time to force duration calculation
-      v.currentTime = 1e10
-    }
-
-    const onSeeked = () => {
+    const onCanPlay = () => {
       if (v.duration && isFinite(v.duration)) {
         setRealDuration(v.duration)
       }
-      v.currentTime = 0
       setReady(true)
-      v.removeEventListener('seeked', onSeeked)
     }
 
-    v.addEventListener('loadedmetadata', fixDuration)
-    v.addEventListener('seeked', onSeeked)
+    // If already ready (cached blob), handle immediately
+    if (v.readyState >= 3) {
+      onCanPlay()
+    } else {
+      v.addEventListener('canplay', onCanPlay)
+    }
 
     return () => {
-      v.removeEventListener('loadedmetadata', fixDuration)
-      v.removeEventListener('seeked', onSeeked)
+      v.removeEventListener('canplay', onCanPlay)
     }
   }, [])
 

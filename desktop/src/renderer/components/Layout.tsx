@@ -46,7 +46,7 @@ export default function Layout({ settings, onDisconnect, onReprovision }: Props)
       </nav>
 
       <main className="flex-1 overflow-auto">
-        {activeTab === 'library' && <Library />}
+        {activeTab === 'library' && <Library settings={settings} />}
         {activeTab === 'record' && <Recording />}
         {activeTab === 'settings' && (
           <Settings settings={settings} onDisconnect={onDisconnect} onReprovision={onReprovision} />
