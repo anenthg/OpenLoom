@@ -1,15 +1,23 @@
 import { useState } from 'react'
 import type { DesktopSource } from '../../lib/types'
+import type { DeviceInfo } from '../../lib/recording/useDeviceList'
 import { CameraIcon, CameraOffIcon, MicIcon, MicOffIcon, HDIcon } from '../icons'
+import DeviceDropdown from './DeviceDropdown'
 
 interface SourcePickerProps {
   sources: DesktopSource[]
   enableCamera: boolean
   enableMic: boolean
   enableHD: boolean
+  cameras: DeviceInfo[]
+  microphones: DeviceInfo[]
+  selectedCameraId: string | null
+  selectedMicId: string | null
   onToggleCamera: () => void
   onToggleMic: () => void
   onToggleHD: () => void
+  onSelectCamera: (id: string | null) => void
+  onSelectMic: (id: string | null) => void
   onSelect: (sourceId: string) => void
 }
 
@@ -20,9 +28,15 @@ export default function SourcePicker({
   enableCamera,
   enableMic,
   enableHD,
+  cameras,
+  microphones,
+  selectedCameraId,
+  selectedMicId,
   onToggleCamera,
   onToggleMic,
   onToggleHD,
+  onSelectCamera,
+  onSelectMic,
   onSelect,
 }: SourcePickerProps) {
   const screens = sources.filter((s) => s.id.startsWith('screen:'))
@@ -35,29 +49,27 @@ export default function SourcePicker({
     <div className="flex flex-col h-full p-6">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold text-zinc-200">Choose a source</h2>
-        <div className="flex gap-2">
-          <button
-            onClick={onToggleCamera}
-            title={enableCamera ? 'Camera on' : 'Camera off'}
-            className={`p-2 rounded-lg transition-colors ${
-              enableCamera
-                ? 'bg-[var(--emerald)]/20 text-[var(--emerald)]'
-                : 'bg-[var(--crimson)]/20 text-[var(--crimson)]'
-            }`}
-          >
-            {enableCamera ? <CameraIcon className="w-5 h-5" /> : <CameraOffIcon className="w-5 h-5" />}
-          </button>
-          <button
-            onClick={onToggleMic}
-            title={enableMic ? 'Mic on' : 'Mic off'}
-            className={`p-2 rounded-lg transition-colors ${
-              enableMic
-                ? 'bg-[var(--emerald)]/20 text-[var(--emerald)]'
-                : 'bg-[var(--crimson)]/20 text-[var(--crimson)]'
-            }`}
-          >
-            {enableMic ? <MicIcon className="w-5 h-5" /> : <MicOffIcon className="w-5 h-5" />}
-          </button>
+        <div className="flex gap-2 items-center">
+          <DeviceDropdown
+            enabled={enableCamera}
+            devices={cameras}
+            selectedDeviceId={selectedCameraId}
+            onToggle={onToggleCamera}
+            onSelectDevice={onSelectCamera}
+            icon={<CameraIcon className="w-4 h-4" />}
+            offIcon={<CameraOffIcon className="w-5 h-5" />}
+            label="Camera"
+          />
+          <DeviceDropdown
+            enabled={enableMic}
+            devices={microphones}
+            selectedDeviceId={selectedMicId}
+            onToggle={onToggleMic}
+            onSelectDevice={onSelectMic}
+            icon={<MicIcon className="w-4 h-4" />}
+            offIcon={<MicOffIcon className="w-5 h-5" />}
+            label="Microphone"
+          />
           <button
             onClick={onToggleHD}
             title={enableHD ? 'HD on' : 'HD off'}

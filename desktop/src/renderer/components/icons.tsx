@@ -164,6 +164,43 @@ export function ClockIcon({ className }: IconProps) {
   )
 }
 
+export function PlayIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" className={className}>
+      <path d="M6 4l15 8-15 8V4z" />
+    </svg>
+  )
+}
+
+export function PauseIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" className={className}>
+      <rect x="5" y="4" width="4" height="16" rx="1" />
+      <rect x="15" y="4" width="4" height="16" rx="1" />
+    </svg>
+  )
+}
+
+export function VolumeIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M11 5L6 9H2v6h4l5 4V5Z" />
+      <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+      <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+    </svg>
+  )
+}
+
+export function VolumeMuteIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M11 5L6 9H2v6h4l5 4V5Z" />
+      <line x1="23" y1="9" x2="17" y2="15" />
+      <line x1="17" y1="9" x2="23" y2="15" />
+    </svg>
+  )
+}
+
 export function GearIcon({ className }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" className={className}>

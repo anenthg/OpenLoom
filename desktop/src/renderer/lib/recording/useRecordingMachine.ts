@@ -20,6 +20,10 @@ export interface RecordingState {
   shareURL: string | null
   /** false when no live audio source (system audio dead + no mic) */
   hasLiveAudio: boolean
+  /** Selected camera device ID (null = system default) */
+  selectedCameraId: string | null
+  /** Selected mic device ID (null = system default) */
+  selectedMicId: string | null
 }
 
 export interface RecordingActions {
@@ -28,6 +32,8 @@ export interface RecordingActions {
   toggleMic: () => void
   toggleHD: () => void
   selectSource: (sourceId: string) => void
+  selectCamera: (id: string | null) => void
+  selectMic: (id: string | null) => void
   stopRecording: () => void
   discard: () => void
   upload: (title: string) => Promise<void>
@@ -49,6 +55,8 @@ export function useRecordingMachine(): RecordingState & RecordingActions {
   const [uploadProgress, setUploadProgress] = useState(0)
   const [shareURL, setShareURL] = useState<string | null>(null)
   const [hasLiveAudio, setHasLiveAudio] = useState(true)
+  const [selectedCameraId, setSelectedCameraId] = useState<string | null>(null)
+  const [selectedMicId, setSelectedMicId] = useState<string | null>(null)
 
   const { acquire, release } = useMediaCapture()
   const compositorRef = useRef<CanvasCompositor | null>(null)
@@ -74,6 +82,7 @@ export function useRecordingMachine(): RecordingState & RecordingActions {
   // Cleanup on unmount
   useEffect(() => cleanup, [cleanup])
 
+  // Feature 1: Auto-start source selection when idle
   const startSourceSelect = useCallback(async () => {
     try {
       const desktopSources = await window.api.getDesktopSources()
@@ -85,14 +94,46 @@ export function useRecordingMachine(): RecordingState & RecordingActions {
     }
   }, [])
 
+  useEffect(() => {
+    if (phase === 'idle' && !error) {
+      startSourceSelect()
+    }
+  }, [phase, error, startSourceSelect])
+
   const toggleCamera = useCallback(() => setEnableCamera((v) => !v), [])
   const toggleMic = useCallback(() => setEnableMic((v) => !v), [])
   const toggleHD = useCallback(() => setEnableHD((v) => !v), [])
 
+  // Feature 2: Device selection
+  const selectCamera = useCallback((id: string | null) => {
+    setSelectedCameraId(id)
+    if (id === null) {
+      setEnableCamera(false)
+    } else {
+      setEnableCamera(true)
+    }
+  }, [])
+
+  const selectMic = useCallback((id: string | null) => {
+    setSelectedMicId(id)
+    if (id === null) {
+      setEnableMic(false)
+    } else {
+      setEnableMic(true)
+    }
+  }, [])
+
   const selectSource = useCallback(
     async (sourceId: string) => {
       try {
-        const mediaStreams = await acquire(sourceId, enableCamera, enableMic, enableHD)
+        const mediaStreams = await acquire(
+          sourceId,
+          enableCamera,
+          enableMic,
+          enableHD,
+          selectedCameraId,
+          selectedMicId,
+        )
         setHasLiveAudio(mediaStreams.hasLiveAudio)
 
         // Create compositor
@@ -140,7 +181,7 @@ export function useRecordingMachine(): RecordingState & RecordingActions {
         setPhase('idle')
       }
     },
-    [acquire, enableCamera, enableMic, enableHD, cleanup],
+    [acquire, enableCamera, enableMic, enableHD, selectedCameraId, selectedMicId, cleanup],
   )
 
   const stopRecording = useCallback(async () => {
@@ -228,6 +269,8 @@ export function useRecordingMachine(): RecordingState & RecordingActions {
     setEnableHD(true)
     setElapsedSeconds(0)
     setCountdownValue(3)
+    setSelectedCameraId(null)
+    setSelectedMicId(null)
   }, [cleanup])
 
   return {
@@ -244,11 +287,15 @@ export function useRecordingMachine(): RecordingState & RecordingActions {
     uploadProgress,
     shareURL,
     hasLiveAudio,
+    selectedCameraId,
+    selectedMicId,
     startSourceSelect,
     toggleCamera,
     toggleMic,
     toggleHD,
     selectSource,
+    selectCamera,
+    selectMic,
     stopRecording,
     discard,
     upload,

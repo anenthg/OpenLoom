@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
 import { useRecordingMachine } from '../lib/recording/useRecordingMachine'
+import { useDeviceList } from '../lib/recording/useDeviceList'
 import SourcePicker from './recording/SourcePicker'
 import Countdown from './recording/Countdown'
 import RecordingControls from './recording/RecordingControls'
 import ReviewPlayer from './recording/ReviewPlayer'
 import UploadProgress from './recording/UploadProgress'
 import PermissionGate from './recording/PermissionGate'
-import { RecordIcon } from './icons'
 
 export default function Recording() {
   // null = checking, false = show gate, true = show recording UI
@@ -39,6 +39,7 @@ export default function Recording() {
 
 function RecordingInner() {
   const state = useRecordingMachine()
+  const { cameras, microphones } = useDeviceList()
 
   if (state.error) {
     return (
@@ -59,17 +60,9 @@ function RecordingInner() {
       return (
         <div
           data-testid="recording-view"
-          className="flex flex-col items-center justify-center h-full text-zinc-500"
+          className="flex items-center justify-center h-full text-zinc-500"
         >
-          <RecordIcon className="w-12 h-12 text-[var(--crimson)] mb-3" />
-          <h2 className="text-lg font-semibold text-zinc-300 mb-4">Recording</h2>
-          <button
-            onClick={state.startSourceSelect}
-            className="px-6 py-3 bg-[var(--crimson)] text-white rounded-lg font-medium transition-all hover:brightness-110 hover:shadow-[0_0_30px_rgba(217,43,43,0.3)] active:scale-[0.97] inline-flex items-center gap-2"
-          >
-            <RecordIcon className="w-4 h-4" />
-            Start Recording
-          </button>
+          <div className="w-6 h-6 border-2 border-zinc-600 border-t-zinc-300 rounded-full animate-spin" />
         </div>
       )
 
@@ -80,9 +73,15 @@ function RecordingInner() {
           enableCamera={state.enableCamera}
           enableMic={state.enableMic}
           enableHD={state.enableHD}
+          cameras={cameras}
+          microphones={microphones}
+          selectedCameraId={state.selectedCameraId}
+          selectedMicId={state.selectedMicId}
           onToggleCamera={state.toggleCamera}
           onToggleMic={state.toggleMic}
           onToggleHD={state.toggleHD}
+          onSelectCamera={state.selectCamera}
+          onSelectMic={state.selectMic}
           onSelect={state.selectSource}
         />
       )

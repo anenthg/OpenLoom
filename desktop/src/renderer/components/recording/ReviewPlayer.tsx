@@ -1,5 +1,5 @@
-import { useMemo, useState, useRef, useEffect, useCallback } from 'react'
-import { TrashIcon, UploadIcon } from '../icons'
+import { useState, useRef, useEffect, useCallback } from 'react'
+import { PauseIcon, PlayIcon, TrashIcon, UploadIcon, VolumeIcon, VolumeMuteIcon } from '../icons'
 
 interface ReviewPlayerProps {
   blob: Blob
@@ -25,58 +25,167 @@ export default function ReviewPlayer({
   onUpload,
 }: ReviewPlayerProps) {
   const [title, setTitle] = useState('')
-  const blobUrl = useMemo(() => URL.createObjectURL(blob), [blob])
   const videoRef = useRef<HTMLVideoElement>(null)
   const progressRef = useRef<HTMLDivElement>(null)
+  const volumeRef = useRef<HTMLDivElement>(null)
 
   const [ready, setReady] = useState(false)
+  const [playing, setPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [realDuration, setRealDuration] = useState(duration)
   const [hoverProgress, setHoverProgress] = useState<number | null>(null)
+  const [volume, setVolume] = useState(1)
+  const [muted, setMuted] = useState(false)
+  const [draggingProgress, setDraggingProgress] = useState(false)
 
-  // WebM blobs from MediaRecorder lack duration metadata, so
-  // video.duration is often Infinity. We already know the duration from
-  // the recording timer, so use that as the default and just mark ready
-  // once the video can play. No seek-to-end hack needed here (unlike the
-  // web viewer which doesn't know the duration upfront).
+  // Load the blob into the video element and mark ready once it can play.
   useEffect(() => {
     const v = videoRef.current
     if (!v) return
+    let revoke: string | null = null
+    let cancelled = false
+
+    console.log('[review-player] Blob received:', { size: blob.size, type: blob.type })
 
     const onCanPlay = () => {
+      console.log('[review-player] canplay fired, duration:', v.duration, 'readyState:', v.readyState)
       if (v.duration && isFinite(v.duration)) {
         setRealDuration(v.duration)
       }
       setReady(true)
     }
 
-    // If already ready (cached blob), handle immediately
-    if (v.readyState >= 3) {
-      onCanPlay()
-    } else {
-      v.addEventListener('canplay', onCanPlay)
+    const onError = () => {
+      const e = v.error
+      console.error('[review-player] Video error:', e?.code, e?.message)
+      // If loading fails, still mark ready so UI isn't stuck on "Loading…"
+      setReady(true)
     }
 
+    const onLoadedData = () => {
+      console.log('[review-player] loadeddata fired, readyState:', v.readyState, 'duration:', v.duration)
+    }
+
+    v.addEventListener('canplay', onCanPlay)
+    v.addEventListener('error', onError)
+    v.addEventListener('loadeddata', onLoadedData)
+
+    // Read blob into ArrayBuffer to create a contiguous blob.
+    // MediaRecorder's chunked blobs can cause range request failures.
+    blob.arrayBuffer().then((buffer) => {
+      if (cancelled) return
+      console.log('[review-player] ArrayBuffer read, size:', buffer.byteLength)
+      const fresh = new Blob([buffer], { type: blob.type || 'video/webm' })
+      const url = URL.createObjectURL(fresh)
+      revoke = url
+      console.log('[review-player] Setting video src:', url)
+      v.src = url
+      v.load()
+    }).catch((err) => {
+      console.error('[review-player] Failed to read blob:', err)
+      setReady(true)
+    })
+
     return () => {
+      cancelled = true
       v.removeEventListener('canplay', onCanPlay)
+      v.removeEventListener('error', onError)
+      v.removeEventListener('loadeddata', onLoadedData)
+      if (revoke) URL.revokeObjectURL(revoke)
+    }
+  }, [blob])
+
+  // Sync play/pause state from video element events
+  useEffect(() => {
+    const v = videoRef.current
+    if (!v) return
+
+    const onPlay = () => setPlaying(true)
+    const onPause = () => setPlaying(false)
+    const onEnded = () => setPlaying(false)
+
+    v.addEventListener('play', onPlay)
+    v.addEventListener('pause', onPause)
+    v.addEventListener('ended', onEnded)
+
+    return () => {
+      v.removeEventListener('play', onPlay)
+      v.removeEventListener('pause', onPause)
+      v.removeEventListener('ended', onEnded)
     }
   }, [])
 
   const onTimeUpdate = useCallback(() => {
     const v = videoRef.current
-    if (v) setCurrentTime(v.currentTime)
-  }, [])
+    if (v && !draggingProgress) setCurrentTime(v.currentTime)
+  }, [draggingProgress])
 
-  const seek = useCallback(
+  const togglePlayPause = useCallback(() => {
+    const v = videoRef.current
+    if (!v || !ready) return
+    if (v.paused || v.ended) {
+      v.play().catch(() => { /* ignore autoplay errors */ })
+    } else {
+      v.pause()
+    }
+  }, [ready])
+
+  const toggleMute = useCallback(() => {
+    const v = videoRef.current
+    if (!v) return
+    const next = !muted
+    v.muted = next
+    setMuted(next)
+  }, [muted])
+
+  const changeVolume = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
       const v = videoRef.current
-      const bar = progressRef.current
+      const bar = volumeRef.current
       if (!v || !bar) return
       const rect = bar.getBoundingClientRect()
       const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width))
-      v.currentTime = ratio * realDuration
+      v.volume = ratio
+      setVolume(ratio)
+      if (ratio > 0 && muted) {
+        v.muted = false
+        setMuted(false)
+      }
+    },
+    [muted],
+  )
+
+  // --- Progress bar scrubbing (mousedown → mousemove → mouseup) ---
+  const seekFromEvent = useCallback(
+    (clientX: number) => {
+      const bar = progressRef.current
+      if (!bar) return
+      const rect = bar.getBoundingClientRect()
+      const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width))
+      const time = ratio * realDuration
+      setCurrentTime(time)
+      const v = videoRef.current
+      if (v) v.currentTime = time
     },
     [realDuration],
+  )
+
+  const onProgressMouseDown = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      setDraggingProgress(true)
+      seekFromEvent(e.clientX)
+
+      const onMouseMove = (ev: MouseEvent) => seekFromEvent(ev.clientX)
+      const onMouseUp = (ev: MouseEvent) => {
+        seekFromEvent(ev.clientX)
+        setDraggingProgress(false)
+        window.removeEventListener('mousemove', onMouseMove)
+        window.removeEventListener('mouseup', onMouseUp)
+      }
+      window.addEventListener('mousemove', onMouseMove)
+      window.addEventListener('mouseup', onMouseUp)
+    },
+    [seekFromEvent],
   )
 
   const onProgressHover = useCallback(
@@ -91,18 +200,21 @@ export default function ReviewPlayer({
   )
 
   const progress = realDuration > 0 ? (currentTime / realDuration) * 100 : 0
+  const volumeDisplay = muted ? 0 : volume
 
   return (
     <div className="flex flex-col h-full p-6">
       <h2 className="text-lg font-semibold text-zinc-200 mb-4">Review Recording</h2>
 
       <div className="flex-1 bg-black rounded-lg overflow-hidden mb-4 flex flex-col min-h-0">
-        {/* Video with native controls for reliable audio playback */}
-        <div className="flex-1 min-h-0 relative">
+        {/* Video area — click to play/pause */}
+        <div
+          className="flex-1 min-h-0 relative cursor-pointer"
+          onClick={togglePlayPause}
+        >
           <video
             ref={videoRef}
-            src={blobUrl}
-            controls
+            preload="auto"
             className="w-full h-full object-contain"
             onTimeUpdate={onTimeUpdate}
             style={{ opacity: ready ? 1 : 0 }}
@@ -112,13 +224,21 @@ export default function ReviewPlayer({
               Loading…
             </div>
           )}
+          {/* Big play button overlay when paused */}
+          {ready && !playing && (
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="w-14 h-14 rounded-full bg-black/60 flex items-center justify-center">
+                <PlayIcon className="w-7 h-7 text-white ml-1" />
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Custom progress bar overlay — more visible than native */}
+        {/* Progress bar */}
         <div
           ref={progressRef}
           className="group relative h-1.5 bg-zinc-700 cursor-pointer hover:h-2.5 transition-all shrink-0"
-          onClick={seek}
+          onMouseDown={onProgressMouseDown}
           onMouseMove={onProgressHover}
           onMouseLeave={() => setHoverProgress(null)}
         >
@@ -139,10 +259,50 @@ export default function ReviewPlayer({
             style={{ left: `${progress}%` }}
           />
         </div>
-      </div>
 
-      <div className="text-sm text-zinc-400 mb-4">
-        Duration: {formatTime(realDuration)}
+        {/* Controls bar */}
+        <div className="flex items-center gap-3 px-3 py-2 bg-zinc-900/80 shrink-0">
+          {/* Play / Pause */}
+          <button
+            onClick={togglePlayPause}
+            className="text-zinc-300 hover:text-white transition-colors"
+          >
+            {playing ? (
+              <PauseIcon className="w-5 h-5" />
+            ) : (
+              <PlayIcon className="w-5 h-5" />
+            )}
+          </button>
+
+          {/* Time */}
+          <span className="text-xs text-zinc-400 font-mono min-w-[5rem] select-none">
+            {formatTime(currentTime)} / {formatTime(realDuration)}
+          </span>
+
+          <div className="flex-1" />
+
+          {/* Volume */}
+          <button
+            onClick={toggleMute}
+            className="text-zinc-300 hover:text-white transition-colors"
+          >
+            {muted || volume === 0 ? (
+              <VolumeMuteIcon className="w-4 h-4" />
+            ) : (
+              <VolumeIcon className="w-4 h-4" />
+            )}
+          </button>
+          <div
+            ref={volumeRef}
+            className="w-16 h-1 bg-zinc-700 rounded-full cursor-pointer relative"
+            onClick={changeVolume}
+          >
+            <div
+              className="absolute inset-y-0 left-0 bg-zinc-400 rounded-full"
+              style={{ width: `${volumeDisplay * 100}%` }}
+            />
+          </div>
+        </div>
       </div>
 
       <input

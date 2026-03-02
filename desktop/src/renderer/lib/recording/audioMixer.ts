@@ -14,11 +14,19 @@ export async function createAudioMixer(
   if (ctx.state !== 'running') await ctx.resume()
   const destination = ctx.createMediaStreamDestination()
 
+  // Always feed silence into the destination so the WebM muxer never
+  // stalls waiting for audio data when no real source is connected.
+  const silence = ctx.createOscillator()
+  const silenceGain = ctx.createGain()
+  silenceGain.gain.value = 0
+  silence.connect(silenceGain)
+  silenceGain.connect(destination)
+  silence.start()
+
   let micGain: GainNode | null = null
 
   // Only connect system audio if it has live tracks
   const sysAudioTracks = systemStream?.getAudioTracks().filter((t) => t.readyState === 'live') ?? []
-  console.log('[audio-mixer] System audio tracks (live):', sysAudioTracks.length)
   if (sysAudioTracks.length > 0) {
     const liveSystemAudio = new MediaStream(sysAudioTracks)
     const systemSource = ctx.createMediaStreamSource(liveSystemAudio)
@@ -27,7 +35,6 @@ export async function createAudioMixer(
 
   // Only connect mic if it has live tracks
   const micAudioTracks = micStream?.getAudioTracks().filter((t) => t.readyState === 'live') ?? []
-  console.log('[audio-mixer] Mic audio tracks (live):', micAudioTracks.length)
   if (micAudioTracks.length > 0) {
     const liveMicAudio = new MediaStream(micAudioTracks)
     const micSource = ctx.createMediaStreamSource(liveMicAudio)
@@ -36,10 +43,6 @@ export async function createAudioMixer(
     micSource.connect(micGain)
     micGain.connect(destination)
   }
-
-  const destTracks = destination.stream.getAudioTracks()
-  console.log('[audio-mixer] Destination tracks:', destTracks.length, destTracks.map((t) => ({ label: t.label, readyState: t.readyState })))
-  console.log('[audio-mixer] AudioContext state:', ctx.state, 'sampleRate:', ctx.sampleRate)
 
   return {
     destination,

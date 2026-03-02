@@ -20,6 +20,8 @@ export function useMediaCapture() {
       enableCamera: boolean,
       enableMic: boolean,
       enableHD: boolean = true,
+      cameraDeviceId: string | null = null,
+      micDeviceId: string | null = null,
     ): Promise<MediaStreams> => {
       const maxWidth = enableHD ? 1920 : 1280
       const maxHeight = enableHD ? 1080 : 720
@@ -75,8 +77,11 @@ export function useMediaCapture() {
       let camera: MediaStream | null = null
       if (enableCamera) {
         try {
+          const videoConstraints: MediaTrackConstraints = cameraDeviceId
+            ? { deviceId: { exact: cameraDeviceId }, width: 320, height: 320 }
+            : { width: 320, height: 320, facingMode: 'user' }
           camera = await navigator.mediaDevices.getUserMedia({
-            video: { width: 320, height: 320, facingMode: 'user' },
+            video: videoConstraints,
           })
         } catch {
           console.warn('Camera not available')
@@ -88,10 +93,12 @@ export function useMediaCapture() {
       let mic: MediaStream | null = null
       if (enableMic) {
         try {
-          const micPermission = await window.api.requestMicAccess()
-          console.log('[media-capture] requestMicAccess result:', micPermission)
+          await window.api.requestMicAccess()
+          const audioConstraints: MediaTrackConstraints = micDeviceId
+            ? { deviceId: { exact: micDeviceId }, echoCancellation: true, noiseSuppression: true }
+            : { echoCancellation: true, noiseSuppression: true }
           mic = await navigator.mediaDevices.getUserMedia({
-            audio: { echoCancellation: true, noiseSuppression: true },
+            audio: audioConstraints,
           })
         } catch (e) {
           // Retry with bare constraints — NotFoundError can occur intermittently
@@ -103,24 +110,11 @@ export function useMediaCapture() {
             console.warn('[media-capture] Mic attempt 2 failed:', e2)
           }
         }
-        if (mic) {
-          const micTracks = mic.getAudioTracks()
-          console.log('[media-capture] Mic tracks:', micTracks.length, micTracks.map((t) => ({ label: t.label, readyState: t.readyState })))
-        }
-      } else {
-        console.log('[media-capture] Mic disabled by user toggle')
       }
 
       const hasLiveAudio =
         (!systemAudioDead && screenAudioTracks.length > 0) ||
         (mic !== null && mic.getAudioTracks().some((t) => t.readyState === 'live'))
-
-      console.log('[media-capture] Summary:', {
-        systemAudioDead,
-        screenAudioTracks: screenAudioTracks.length,
-        micAvailable: mic !== null,
-        hasLiveAudio,
-      })
 
       const result: MediaStreams = { screen, camera, mic, systemAudioDead, hasLiveAudio }
       streamsRef.current = result

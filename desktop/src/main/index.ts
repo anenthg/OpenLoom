@@ -4,6 +4,7 @@ import {
   desktopCapturer,
   ipcMain,
   net,
+  session,
   shell,
   safeStorage,
   systemPreferences,
@@ -207,6 +208,7 @@ function createWindow(): void {
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,
+      backgroundThrottling: false,
     },
   })
 
@@ -575,6 +577,17 @@ ipcMain.handle('clear-settings', () => {
 })
 
 app.whenReady().then(async () => {
+  // Grant Chromium-level permissions for media devices (camera, mic).
+  // macOS TCC permissions are handled separately via systemPreferences,
+  // but Chromium's renderer also needs its own permission grants for
+  // getUserMedia to enumerate and access devices.
+  session.defaultSession.setPermissionRequestHandler((_webContents, permission, callback) => {
+    callback(true)
+  })
+  session.defaultSession.setPermissionCheckHandler(() => {
+    return true
+  })
+
   settings = loadSettings()
 
   // Re-initialize Firebase if service account exists in settings

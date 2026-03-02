@@ -15,20 +15,12 @@ export function createRecorder(
   tracks.push(...audioTracks)
   const combinedStream = new MediaStream(tracks)
 
-  console.log('[recorder] Video tracks:', videoStream.getVideoTracks().length)
-  console.log('[recorder] Audio tracks from destination:', audioTracks.length, audioTracks.map((t) => ({ label: t.label, readyState: t.readyState })))
-  console.log('[recorder] Combined stream tracks:', combinedStream.getTracks().length,
-    '(video:', combinedStream.getVideoTracks().length,
-    'audio:', combinedStream.getAudioTracks().length, ')')
-
   // Prefer VP9, fall back to VP8
   const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')
     ? 'video/webm;codecs=vp9,opus'
     : MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')
       ? 'video/webm;codecs=vp8,opus'
       : 'video/webm'
-
-  console.log('[recorder] Using mimeType:', mimeType)
 
   const mediaRecorder = new MediaRecorder(combinedStream, {
     mimeType,
@@ -38,6 +30,10 @@ export function createRecorder(
   const chunks: Blob[] = []
   mediaRecorder.ondataavailable = (e) => {
     if (e.data.size > 0) chunks.push(e.data)
+  }
+
+  mediaRecorder.onerror = (e) => {
+    console.error('[recorder] MediaRecorder error:', e)
   }
 
   let resolveStop: ((blob: Blob) => void) | null = null
@@ -55,6 +51,12 @@ export function createRecorder(
     stop() {
       return new Promise<Blob>((resolve) => {
         resolveStop = resolve
+        // Force a final data flush before stopping — without this,
+        // recordings under 1s produce 0-byte blobs because the
+        // timeslice (1000ms) hasn't elapsed yet.
+        if (mediaRecorder.state === 'recording') {
+          mediaRecorder.requestData()
+        }
         mediaRecorder.stop()
       })
     },

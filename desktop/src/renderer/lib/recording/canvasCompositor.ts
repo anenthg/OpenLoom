@@ -43,9 +43,22 @@ export function createCanvasCompositor(
   const pipY = h - pipDiameter - pipMargin
   const pipRadius = pipDiameter / 2
 
+  // Use captureStream(0) so frames are only emitted when we explicitly call
+  // requestFrame(). This avoids relying on the browser's internal
+  // "canvas-was-modified" heuristic which can silently produce 0 frames when
+  // the canvas or its source videos are offscreen.
+  const stream = canvas.captureStream(0)
+  const captureTrack = stream.getVideoTracks()[0] as MediaStreamTrack & { requestFrame(): void }
+
   // Use setInterval (not rAF) so drawing continues when window is unfocused
   const interval = setInterval(() => {
-    ctx.drawImage(screenVideo, 0, 0, w, h)
+    if (screenVideo.readyState >= 2) {
+      ctx.drawImage(screenVideo, 0, 0, w, h)
+    } else {
+      // Fill black while waiting for the video to load
+      ctx.fillStyle = '#000'
+      ctx.fillRect(0, 0, w, h)
+    }
 
     if (cameraVideo && cameraVideo.readyState >= 2) {
       ctx.save()
@@ -73,9 +86,10 @@ export function createCanvasCompositor(
       ctx.lineWidth = 2
       ctx.stroke()
     }
-  }, 33)
 
-  const stream = canvas.captureStream(30)
+    // Explicitly push this frame to the capture stream
+    captureTrack.requestFrame()
+  }, 33)
 
   return {
     canvas,
