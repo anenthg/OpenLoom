@@ -32,7 +32,7 @@ export default function UploadProgress({ progress, shareURL, onNewRecording }: U
 
       {!isComplete && (
         <>
-          <div className="w-full max-w-sm bg-zinc-800 rounded-full h-3 mb-4">
+          <div className="w-full max-w-md bg-zinc-800 rounded-full h-3 mb-4">
             <div
               className="bg-[var(--crimson)] h-3 rounded-full transition-all duration-300"
               style={{ width: `${progress}%` }}
@@ -43,7 +43,7 @@ export default function UploadProgress({ progress, shareURL, onNewRecording }: U
       )}
 
       {shareURL && (
-        <div className="flex flex-col items-center gap-4 w-full max-w-sm">
+        <div className="flex flex-col items-center gap-4 w-full max-w-md">
           <div className="text-center">
             <p className="text-sm text-zinc-400 mb-2">Share link:</p>
             <a

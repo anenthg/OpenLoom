@@ -57,11 +57,27 @@ function formatDuration(ms: number | null): string {
   return `${min}:${sec.toString().padStart(2, "0")}`;
 }
 
-function parseSlug(): { projectId: string; code: string } | null {
+function decodeBase64Url(encoded: string): string {
+  const base64 = encoded.replace(/-/g, "+").replace(/_/g, "/");
+  const pad = (4 - (base64.length % 4)) % 4;
+  return atob(base64 + "=".repeat(pad));
+}
+
+function parseSlug(): { projectId: string; code: string; provider: string } | null {
   if (typeof window === "undefined") return null;
   const parts = window.location.pathname.split("/").filter(Boolean);
   if (parts.length >= 3 && parts[0] === "v") {
-    return { projectId: parts[1], code: parts[2] };
+    try {
+      const decoded = decodeBase64Url(parts[1]);
+      const dashIdx = decoded.indexOf("-");
+      if (dashIdx < 1) return null;
+      const provider = decoded.slice(0, dashIdx);
+      const projectId = decoded.slice(dashIdx + 1);
+      if (!provider || !projectId) return null;
+      return { projectId, code: parts[2], provider };
+    } catch {
+      return null;
+    }
   }
   return null;
 }
@@ -247,7 +263,7 @@ export default function VideoViewerPage() {
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const plyrRef = useRef<unknown>(null);
-  const slugRef = useRef<{ projectId: string; code: string } | null>(null);
+  const slugRef = useRef<{ projectId: string; code: string; provider: string } | null>(null);
 
   // -------------------------------------------------------------------------
   // 1. Parse URL and fetch video metadata

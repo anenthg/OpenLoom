@@ -72,5 +72,6 @@ export async function uploadVideo(
 // --- Share URL ---
 
 export function getShareURL(projectId: string, shortCode: string): string {
-  return `https://openloom.live/v/${projectId}/${shortCode}`
+  const encoded = btoa(`f-${projectId}`).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+  return `https://openloom.live/v/${encoded}/${shortCode}`
 }

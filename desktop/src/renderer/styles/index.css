@@ -22,6 +22,17 @@ body {
   color: #ededed;
 }
 
+button,
+[role="button"],
+label[for],
+select,
+summary,
+[type="button"],
+[type="reset"],
+[type="submit"] {
+  cursor: pointer;
+}
+
 /* ------------------------------------------------------------------ */
 /* Jamakkalam stripe divider                                           */
 /* ------------------------------------------------------------------ */
