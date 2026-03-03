@@ -120,8 +120,8 @@ Produces DMG and ZIP installers for macOS (arm64 + x64) in `desktop/release/`.
 Tag a version and push:
 
 ```bash
-git tag v0.1.0
-git push origin v0.1.0
+git tag v0.2.0
+git push origin v0.2.0
 ```
 
 The workflow builds the installers and publishes them as a GitHub Release.
@@ -150,7 +150,7 @@ The `netlify.toml` at the repo root handles build settings. Alternatively, deplo
 
 ## Contributing
 
-PRs and issues are welcome. This project is in early development (v0.1.0).
+PRs and issues are welcome. This project is in early development (v0.2.0).
 
 1. Fork the repo
 2. Create a feature branch
