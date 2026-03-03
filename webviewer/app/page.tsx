@@ -315,17 +315,27 @@ export default function LandingPage() {
             </a>
             .
           </span>
-          <span className="font-mono text-xs text-[var(--cotton)]/25">
-            A weekend project by{" "}
+          <span className="font-mono text-xs text-[var(--cotton)]/25 text-right">
+            <span>A weekend project by{" "}
+              <a
+                href="https://x.com/anenth"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="transition-colors hover:text-[var(--cotton)]/40"
+              >
+                @anenth
+              </a>
+              , pair-programmed with Claude Code.
+            </span>
+            <br />
             <a
-              href="https://x.com/anenth"
+              href="https://buymeacoffee.com/anenthg"
               target="_blank"
               rel="noopener noreferrer"
               className="transition-colors hover:text-[var(--cotton)]/40"
             >
-              @anenth
+              ☕ Buy me a coffee
             </a>
-            , pair-programmed with Claude Code.
           </span>
         </div>
       </footer>
