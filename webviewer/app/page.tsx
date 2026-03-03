@@ -249,7 +249,18 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <div className="mt-10 text-center" data-reveal data-delay="400">
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-4" data-reveal data-delay="400">
+            <a
+              href="https://openloom.live/v/Zi1hbmVudGgtaG9zdGVkLWJhY2t1cA/Dgt8PUUf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-lg border border-[var(--emerald)]/20 px-5 py-2.5 text-sm font-medium text-[var(--emerald)] transition-all hover:border-[var(--emerald)]/40 hover:bg-[var(--emerald)]/10"
+            >
+              See it in action
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </a>
             <Link
               href="/technology"
               className="inline-flex items-center gap-2 rounded-lg border border-[var(--cotton)]/10 px-5 py-2.5 text-sm font-medium text-[var(--cotton)]/60 transition-all hover:border-[var(--cotton)]/20 hover:text-[var(--cotton)]"
@@ -317,7 +328,7 @@ export default function LandingPage() {
             .
           </span>
           <span className="font-mono text-xs text-[var(--cotton)]/25 text-right">
-            <span>A weekend project by{" "}
+            <span>Pair-programmed with Claude Code by{" "}
               <a
                 href="https://x.com/anenth"
                 target="_blank"
@@ -326,7 +337,6 @@ export default function LandingPage() {
               >
                 @anenth
               </a>
-              , pair-programmed with Claude Code.
             </span>
             <br />
             <a
