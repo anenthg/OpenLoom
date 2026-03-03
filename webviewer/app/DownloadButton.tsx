@@ -6,8 +6,8 @@ const RELEASE_URL =
   "https://github.com/anenthg/OpenLoom/releases/latest/download";
 
 const DOWNLOAD_OPTIONS = [
-  { label: "Apple Silicon", file: "OpenLoom-0.2.0-arm64.dmg", note: "M1, M2, M3, M4" },
-  { label: "Intel", file: "OpenLoom-0.2.0.dmg", note: "Older Macs" },
+  { label: "Apple Silicon", file: "OpenLoom-arm64.dmg", note: "M1, M2, M3, M4" },
+  { label: "Intel", file: "OpenLoom-x64.dmg", note: "Older Macs" },
 ];
 
 export default function DownloadButton() {

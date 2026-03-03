@@ -35,6 +35,7 @@
     "appId": "live.openloom.desktop",
     "productName": "OpenLoom",
     "icon": "resources/icon.png",
+    "artifactName": "${productName}-${arch}.${ext}",
     "mac": {
       "target": ["dmg", "zip"],
       "icon": "resources/icon.icns",
