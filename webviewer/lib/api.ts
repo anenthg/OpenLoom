@@ -11,15 +11,27 @@ export interface VideoMeta {
   created_at: string;
 }
 
-function apiBaseUrl(projectId: string): string {
+function apiBaseUrl(provider: string, projectId: string): string {
+  if (provider === "c") {
+    return `https://${projectId}.convex.site`;
+  }
+  // Firebase (provider === "f")
   return `https://us-central1-${projectId}.cloudfunctions.net/openloom`;
 }
 
 export async function fetchVideoMeta(
   projectId: string,
   code: string,
+  provider = "f",
 ): Promise<VideoMeta> {
-  const res = await fetch(`${apiBaseUrl(projectId)}/v/${code}`);
+  let url: string;
+  if (provider === "c") {
+    url = `${apiBaseUrl(provider, projectId)}/v?code=${encodeURIComponent(code)}`;
+  } else {
+    url = `${apiBaseUrl(provider, projectId)}/v/${code}`;
+  }
+
+  const res = await fetch(url);
   if (!res.ok) {
     throw new Error(res.status === 404 ? "not_found" : "fetch_failed");
   }
@@ -29,17 +41,34 @@ export async function fetchVideoMeta(
 export async function incrementView(
   projectId: string,
   code: string,
+  provider = "f",
 ): Promise<void> {
-  fetch(`${apiBaseUrl(projectId)}/v/${code}/view`, { method: "POST" }).catch(
-    () => {},
-  );
+  if (provider === "c") {
+    fetch(`${apiBaseUrl(provider, projectId)}/view`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code }),
+    }).catch(() => {});
+  } else {
+    fetch(`${apiBaseUrl(provider, projectId)}/v/${code}/view`, {
+      method: "POST",
+    }).catch(() => {});
+  }
 }
 
 export async function fetchReactions(
   projectId: string,
   code: string,
+  provider = "f",
 ): Promise<Reaction[]> {
-  const res = await fetch(`${apiBaseUrl(projectId)}/v/${code}/reactions`);
+  let url: string;
+  if (provider === "c") {
+    url = `${apiBaseUrl(provider, projectId)}/reactions?code=${encodeURIComponent(code)}`;
+  } else {
+    url = `${apiBaseUrl(provider, projectId)}/v/${code}/reactions`;
+  }
+
+  const res = await fetch(url);
   if (!res.ok) return [];
   return res.json();
 }
@@ -49,10 +78,19 @@ export async function addReaction(
   code: string,
   emoji: string,
   timestamp: number,
+  provider = "f",
 ): Promise<void> {
-  fetch(`${apiBaseUrl(projectId)}/v/${code}/reactions`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ emoji, timestamp }),
-  }).catch(() => {});
+  if (provider === "c") {
+    fetch(`${apiBaseUrl(provider, projectId)}/reactions/add`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code, emoji, timestamp }),
+    }).catch(() => {});
+  } else {
+    fetch(`${apiBaseUrl(provider, projectId)}/v/${code}/reactions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ emoji, timestamp }),
+    }).catch(() => {});
+  }
 }

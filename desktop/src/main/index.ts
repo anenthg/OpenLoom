@@ -13,6 +13,18 @@ import {
 import { join } from 'path'
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs'
 import { deployCloudFunction, CLOUD_FUNCTION_VERSION } from './deploy-cloud-function'
+import {
+  initConvex,
+  validateConvexConnection,
+  convexInsert,
+  convexQuery_ as convexQueryFn,
+  convexQueryByField,
+  convexDelete,
+  convexUpload,
+  convexDeleteFile,
+  convexGetFileUrl,
+} from './convex-backend'
+import { deployConvexFunctions, CONVEX_FUNCTIONS_VERSION } from './deploy-convex-functions'
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const admin = require('firebase-admin') as typeof import('firebase-admin')
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -135,6 +147,57 @@ async function detectOrCreateBucket(serviceAccount: { project_id: string; client
       `Tried creating: ${createName}, ${fallbackName}. ` +
       `Error: ${e instanceof Error ? e.message : String(e)}`,
     )
+  }
+}
+
+/** Firebase storage upload with bucket fallback/auto-detect. */
+async function firebaseUploadFile(
+  remotePath: string,
+  buffer: Buffer,
+  contentType: string,
+): Promise<{ ok: boolean; url?: string; error?: string }> {
+  const fbApp = getFirebaseApp()
+  const defaultBucket = fbApp.storage().bucket()
+  try {
+    await defaultBucket.file(remotePath).save(buffer, {
+      metadata: { contentType },
+      public: true,
+    })
+    const publicUrl = `https://storage.googleapis.com/${defaultBucket.name}/${remotePath}`
+    return { ok: true, url: publicUrl }
+  } catch (primaryErr) {
+    const errStr = primaryErr instanceof Error ? primaryErr.message : String(primaryErr)
+    // If the bucket simply doesn't exist, try to discover the real one
+    if (!errStr.includes('does not exist')) {
+      return { ok: false, error: `Storage upload failed (bucket: ${defaultBucket.name}): ${errStr}` }
+    }
+
+    const saJson = settings.serviceAccountJson as string | undefined
+    if (!saJson) {
+      return { ok: false, error: `Storage upload failed (bucket: ${defaultBucket.name}): ${errStr}` }
+    }
+    const sa = JSON.parse(saJson)
+
+    try {
+      const detectedName = await detectOrCreateBucket(sa)
+      const gcs = new GCSStorage({ credentials: sa, projectId: sa.project_id })
+      const altBucket = gcs.bucket(detectedName)
+      await altBucket.file(remotePath).save(buffer, {
+        metadata: { contentType },
+        public: true,
+      })
+      // Persist the working bucket so future calls use it directly
+      resolvedBucket = detectedName
+      settings.resolvedBucket = detectedName
+      saveSettings(settings)
+      initFirebase(saJson, detectedName)
+
+      const publicUrl = `https://storage.googleapis.com/${detectedName}/${remotePath}`
+      return { ok: true, url: publicUrl }
+    } catch (fallbackErr) {
+      const fbStr = fallbackErr instanceof Error ? fallbackErr.message : String(fallbackErr)
+      return { ok: false, error: `Storage upload failed (bucket: ${defaultBucket.name}): ${fbStr}` }
+    }
   }
 }
 
@@ -374,56 +437,7 @@ ipcMain.handle(
 ipcMain.handle(
   'storage-upload',
   async (_event, remotePath: string, fileData: ArrayBuffer, contentType: string) => {
-    const buffer = Buffer.from(fileData)
-    const fbApp = getFirebaseApp()
-
-    // Try the default (configured) bucket first
-    const defaultBucket = fbApp.storage().bucket()
-    try {
-      await defaultBucket.file(remotePath).save(buffer, {
-        metadata: { contentType },
-        public: true,
-      })
-      const publicUrl = `https://storage.googleapis.com/${defaultBucket.name}/${remotePath}`
-      return { ok: true, url: publicUrl }
-    } catch (primaryErr) {
-      const errStr = primaryErr instanceof Error ? primaryErr.message : String(primaryErr)
-      // If bucket not found, try the other candidate before giving up
-      if (!errStr.includes('does not exist')) {
-        return { ok: false, error: `Storage upload failed (bucket: ${defaultBucket.name}): ${errStr}` }
-      }
-
-      // Try to discover the real bucket via full detection
-      const saJson = settings.serviceAccountJson as string | undefined
-      if (!saJson) {
-        return { ok: false, error: `Storage upload failed (bucket: ${defaultBucket.name}): ${errStr}` }
-      }
-      const sa = JSON.parse(saJson)
-
-      try {
-        const detectedName = await detectOrCreateBucket(sa)
-        const gcs = new GCSStorage({ credentials: sa, projectId: sa.project_id })
-        const altBucket = gcs.bucket(detectedName)
-        await altBucket.file(remotePath).save(buffer, {
-          metadata: { contentType },
-          public: true,
-        })
-        // This bucket works — persist it and re-init so future calls use it
-        resolvedBucket = detectedName
-        settings.resolvedBucket = detectedName
-        saveSettings(settings)
-        initFirebase(saJson, detectedName)
-
-        const publicUrl = `https://storage.googleapis.com/${detectedName}/${remotePath}`
-        return { ok: true, url: publicUrl }
-      } catch (fallbackErr) {
-        const fbStr = fallbackErr instanceof Error ? fallbackErr.message : String(fallbackErr)
-        return {
-          ok: false,
-          error: `Storage upload failed (bucket: ${defaultBucket.name}): ${fbStr}`,
-        }
-      }
-    }
+    return firebaseUploadFile(remotePath, Buffer.from(fileData), contentType)
   },
 )
 
@@ -584,6 +598,199 @@ ipcMain.handle('clear-settings', () => {
   return {}
 })
 
+// ---------------------------------------------------------------------------
+// Provider-agnostic IPC handlers
+// ---------------------------------------------------------------------------
+
+function getProvider(): string {
+  return (settings.provider as string) || 'firebase'
+}
+
+// Validate connection (provider-agnostic)
+ipcMain.handle('validate-connection', async (_event, credential: string) => {
+  const provider = getProvider()
+  if (provider === 'convex') {
+    const result = await validateConvexConnection(credential)
+    if (result.ok && result.deploymentUrl) {
+      // Initialize Convex client so subsequent CRUD calls work
+      initConvex(credential, result.deploymentUrl)
+    }
+    return result
+  }
+  // Firebase path — NOTE: The SetupWizard Firebase flow calls 'validate-firebase'
+  // directly (which has full Datastore Mode handling and bucket detection).
+  // This fallback exists for completeness but should not be the primary
+  // Firebase validation path. Use window.api.validateFirebaseConnection() instead.
+  try {
+    const fbApp = initFirebase(credential)
+    const serviceAccount = JSON.parse(credential)
+    const projectId = serviceAccount.project_id
+    const db = fbApp.firestore()
+    await db.collection('videos').limit(1).get()
+    return { ok: true, projectId }
+  } catch (e) {
+    return { ok: false, error: `Connection failed: ${e instanceof Error ? e.message : String(e)}` }
+  }
+})
+
+// DB Insert
+ipcMain.handle(
+  'db-insert',
+  async (_event, collection: string, docId: string, data: Record<string, unknown>) => {
+    if (getProvider() === 'convex') return convexInsert(collection, docId, data)
+    // Firebase
+    try {
+      const db = getFirestoreDB()
+      await db.collection(collection).doc(docId).set(data)
+      return { ok: true }
+    } catch (e) {
+      return { ok: false, error: `Firestore insert failed: ${e instanceof Error ? e.message : String(e)}` }
+    }
+  },
+)
+
+// DB Query
+ipcMain.handle(
+  'db-query',
+  async (_event, collection: string, orderBy: string, direction: string) => {
+    if (getProvider() === 'convex') return convexQueryFn(collection, orderBy, direction)
+    // Firebase
+    try {
+      const db = getFirestoreDB()
+      const dir = direction === 'asc' ? 'asc' : 'desc'
+      const snapshot = await db.collection(collection).orderBy(orderBy, dir).get()
+      const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+      return { ok: true, data }
+    } catch (e) {
+      return { ok: false, error: `Firestore query failed: ${e instanceof Error ? e.message : String(e)}` }
+    }
+  },
+)
+
+// DB Query by Field
+ipcMain.handle(
+  'db-query-by-field',
+  async (_event, collection: string, field: string, value: string) => {
+    if (getProvider() === 'convex') return convexQueryByField(collection, field, value)
+    // Firebase
+    try {
+      const db = getFirestoreDB()
+      const snapshot = await db.collection(collection).where(field, '==', value).limit(1).get()
+      const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+      return { ok: true, data }
+    } catch (e) {
+      return { ok: false, error: `Firestore query failed: ${e instanceof Error ? e.message : String(e)}` }
+    }
+  },
+)
+
+// DB Delete
+ipcMain.handle(
+  'db-delete',
+  async (_event, collection: string, docId: string) => {
+    if (getProvider() === 'convex') return convexDelete(collection, docId)
+    // Firebase
+    try {
+      const db = getFirestoreDB()
+      await db.collection(collection).doc(docId).delete()
+      return { ok: true }
+    } catch (e) {
+      return { ok: false, error: `Firestore delete failed: ${e instanceof Error ? e.message : String(e)}` }
+    }
+  },
+)
+
+// File Upload
+ipcMain.handle(
+  'file-upload',
+  async (_event, remotePath: string, fileData: ArrayBuffer, contentType: string) => {
+    if (getProvider() === 'convex') return convexUpload(remotePath, fileData, contentType)
+    // Firebase — use shared upload with bucket fallback
+    return firebaseUploadFile(remotePath, Buffer.from(fileData), contentType)
+  },
+)
+
+// File Delete
+ipcMain.handle('file-delete', async (_event, remotePath: string) => {
+  if (getProvider() === 'convex') return convexDeleteFile(remotePath)
+  // Firebase
+  try {
+    const bucket = getFirebaseApp().storage().bucket()
+    await bucket.file(remotePath).delete().catch(() => {})
+    return { ok: true }
+  } catch (e) {
+    return { ok: false, error: `Storage delete failed: ${e instanceof Error ? e.message : String(e)}` }
+  }
+})
+
+// File Get Public URL
+ipcMain.handle('file-get-public-url', async (_event, remotePath: string) => {
+  if (getProvider() === 'convex') return convexGetFileUrl(remotePath)
+  // Firebase
+  try {
+    const bucket = getFirebaseApp().storage().bucket()
+    const publicUrl = `https://storage.googleapis.com/${bucket.name}/${remotePath}`
+    return { ok: true, url: publicUrl }
+  } catch (e) {
+    return { ok: false, error: `Failed to get URL: ${e instanceof Error ? e.message : String(e)}` }
+  }
+})
+
+// Deploy Backend Functions (provider-agnostic)
+ipcMain.handle('deploy-backend-functions', async (event) => {
+  if (getProvider() === 'convex') {
+    const deployKey = settings.convexDeployKey as string | undefined
+    if (!deployKey) return { ok: false, error: 'No Convex deploy key configured' }
+
+    const currentVersion = settings.convexFunctionsVersion as string | undefined
+    if (currentVersion === CONVEX_FUNCTIONS_VERSION) {
+      return { ok: true, skipped: true }
+    }
+
+    const result = await deployConvexFunctions(deployKey, (stage) => {
+      event.sender.send('deploy-progress', stage)
+    })
+
+    if (result.ok) {
+      settings.convexFunctionsVersion = CONVEX_FUNCTIONS_VERSION
+      saveSettings(settings)
+    }
+
+    return result
+  }
+
+  // Firebase — delegate to existing deploy handler
+  try {
+    const currentVersion = settings.cloudFunctionVersion as string | undefined
+    if (currentVersion === CLOUD_FUNCTION_VERSION) {
+      return { ok: true, skipped: true }
+    }
+
+    const serviceAccountJson = settings.serviceAccountJson as string | undefined
+    if (!serviceAccountJson) return { ok: false, error: 'No service account configured' }
+
+    const sa = JSON.parse(serviceAccountJson)
+    const projectId = sa.project_id
+    const firestoreDbId = settings.firestoreDbId as string | undefined
+    const bucket = (settings.resolvedBucket as string | undefined) || `${projectId}.firebasestorage.app`
+
+    const result = await deployCloudFunction(
+      { serviceAccountJson, projectId, firestoreDbId, storageBucket: bucket },
+      (stage) => { event.sender.send('deploy-progress', stage) },
+    )
+
+    if (result.ok) {
+      settings.cloudFunctionVersion = CLOUD_FUNCTION_VERSION
+      if (result.functionUrl) settings.cloudFunctionUrl = result.functionUrl
+      saveSettings(settings)
+    }
+
+    return result
+  } catch (e) {
+    return { ok: false, error: `Deploy failed: ${e instanceof Error ? e.message : String(e)}` }
+  }
+})
+
 app.whenReady().then(async () => {
   // Grant Chromium-level permissions for media devices (camera, mic).
   // macOS TCC permissions are handled separately via systemPreferences,
@@ -597,6 +804,13 @@ app.whenReady().then(async () => {
   })
 
   settings = loadSettings()
+
+  // Re-initialize Convex if deploy key exists
+  const convexDeployKey = settings.convexDeployKey as string | undefined
+  const convexDeploymentUrl = settings.convexDeploymentUrl as string | undefined
+  if (convexDeployKey && convexDeploymentUrl) {
+    initConvex(convexDeployKey, convexDeploymentUrl)
+  }
 
   // Re-initialize Firebase if service account exists in settings
   const serviceAccountJson = settings.serviceAccountJson as string | undefined

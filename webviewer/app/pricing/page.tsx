@@ -298,9 +298,9 @@ const PROVIDERS: Record<Provider, ProviderConfig> = {
   convex: {
     name: "Convex",
     color: "var(--crimson)",
-    status: "coming-soon",
+    status: "available",
     tagline:
-      "Convex support is coming soon. Here\u2019s what the free tier would look like for planning purposes.",
+      "OpenLoom supports Convex as an alternative backend. Here\u2019s what the free tier looks like.",
     shortVersion: [
       {
         label: "HD Mode",

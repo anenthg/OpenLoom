@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { listVideos, deleteVideo, getShareURL } from '../lib/firebase'
+import { listVideos, deleteVideo, getShareURL } from '../lib/backend'
 import type { AppSettings, Video } from '../lib/types'
 import { CheckIcon, ClockIcon, EyeIcon, FolderIcon, LinkIcon, TrashIcon } from './icons'
 
@@ -56,8 +56,7 @@ export default function Library({ settings }: Props) {
   }, [refresh])
 
   const handleCopyLink = async (video: Video) => {
-    if (!settings.firebaseProjectId) return
-    const url = getShareURL(settings.firebaseProjectId, video.short_code)
+    const url = getShareURL(settings, video.short_code)
     await navigator.clipboard.writeText(url)
     setCopiedId(video.short_code)
     setTimeout(() => setCopiedId(null), 2000)

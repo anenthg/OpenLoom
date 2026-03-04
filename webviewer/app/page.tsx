@@ -4,6 +4,68 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import DownloadButton from "./DownloadButton";
 
+/* ------------------------------------------------------------------ */
+/* Terminal autocomplete dropdown for backend providers                 */
+/* ------------------------------------------------------------------ */
+
+const INFRA_PROVIDERS = [
+  { name: "Firebase", color: "var(--mustard)", status: "ready" },
+  { name: "Supabase", color: "var(--emerald)", status: "soon" },
+  { name: "Convex", color: "var(--crimson)", status: "ready" },
+] as const;
+
+function BackendInfraDropdown() {
+  return (
+    <span className="relative inline-block cursor-default group">
+      <span className="border-b border-dotted border-[var(--mustard)]/50 transition-colors group-hover:border-[var(--cotton)]/50">
+        backend infra
+      </span>
+
+      {/* Dropdown */}
+      <span
+        className="pointer-events-none absolute left-1/2 top-full z-50 mt-2 -translate-x-1/2 opacity-0 transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100 translate-y-1"
+      >
+        <span className="block rounded-lg border border-[var(--cotton)]/10 bg-[var(--deep-black)] px-1 py-1 shadow-xl shadow-black/40 backdrop-blur-sm">
+          {/* Terminal prompt hint */}
+          <span className="block px-3 pt-1.5 pb-1 font-mono text-[10px] uppercase tracking-widest text-[var(--cotton)]/25">
+            tab-complete
+          </span>
+
+          {INFRA_PROVIDERS.map((p) => (
+            <span
+              key={p.name}
+              className="flex items-center gap-2.5 whitespace-nowrap rounded-md px-3 py-1.5 transition-colors hover:bg-[var(--cotton)]/[0.06]"
+            >
+              <span
+                className="h-2 w-2 shrink-0 rounded-full"
+                style={{ backgroundColor: p.color }}
+              />
+              <span className="font-mono text-xs text-[var(--cotton)]/80">
+                {p.name}
+              </span>
+              <span
+                className="ml-auto pl-4 font-mono text-[10px]"
+                style={{
+                  color:
+                    p.status === "ready"
+                      ? "var(--emerald)"
+                      : "var(--cotton)",
+                  opacity: p.status === "ready" ? 0.7 : 0.25,
+                }}
+              >
+                {p.status}
+              </span>
+            </span>
+          ))}
+        </span>
+
+        {/* Arrow pointing up */}
+        <span className="absolute -top-1 left-1/2 h-2 w-2 -translate-x-1/2 rotate-45 border-l border-t border-[var(--cotton)]/10 bg-[var(--deep-black)]" />
+      </span>
+    </span>
+  );
+}
+
 function useScrollReveal() {
   useEffect(() => {
     const els = document.querySelectorAll("[data-reveal]");
@@ -74,14 +136,8 @@ export default function LandingPage() {
           <div className="mt-6 mb-6 font-mono text-sm leading-relaxed">
             <div className="text-[var(--mustard)]">
               <span className="text-[var(--emerald)]">$</span> Open-source alternative to Loom. Your screen recordings live on your
-              own hosted{" "}
-              <span className="relative group cursor-default border-b border-dotted border-[var(--mustard)]/50">
-                backend infra
-                <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 whitespace-nowrap rounded bg-[var(--deep-black)] px-3 py-1.5 text-xs text-[var(--cotton)] opacity-0 transition-opacity group-hover:opacity-100 border border-[var(--cotton)]/10">
-                  Firebase and Supabase (soon)
-                </span>
-              </span>
-              {" "}— no third-party servers, no vendor lock-in.
+              own hosted <BackendInfraDropdown /> — no third-party servers, no vendor
+              lock-in.
             </div>
           </div>
 
@@ -174,7 +230,7 @@ export default function LandingPage() {
               {
                 icon: "selfhost",
                 title: "Self-hosted",
-                desc: "Recordings live on your own Firebase project. 5 GB storage included in the free tier. Supabase is coming soon.",
+                desc: "Recordings live on your own backend \u2014 Firebase, Convex, or Supabase. No third-party servers, no vendor lock-in.",
               },
               {
                 icon: "screen",
@@ -232,13 +288,13 @@ export default function LandingPage() {
             <div className="text-center">
               <span className="font-mono text-sm font-bold text-[var(--crimson)]">01 — Record</span>
               <p className="mt-2 text-sm leading-relaxed text-[var(--cotton)]/50">
-                Open the desktop app, choose your capture mode, and hit record. Video chunks stream to your Firebase.
+                Open the desktop app, choose your capture mode, and hit record. Your video uploads to your own backend.
               </p>
             </div>
             <div className="text-center">
               <span className="font-mono text-sm font-bold text-[var(--mustard)]">02 — Store</span>
               <p className="mt-2 text-sm leading-relaxed text-[var(--cotton)]/50">
-                Firebase stores your video chunks, metadata, and reactions. Everything lives on your own project.
+                Your backend stores the video, metadata, and reactions. Everything lives on your own project.
               </p>
             </div>
             <div className="text-center">
@@ -395,7 +451,7 @@ function DataFlowDiagram() {
           Your Backend
         </text>
         <text x="360" y="103" textAnchor="middle" fill="#F5C518" fontSize="9" fontFamily="var(--font-jetbrains-mono), monospace" opacity="0.5">
-          Firebase &amp; Supabase soon
+          Firebase · Supabase · Convex
         </text>
 
         {/* ---- Node: OpenLoom Player (center 645) ---- */}
@@ -517,15 +573,15 @@ const STEPS = [
     color: "var(--crimson)",
     title: "Download & Configure",
     description:
-      "Download the OpenLoom desktop app for macOS, open it, and connect your Firebase project. Paste your project ID, import your service account key, and you\u2019re ready to record.",
+      "Download the OpenLoom desktop app for macOS, open it, and connect your backend provider. Choose Firebase, Convex, or Supabase \u2014 paste your credentials and you\u2019re ready to record.",
   },
   {
-    id: "firebase",
-    label: "Firebase Setup",
+    id: "setup",
+    label: "Setup",
     color: "var(--mustard)",
-    title: "Configure Firebase",
+    title: "Configure Your Backend",
     description:
-      "Create a Firebase project (or use an existing one), enable Cloud Storage and Cloud Firestore, deploy the provided Cloud Functions, and lock down your security rules.",
+      "Set up your chosen backend provider. Each platform requires a few services to be enabled \u2014 follow the checklist for your selected provider.",
   },
   {
     id: "share",
@@ -547,12 +603,11 @@ function StepIcon({ id, active }: { id: string; active: boolean }) {
       </svg>
     );
   }
-  if (id === "firebase") {
+  if (id === "setup") {
     return (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <ellipse cx="12" cy="5" rx="9" ry="3" />
-        <path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5" />
-        <path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3" />
+        <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+        <circle cx="12" cy="12" r="3" />
       </svg>
     );
   }
@@ -584,12 +639,13 @@ function DesktopAppVisual() {
       <line x1="140" y1="64" x2="200" y2="64" stroke="rgba(245,245,232,0.1)" strokeWidth="1" strokeDasharray="4 3" />
       <line x1="280" y1="64" x2="340" y2="64" stroke="rgba(245,245,232,0.1)" strokeWidth="1" strokeDasharray="4 3" />
 
-      {/* Form area */}
-      <text x="60" y="110" fill="rgba(245,245,232,0.5)" fontSize="11" fontFamily="var(--font-space-grotesk), sans-serif">Firebase Project ID</text>
+      {/* Provider selector */}
+      <text x="60" y="110" fill="rgba(245,245,232,0.5)" fontSize="11" fontFamily="var(--font-space-grotesk), sans-serif">Backend Provider</text>
       <rect x="60" y="118" width="360" height="36" rx="8" fill="rgba(245,245,232,0.04)" stroke="rgba(245,245,232,0.1)" strokeWidth="1" />
-      <text x="76" y="141" fill="rgba(245,245,232,0.25)" fontSize="12" fontFamily="var(--font-jetbrains-mono), monospace">my-openloom-project</text>
+      <text x="76" y="141" fill="rgba(245,245,232,0.45)" fontSize="12" fontFamily="var(--font-jetbrains-mono), monospace">Firebase  ·  Convex  ·  Supabase</text>
 
-      <text x="60" y="180" fill="rgba(245,245,232,0.5)" fontSize="11" fontFamily="var(--font-space-grotesk), sans-serif">Service Account Key</text>
+      {/* Credential field */}
+      <text x="60" y="180" fill="rgba(245,245,232,0.5)" fontSize="11" fontFamily="var(--font-space-grotesk), sans-serif">Credentials</text>
       <rect x="60" y="188" width="280" height="36" rx="8" fill="rgba(245,245,232,0.04)" stroke="rgba(245,245,232,0.1)" strokeWidth="1" />
       <text x="76" y="211" fill="rgba(245,245,232,0.25)" fontSize="12" fontFamily="var(--font-jetbrains-mono), monospace">service-account.json</text>
       <rect x="352" y="188" width="68" height="36" rx="8" fill="rgba(245,245,232,0.06)" stroke="rgba(245,245,232,0.12)" strokeWidth="1" />
@@ -602,45 +658,130 @@ function DesktopAppVisual() {
   );
 }
 
-function FirebaseSetupVisual() {
-  const items = [
+const SETUP_PROVIDERS = [
+  { id: "firebase", label: "Firebase", color: "var(--mustard)" },
+  { id: "convex", label: "Convex", color: "var(--crimson)" },
+  { id: "supabase", label: "Supabase", color: "var(--emerald)" },
+] as const;
+
+type SetupProviderId = (typeof SETUP_PROVIDERS)[number]["id"];
+
+const PROVIDER_CHECKLIST: Record<SetupProviderId, { label: string; done: boolean }[]> = {
+  firebase: [
     { label: "Cloud Storage", done: true },
     { label: "Cloud Firestore", done: true },
     { label: "Cloud Functions", done: true },
     { label: "IAM Roles", done: false },
-  ];
+  ],
+  convex: [
+    { label: "Create Project", done: true },
+    { label: "Generate Deploy Key", done: true },
+    { label: "Backend Functions", done: true },
+  ],
+  supabase: [
+    { label: "Create Project", done: false },
+    { label: "Storage Bucket", done: false },
+    { label: "Edge Functions", done: false },
+    { label: "Row Level Security", done: false },
+  ],
+};
+
+const PROVIDER_CONSOLE: Record<SetupProviderId, string> = {
+  firebase: "Firebase Console",
+  convex: "Convex Dashboard",
+  supabase: "Supabase Dashboard",
+};
+
+function SetupVisual() {
+  const [provider, setProvider] = useState<SetupProviderId>("firebase");
+  const items = PROVIDER_CHECKLIST[provider];
+  const activeProvider = SETUP_PROVIDERS.find((p) => p.id === provider)!;
+  const isComingSoon = provider === "supabase";
+
   return (
-    <svg viewBox="0 0 480 250" fill="none" className="w-full" aria-label="Firebase setup checklist mockup">
-      {/* Window chrome */}
-      <rect x="0" y="0" width="480" height="300" rx="12" fill="#0A0A12" stroke="rgba(245,245,232,0.08)" strokeWidth="1" />
-      <rect x="0" y="0" width="480" height="36" rx="12" fill="#141422" />
-      <rect x="0" y="24" width="480" height="12" fill="#141422" />
-      <circle cx="20" cy="18" r="5" fill="var(--crimson)" />
-      <circle cx="36" cy="18" r="5" fill="var(--mustard)" />
-      <circle cx="52" cy="18" r="5" fill="var(--emerald)" />
-      <text x="240" y="22" textAnchor="middle" fill="rgba(245,245,232,0.4)" fontSize="11" fontFamily="var(--font-jetbrains-mono), monospace">Firebase Console</text>
+    <div>
+      {/* Provider tabs */}
+      <div className="flex border-b border-[var(--cotton)]/8">
+        {SETUP_PROVIDERS.map((p) => {
+          const isActive = p.id === provider;
+          return (
+            <button
+              key={p.id}
+              onClick={() => setProvider(p.id)}
+              className={`relative flex items-center gap-2 px-5 py-3 text-sm font-medium transition-all ${
+                isActive
+                  ? "text-[var(--cotton)]"
+                  : "text-[var(--cotton)]/35 hover:text-[var(--cotton)]/60"
+              }`}
+            >
+              <span
+                className="h-2 w-2 rounded-full"
+                style={{ backgroundColor: p.color, opacity: isActive ? 1 : 0.4 }}
+              />
+              {p.label}
+              {p.id === "supabase" && (
+                <span className="ml-1 rounded-full bg-[var(--cotton)]/[0.08] px-1.5 py-0.5 text-[10px] text-[var(--cotton)]/30">
+                  soon
+                </span>
+              )}
+              {isActive && (
+                <span
+                  className="absolute bottom-0 left-0 right-0 h-[2px]"
+                  style={{ backgroundColor: p.color }}
+                />
+              )}
+            </button>
+          );
+        })}
+      </div>
 
-      {/* Checklist items */}
-      {items.map((item, i) => {
-        const y = 56 + i * 44;
-        return (
-          <g key={item.label}>
-            <rect x="40" y={y} width="400" height="36" rx="8" fill="rgba(245,245,232,0.03)" stroke="rgba(245,245,232,0.06)" strokeWidth="1" />
-            {item.done ? (
-              <>
-                <circle cx="64" cy={y + 18} r="10" fill="var(--mustard)" opacity="0.15" />
-                <path d={`M58 ${y + 18} l4 4 8-8`} stroke="var(--mustard)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </>
-            ) : (
-              <circle cx="64" cy={y + 18} r="10" stroke="rgba(245,245,232,0.15)" strokeWidth="1.5" fill="none" />
-            )}
-            <text x="88" y={y + 22} fill={item.done ? "rgba(245,245,232,0.7)" : "rgba(245,245,232,0.35)"} fontSize="13" fontFamily="var(--font-space-grotesk), sans-serif">{item.label}</text>
-            {item.done && <text x="400" y={y + 22} textAnchor="end" fill="var(--mustard)" fontSize="10" fontFamily="var(--font-jetbrains-mono), monospace" opacity="0.6">enabled</text>}
-          </g>
-        );
-      })}
+      {/* Checklist visual */}
+      <svg viewBox="0 0 480 250" fill="none" className="w-full" aria-label={`${activeProvider.label} setup checklist`}>
+        {/* Window chrome */}
+        <rect x="0" y="0" width="480" height="250" rx="0" fill="#0A0A12" />
+        <rect x="0" y="0" width="480" height="36" fill="#141422" />
+        <circle cx="20" cy="18" r="5" fill="var(--crimson)" />
+        <circle cx="36" cy="18" r="5" fill="var(--mustard)" />
+        <circle cx="52" cy="18" r="5" fill="var(--emerald)" />
+        <text x="240" y="22" textAnchor="middle" fill="rgba(245,245,232,0.4)" fontSize="11" fontFamily="var(--font-jetbrains-mono), monospace">
+          {PROVIDER_CONSOLE[provider]}
+        </text>
 
-    </svg>
+        {/* Coming soon overlay for Supabase */}
+        {isComingSoon && (
+          <>
+            <rect x="0" y="36" width="480" height="214" fill="rgba(10,10,18,0.7)" />
+            <text x="240" y="140" textAnchor="middle" fill="rgba(245,245,232,0.3)" fontSize="16" fontFamily="var(--font-space-grotesk), sans-serif" fontWeight="600">
+              Coming soon
+            </text>
+            <text x="240" y="162" textAnchor="middle" fill="rgba(245,245,232,0.15)" fontSize="11" fontFamily="var(--font-jetbrains-mono), monospace">
+              Supabase support is on the roadmap
+            </text>
+          </>
+        )}
+
+        {/* Checklist items */}
+        {items.map((item, i) => {
+          const y = 56 + i * 44;
+          const accentColor = activeProvider.color;
+          return (
+            <g key={`${provider}-${item.label}`} opacity={isComingSoon ? 0.2 : 1}>
+              <rect x="40" y={y} width="400" height="36" rx="8" fill="rgba(245,245,232,0.03)" stroke="rgba(245,245,232,0.06)" strokeWidth="1" />
+              {item.done ? (
+                <>
+                  <circle cx="64" cy={y + 18} r="10" fill={accentColor} opacity="0.15" />
+                  <path d={`M58 ${y + 18} l4 4 8-8`} stroke={accentColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </>
+              ) : (
+                <circle cx="64" cy={y + 18} r="10" stroke="rgba(245,245,232,0.15)" strokeWidth="1.5" fill="none" />
+              )}
+              <text x="88" y={y + 22} fill={item.done ? "rgba(245,245,232,0.7)" : "rgba(245,245,232,0.35)"} fontSize="13" fontFamily="var(--font-space-grotesk), sans-serif">{item.label}</text>
+              {item.done && <text x="400" y={y + 22} textAnchor="end" fill={accentColor} fontSize="10" fontFamily="var(--font-jetbrains-mono), monospace" opacity="0.6">enabled</text>}
+            </g>
+          );
+        })}
+      </svg>
+    </div>
   );
 }
 
@@ -686,7 +827,7 @@ function ShareRecordingVisual() {
   );
 }
 
-const TAB_VISUALS = [DesktopAppVisual, FirebaseSetupVisual, ShareRecordingVisual];
+const TAB_VISUALS = [DesktopAppVisual, SetupVisual, ShareRecordingVisual];
 
 function GetStartedSection() {
   const [activeTab, setActiveTab] = useState(0);

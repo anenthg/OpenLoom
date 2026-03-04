@@ -1,9 +1,18 @@
+export type BackendProvider = 'firebase' | 'convex'
+
 export interface AppSettings {
+  provider?: BackendProvider
+  // Firebase fields
   firebaseProjectId?: string
   serviceAccountJson?: string // stringified service account key
   isProvisioned?: boolean
   cloudFunctionVersion?: string
   cloudFunctionUrl?: string
+  // Convex fields
+  convexDeployKey?: string
+  convexDeploymentUrl?: string
+  convexDeploymentName?: string
+  convexHttpActionsUrl?: string
 }
 
 export interface Video {
@@ -99,6 +108,44 @@ export interface IElectronAPI {
   }>
   onDeployProgress: (callback: (stage: string) => void) => void
   offDeployProgress: () => void
+  // Provider-agnostic methods
+  validateConnection: (
+    credential: string,
+  ) => Promise<{ ok: boolean; projectId?: string; deploymentName?: string; deploymentUrl?: string; httpActionsUrl?: string; error?: string }>
+  dbInsert: (
+    collection: string,
+    docId: string,
+    data: Record<string, unknown>,
+  ) => Promise<{ ok: boolean; error?: string }>
+  dbQuery: (
+    collection: string,
+    orderBy: string,
+    direction: string,
+  ) => Promise<{ ok: boolean; data?: Record<string, unknown>[]; error?: string }>
+  dbQueryByField: (
+    collection: string,
+    field: string,
+    value: string,
+  ) => Promise<{ ok: boolean; data?: Record<string, unknown>[]; error?: string }>
+  dbDelete: (
+    collection: string,
+    docId: string,
+  ) => Promise<{ ok: boolean; error?: string }>
+  fileUpload: (
+    remotePath: string,
+    fileData: ArrayBuffer,
+    contentType: string,
+  ) => Promise<{ ok: boolean; url?: string; error?: string }>
+  fileDelete: (remotePath: string) => Promise<{ ok: boolean; error?: string }>
+  fileGetPublicUrl: (
+    remotePath: string,
+  ) => Promise<{ ok: boolean; url?: string; error?: string }>
+  deployBackendFunctions: () => Promise<{
+    ok: boolean
+    skipped?: boolean
+    error?: string
+    enableUrls?: { label: string; url: string }[]
+  }>
 }
 
 declare global {

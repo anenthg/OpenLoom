@@ -4,13 +4,26 @@ import SetupWizard from './components/SetupWizard'
 import Provisioning from './components/Provisioning'
 import Layout from './components/Layout'
 
+function isConfigured(s: AppSettings): boolean {
+  const provider = s.provider || 'firebase'
+  if (provider === 'convex') {
+    return !!(s.convexDeployKey && s.convexDeploymentUrl)
+  }
+  // Firebase (default for backwards compat)
+  return !!(s.firebaseProjectId && s.serviceAccountJson)
+}
+
 export default function App() {
   const [settings, setSettings] = useState<AppSettings | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     window.api.getSettings().then((s) => {
-      if (s.firebaseProjectId && s.serviceAccountJson) {
+      // Default provider to 'firebase' when undefined (backwards compat)
+      if (!s.provider && s.firebaseProjectId) {
+        s.provider = 'firebase'
+      }
+      if (isConfigured(s)) {
         setSettings(s)
       }
       setLoading(false)
@@ -35,9 +48,7 @@ export default function App() {
     )
   }
 
-  const isConfigured = !!(settings.firebaseProjectId && settings.serviceAccountJson)
-
-  if (isConfigured && !settings.isProvisioned) {
+  if (isConfigured(settings) && !settings.isProvisioned) {
     return (
       <Provisioning
         settings={settings}

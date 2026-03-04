@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import type { AppSettings } from '../lib/types'
+import type { AppSettings, BackendProvider } from '../lib/types'
 import iamHelpImg from '../assets/iam-help.png'
 
 interface Props {
@@ -7,15 +7,25 @@ interface Props {
 }
 
 export default function SetupWizard({ onConnect }: Props) {
+  const [provider, setProvider] = useState<BackendProvider | null>(null)
+
+  // Firebase state
   const [serviceAccountJson, setServiceAccountJson] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [connecting, setConnecting] = useState(false)
   const [fileName, setFileName] = useState<string | null>(null)
   const [dragOver, setDragOver] = useState(false)
   const [projectId, setProjectId] = useState<string | null>(null)
   const [step, setStep] = useState<'upload' | 'prerequisites'>('upload')
   const [showHelp, setShowHelp] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Convex state
+  const [convexDeployKey, setConvexDeployKey] = useState('')
+
+  // Shared state
+  const [error, setError] = useState<string | null>(null)
+  const [connecting, setConnecting] = useState(false)
+
+  // --- Firebase handlers ---
 
   function handleFile(file: File) {
     setError(null)
@@ -41,7 +51,7 @@ export default function SetupWizard({ onConnect }: Props) {
     reader.readAsText(file)
   }
 
-  function handleBack() {
+  function handleFirebaseBack() {
     setStep('upload')
     setServiceAccountJson('')
     setFileName(null)
@@ -50,7 +60,7 @@ export default function SetupWizard({ onConnect }: Props) {
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
-  async function handleConnect() {
+  async function handleFirebaseConnect() {
     setError(null)
     setConnecting(true)
 
@@ -82,6 +92,7 @@ export default function SetupWizard({ onConnect }: Props) {
       }
 
       const settings: AppSettings = {
+        provider: 'firebase',
         firebaseProjectId: result.projectId,
         serviceAccountJson,
         isProvisioned: false,
@@ -96,9 +107,73 @@ export default function SetupWizard({ onConnect }: Props) {
     }
   }
 
+  // --- Convex handlers ---
+
+  async function handleConvexConnect() {
+    setError(null)
+    setConnecting(true)
+
+    const key = convexDeployKey.trim()
+    if (!key) {
+      setError('Please paste your Convex deploy key.')
+      setConnecting(false)
+      return
+    }
+
+    try {
+      // Save provider first so main process routes correctly, then validate
+      await window.api.saveSettings({ provider: 'convex' })
+
+      const result = await Promise.race([
+        window.api.validateConnection(key),
+        new Promise<{ ok: false; error: string }>((_, reject) =>
+          setTimeout(() => reject(new Error('Connection timed out. Check your deploy key and try again.')), 15000),
+        ),
+      ])
+
+      if (!result.ok) {
+        // Revert provider on failure so settings aren't left in a bad state
+        await window.api.saveSettings({ provider: undefined })
+        setError(result.error ?? 'Connection failed')
+        setConnecting(false)
+        return
+      }
+
+      const settings: AppSettings = {
+        provider: 'convex',
+        convexDeployKey: key,
+        convexDeploymentUrl: result.deploymentUrl,
+        convexDeploymentName: result.deploymentName,
+        convexHttpActionsUrl: result.httpActionsUrl,
+        isProvisioned: false,
+      }
+
+      await window.api.saveSettings(settings)
+      setConnecting(false)
+      onConnect(settings)
+    } catch (e) {
+      // Revert provider on failure
+      await window.api.saveSettings({ provider: undefined }).catch(() => {})
+      setError(e instanceof Error ? e.message : 'Connection failed. Please try again.')
+      setConnecting(false)
+    }
+  }
+
+  function handleBackToProviderSelect() {
+    setProvider(null)
+    setError(null)
+    setConnecting(false)
+    setConvexDeployKey('')
+    setServiceAccountJson('')
+    setFileName(null)
+    setProjectId(null)
+    setStep('upload')
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
   return (
     <div className="relative flex flex-col h-screen bg-[var(--warp-indigo)]">
-      {/* Jamakkalam stripe band — top ~20% with branding centered */}
+      {/* Jamakkalam stripe band */}
       <div className="relative shrink-0 h-[20vh] flex items-center justify-center">
         <div className="jamakkalam-stripes jamakkalam-stripes-animated absolute inset-0" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[var(--warp-indigo)]" />
@@ -109,210 +184,293 @@ export default function SetupWizard({ onConnect }: Props) {
       </div>
 
       {/* Content area */}
-      <div className="flex-1 flex flex-col items-center px-10 pt-8">
-        <p className="text-zinc-400 text-sm mb-8">Connect your Firebase project</p>
-
-        {step === 'upload' && (
-          <div className="w-full max-w-md space-y-6">
-            {/* Step 1 */}
-            <div className="flex gap-3">
-              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--crimson)]/15 text-[var(--crimson)] text-xs font-bold flex items-center justify-center mt-0.5">
-                1
-              </span>
-              <div>
-                <p className="text-sm font-medium text-[var(--cotton)]">Create a Firebase project</p>
-
-                <div className="mt-2 space-y-2">
-                  <div>
-                    <p className="text-xs font-medium text-zinc-300">Firestore Database</p>
-                    <div className="mt-1 space-y-0.5 text-xs text-zinc-400">
-                      <p>→ Standard → Location (closer to your users)</p>
-                      <p>→ Start in production mode</p>
-                    </div>
-                  </div>
-
-                  <div>
-                    <p className="text-xs font-medium text-zinc-300">Storage</p>
-                    <div className="mt-1 space-y-0.5 text-xs text-zinc-400">
-                      <p>→ Upgrade Project → Existing / New Billing Account</p>
-                      <p>→ Link Cloud Billing Account → Blaze Plan</p>
-                      <p>→ Pick a US region (<span className="text-zinc-300">us-central1</span>, <span className="text-zinc-300">us-east1</span>, or <span className="text-zinc-300">us-west1</span>) for 5 GB free storage</p>
-                      <p>→ Start in production mode</p>
-                    </div>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => window.open('https://console.firebase.google.com/')}
-                  className="text-xs text-[var(--mustard)] hover:text-[var(--mustard)]/80 transition-colors mt-2"
-                >
-                  Open Firebase Console →
-                </button>
-              </div>
-            </div>
-
-            {/* Step 2 */}
-            <div className="flex gap-3">
-              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--crimson)]/15 text-[var(--crimson)] text-xs font-bold flex items-center justify-center mt-0.5">
-                2
-              </span>
-              <div>
-                <p className="text-sm font-medium text-[var(--cotton)]">Download the Service Account JSON</p>
-                <p className="text-xs text-zinc-400 mt-0.5">Project Overview ⚙️ → Service Accounts → Generate New Private Key</p>
-              </div>
-            </div>
-
-            {/* File upload zone */}
-            <div>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".json"
-                className="hidden"
-                data-testid="service-account-json"
-                onChange={(e) => {
-                  const file = e.target.files?.[0]
-                  if (file) handleFile(file)
-                }}
-              />
-              <div
-                onClick={() => fileInputRef.current?.click()}
-                onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
-                onDragLeave={() => setDragOver(false)}
-                onDrop={(e) => {
-                  e.preventDefault()
-                  setDragOver(false)
-                  const file = e.dataTransfer.files[0]
-                  if (file) handleFile(file)
-                }}
-                className={`w-full px-4 py-8 border-2 border-dashed rounded-lg cursor-pointer transition-colors text-center ${
-                  dragOver
-                    ? 'border-[var(--crimson)] bg-[var(--crimson)]/5'
-                    : 'border-zinc-700 hover:border-zinc-500'
-                }`}
+      <div className="flex-1 flex flex-col items-center px-10 pt-8 overflow-y-auto">
+        {/* Step 0: Provider selection */}
+        {!provider && (
+          <>
+            <p className="text-zinc-400 text-sm mb-8">Choose your backend provider</p>
+            <div className="w-full max-w-md space-y-3">
+              <button
+                onClick={() => setProvider('firebase')}
+                className="w-full p-4 rounded-lg border border-zinc-700 hover:border-[var(--mustard)]/50 bg-zinc-800/50 hover:bg-zinc-800 transition-all text-left group"
               >
-                <svg className="w-8 h-8 mx-auto mb-2 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m6.75 12l-3-3m0 0l-3 3m3-3v6m-1.5-15H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                </svg>
-                <p className="text-sm text-zinc-400">
-                  Drop your Service Account JSON here, or <span className="text-[var(--crimson)]">click to browse</span>
-                </p>
-              </div>
-            </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-[var(--cotton)]">Firebase</p>
+                    <p className="text-xs text-zinc-400 mt-0.5">5 GB storage, 100 GB egress free</p>
+                  </div>
+                  <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-[var(--mustard)]/10 text-[var(--mustard)]">
+                    Recommended
+                  </span>
+                </div>
+              </button>
 
-            {error && (
-              <p data-testid="error-message" className="text-red-400 text-sm">
-                {error}
-              </p>
-            )}
-          </div>
+              <button
+                onClick={() => setProvider('convex')}
+                className="w-full p-4 rounded-lg border border-zinc-700 hover:border-[var(--crimson)]/50 bg-zinc-800/50 hover:bg-zinc-800 transition-all text-left group"
+              >
+                <div>
+                  <p className="text-sm font-medium text-[var(--cotton)]">Convex</p>
+                  <p className="text-xs text-zinc-400 mt-0.5">1 GB storage, 1 GB egress free</p>
+                </div>
+              </button>
+            </div>
+          </>
         )}
 
-        {step === 'prerequisites' && projectId && (
-          <div className="w-full max-w-md space-y-4">
-            <p className="text-zinc-400 text-sm mb-2">
-              Project: <span className="font-mono text-zinc-300">{projectId}</span>
-            </p>
-            <p className="text-zinc-500 text-xs mb-4">
-              Ensure these are configured before continuing.
-            </p>
+        {/* Firebase flow */}
+        {provider === 'firebase' && (
+          <>
+            <p className="text-zinc-400 text-sm mb-8">Connect your Firebase project</p>
 
-            <div className="rounded-lg border border-zinc-700 bg-zinc-800/50 p-4 space-y-3">
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <p className="text-xs text-zinc-400">IAM roles on the service account:</p>
-                  <button
-                    onClick={() => setShowHelp(true)}
-                    className="text-xs text-zinc-400 border-b border-dotted border-zinc-500 hover:text-zinc-300 transition-colors"
-                  >
-                    Help
-                  </button>
-                </div>
-                <p className="text-xs text-zinc-500 mb-2">
-                  In the IAM page, find the <span className="text-zinc-300">firebase-adminsdk</span> service account and add these roles:
-                </p>
-                <div className="space-y-1 mb-2">
-                  {['Cloud Functions Developer', 'Service Account User', 'Cloud Run Admin'].map((role) => (
-                    <div key={role} className="flex items-center gap-2 text-xs text-zinc-300">
-                      <span className="text-zinc-500">○</span>
-                      {role}
+            {step === 'upload' && (
+              <div className="w-full max-w-md space-y-6">
+                <div className="flex gap-3">
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--crimson)]/15 text-[var(--crimson)] text-xs font-bold flex items-center justify-center mt-0.5">
+                    1
+                  </span>
+                  <div>
+                    <p className="text-sm font-medium text-[var(--cotton)]">Create a Firebase project</p>
+                    <div className="mt-2 space-y-2">
+                      <div>
+                        <p className="text-xs font-medium text-zinc-300">Firestore Database</p>
+                        <div className="mt-1 space-y-0.5 text-xs text-zinc-400">
+                          <p>→ Standard → Location (closer to your users)</p>
+                          <p>→ Start in production mode</p>
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium text-zinc-300">Storage</p>
+                        <div className="mt-1 space-y-0.5 text-xs text-zinc-400">
+                          <p>→ Upgrade Project → Existing / New Billing Account</p>
+                          <p>→ Link Cloud Billing Account → Blaze Plan</p>
+                          <p>→ Pick a US region (<span className="text-zinc-300">us-central1</span>, <span className="text-zinc-300">us-east1</span>, or <span className="text-zinc-300">us-west1</span>) for 5 GB free storage</p>
+                          <p>→ Start in production mode</p>
+                        </div>
+                      </div>
                     </div>
-                  ))}
+                    <button
+                      onClick={() => window.open('https://console.firebase.google.com/')}
+                      className="text-xs text-[var(--mustard)] hover:text-[var(--mustard)]/80 transition-colors mt-2"
+                    >
+                      Open Firebase Console →
+                    </button>
+                  </div>
                 </div>
+
+                <div className="flex gap-3">
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--crimson)]/15 text-[var(--crimson)] text-xs font-bold flex items-center justify-center mt-0.5">
+                    2
+                  </span>
+                  <div>
+                    <p className="text-sm font-medium text-[var(--cotton)]">Download the Service Account JSON</p>
+                    <p className="text-xs text-zinc-400 mt-0.5">Project Overview ⚙️ → Service Accounts → Generate New Private Key</p>
+                  </div>
+                </div>
+
+                <div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".json"
+                    className="hidden"
+                    data-testid="service-account-json"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (file) handleFile(file)
+                    }}
+                  />
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
+                    onDragLeave={() => setDragOver(false)}
+                    onDrop={(e) => {
+                      e.preventDefault()
+                      setDragOver(false)
+                      const file = e.dataTransfer.files[0]
+                      if (file) handleFile(file)
+                    }}
+                    className={`w-full px-4 py-8 border-2 border-dashed rounded-lg cursor-pointer transition-colors text-center ${
+                      dragOver
+                        ? 'border-[var(--crimson)] bg-[var(--crimson)]/5'
+                        : 'border-zinc-700 hover:border-zinc-500'
+                    }`}
+                  >
+                    <svg className="w-8 h-8 mx-auto mb-2 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m6.75 12l-3-3m0 0l-3 3m3-3v6m-1.5-15H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                    </svg>
+                    <p className="text-sm text-zinc-400">
+                      Drop your Service Account JSON here, or <span className="text-[var(--crimson)]">click to browse</span>
+                    </p>
+                  </div>
+                </div>
+
+                {error && (
+                  <p data-testid="error-message" className="text-red-400 text-sm">{error}</p>
+                )}
+
                 <button
-                  onClick={() => window.open(`https://console.cloud.google.com/iam-admin/iam?project=${projectId}`)}
-                  className="text-xs text-[var(--mustard)] hover:text-[var(--mustard)]/80 transition-colors"
+                  onClick={handleBackToProviderSelect}
+                  className="w-full py-2 px-4 text-zinc-500 hover:text-zinc-300 text-sm font-medium transition-colors"
                 >
-                  Go to IAM page →
+                  ← Change provider
                 </button>
               </div>
-
-              <div className="border-t border-zinc-700 pt-3">
-                <p className="text-xs text-zinc-400 mb-1.5">APIs that must be enabled:</p>
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-xs text-zinc-300">
-                      <span className="text-zinc-500">○</span>
-                      Cloud Functions API
-                    </div>
-                    <button
-                      onClick={() => window.open(`https://console.cloud.google.com/apis/library/cloudfunctions.googleapis.com?project=${projectId}`)}
-                      className="text-xs text-[var(--mustard)] hover:text-[var(--mustard)]/80 transition-colors"
-                    >
-                      Enable →
-                    </button>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-xs text-zinc-300">
-                      <span className="text-zinc-500">○</span>
-                      Cloud Build API
-                    </div>
-                    <button
-                      onClick={() => window.open(`https://console.cloud.google.com/apis/library/cloudbuild.googleapis.com?project=${projectId}`)}
-                      className="text-xs text-[var(--mustard)] hover:text-[var(--mustard)]/80 transition-colors"
-                    >
-                      Enable →
-                    </button>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-xs text-zinc-300">
-                      <span className="text-zinc-500">○</span>
-                      Cloud Run Admin API
-                    </div>
-                    <button
-                      onClick={() => window.open(`https://console.cloud.google.com/apis/library/run.googleapis.com?project=${projectId}`)}
-                      className="text-xs text-[var(--mustard)] hover:text-[var(--mustard)]/80 transition-colors"
-                    >
-                      Enable →
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {error && (
-              <p data-testid="error-message" className="text-red-400 text-sm">
-                {error}
-              </p>
             )}
 
-            <button
-              data-testid="connect-button"
-              onClick={handleConnect}
-              disabled={connecting}
-              className="w-full py-2 px-4 bg-[var(--crimson)] hover:brightness-110 hover:shadow-[0_0_20px_rgba(217,43,43,0.25)] active:scale-[0.97] disabled:bg-zinc-700 disabled:text-zinc-500 rounded-lg font-medium transition-all"
-            >
-              {connecting ? 'Connecting...' : 'Continue'}
-            </button>
+            {step === 'prerequisites' && projectId && (
+              <div className="w-full max-w-md space-y-4">
+                <p className="text-zinc-400 text-sm mb-2">
+                  Project: <span className="font-mono text-zinc-300">{projectId}</span>
+                </p>
+                <p className="text-zinc-500 text-xs mb-4">
+                  Ensure these are configured before continuing.
+                </p>
 
-            <button
-              onClick={handleBack}
-              disabled={connecting}
-              className="w-full py-2 px-4 text-zinc-500 hover:text-zinc-300 text-sm font-medium transition-colors disabled:opacity-50"
-            >
-              ← Change service account
-            </button>
-          </div>
+                <div className="rounded-lg border border-zinc-700 bg-zinc-800/50 p-4 space-y-3">
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <p className="text-xs text-zinc-400">IAM roles on the service account:</p>
+                      <button
+                        onClick={() => setShowHelp(true)}
+                        className="text-xs text-zinc-400 border-b border-dotted border-zinc-500 hover:text-zinc-300 transition-colors"
+                      >
+                        Help
+                      </button>
+                    </div>
+                    <p className="text-xs text-zinc-500 mb-2">
+                      In the IAM page, find the <span className="text-zinc-300">firebase-adminsdk</span> service account and add these roles:
+                    </p>
+                    <div className="space-y-1 mb-2">
+                      {['Cloud Functions Developer', 'Service Account User', 'Cloud Run Admin'].map((role) => (
+                        <div key={role} className="flex items-center gap-2 text-xs text-zinc-300">
+                          <span className="text-zinc-500">○</span>
+                          {role}
+                        </div>
+                      ))}
+                    </div>
+                    <button
+                      onClick={() => window.open(`https://console.cloud.google.com/iam-admin/iam?project=${projectId}`)}
+                      className="text-xs text-[var(--mustard)] hover:text-[var(--mustard)]/80 transition-colors"
+                    >
+                      Go to IAM page →
+                    </button>
+                  </div>
+
+                  <div className="border-t border-zinc-700 pt-3">
+                    <p className="text-xs text-zinc-400 mb-1.5">APIs that must be enabled:</p>
+                    <div className="space-y-1">
+                      {[
+                        { name: 'Cloud Functions API', slug: 'cloudfunctions.googleapis.com' },
+                        { name: 'Cloud Build API', slug: 'cloudbuild.googleapis.com' },
+                        { name: 'Cloud Run Admin API', slug: 'run.googleapis.com' },
+                      ].map((api) => (
+                        <div key={api.slug} className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 text-xs text-zinc-300">
+                            <span className="text-zinc-500">○</span>
+                            {api.name}
+                          </div>
+                          <button
+                            onClick={() => window.open(`https://console.cloud.google.com/apis/library/${api.slug}?project=${projectId}`)}
+                            className="text-xs text-[var(--mustard)] hover:text-[var(--mustard)]/80 transition-colors"
+                          >
+                            Enable →
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {error && (
+                  <p data-testid="error-message" className="text-red-400 text-sm">{error}</p>
+                )}
+
+                <button
+                  data-testid="connect-button"
+                  onClick={handleFirebaseConnect}
+                  disabled={connecting}
+                  className="w-full py-2 px-4 bg-[var(--crimson)] hover:brightness-110 hover:shadow-[0_0_20px_rgba(217,43,43,0.25)] active:scale-[0.97] disabled:bg-zinc-700 disabled:text-zinc-500 rounded-lg font-medium transition-all"
+                >
+                  {connecting ? 'Connecting...' : 'Continue'}
+                </button>
+
+                <button
+                  onClick={handleFirebaseBack}
+                  disabled={connecting}
+                  className="w-full py-2 px-4 text-zinc-500 hover:text-zinc-300 text-sm font-medium transition-colors disabled:opacity-50"
+                >
+                  ← Change service account
+                </button>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Convex flow */}
+        {provider === 'convex' && (
+          <>
+            <p className="text-zinc-400 text-sm mb-8">Connect your Convex project</p>
+            <div className="w-full max-w-md space-y-6">
+              <div className="flex gap-3">
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--crimson)]/15 text-[var(--crimson)] text-xs font-bold flex items-center justify-center mt-0.5">
+                  1
+                </span>
+                <div>
+                  <p className="text-sm font-medium text-[var(--cotton)]">Create a Convex project</p>
+                  <p className="text-xs text-zinc-400 mt-0.5">Sign up and create a new project at convex.dev</p>
+                  <button
+                    onClick={() => window.open('https://dashboard.convex.dev/')}
+                    className="text-xs text-[var(--mustard)] hover:text-[var(--mustard)]/80 transition-colors mt-2"
+                  >
+                    Open Convex Dashboard →
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--crimson)]/15 text-[var(--crimson)] text-xs font-bold flex items-center justify-center mt-0.5">
+                  2
+                </span>
+                <div>
+                  <p className="text-sm font-medium text-[var(--cotton)]">Generate a deploy key</p>
+                  <p className="text-xs text-zinc-400 mt-0.5">Project Settings → Deploy Key → Generate</p>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs text-zinc-400 mb-1.5">Deploy Key</label>
+                <input
+                  type="password"
+                  value={convexDeployKey}
+                  onChange={(e) => { setConvexDeployKey(e.target.value); setError(null) }}
+                  placeholder="prod:happy-animal-123|..."
+                  className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-[var(--cotton)] placeholder-zinc-600 focus:outline-none focus:border-[var(--crimson)]/50"
+                />
+              </div>
+
+              {error && (
+                <p data-testid="error-message" className="text-red-400 text-sm">{error}</p>
+              )}
+
+              <button
+                data-testid="connect-button"
+                onClick={handleConvexConnect}
+                disabled={connecting || !convexDeployKey.trim()}
+                className="w-full py-2 px-4 bg-[var(--crimson)] hover:brightness-110 hover:shadow-[0_0_20px_rgba(217,43,43,0.25)] active:scale-[0.97] disabled:bg-zinc-700 disabled:text-zinc-500 rounded-lg font-medium transition-all"
+              >
+                {connecting ? 'Connecting...' : 'Continue'}
+              </button>
+
+              <button
+                onClick={handleBackToProviderSelect}
+                disabled={connecting}
+                className="w-full py-2 px-4 text-zinc-500 hover:text-zinc-300 text-sm font-medium transition-colors disabled:opacity-50"
+              >
+                ← Change provider
+              </button>
+            </div>
+          </>
         )}
       </div>
 

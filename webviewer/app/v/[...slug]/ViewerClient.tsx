@@ -278,7 +278,7 @@ export default function VideoViewerPage() {
 
     (USE_MOCK
       ? mock.fetchVideoMeta(slug.projectId, slug.code)
-      : fetchVideoMeta(slug.projectId, slug.code)
+      : fetchVideoMeta(slug.projectId, slug.code, slug.provider)
     )
       .then((meta) => {
         setVideoMeta(meta);
@@ -306,7 +306,7 @@ export default function VideoViewerPage() {
     if (USE_MOCK) {
       mock.incrementView();
     } else {
-      incrementView(projectId, code);
+      incrementView(projectId, code, slugRef.current.provider);
     }
 
     if (USE_MOCK) {
@@ -318,7 +318,7 @@ export default function VideoViewerPage() {
       setPhase("error");
     }
 
-    (USE_MOCK ? mock.fetchReactions() : fetchReactionsEdge(projectId, code))
+    (USE_MOCK ? mock.fetchReactions() : fetchReactionsEdge(projectId, code, slugRef.current.provider))
       .then((data) => setReactions(data))
       .catch(() => {});
   }, [phase, videoMeta]);
@@ -424,7 +424,7 @@ export default function VideoViewerPage() {
       if (USE_MOCK) {
         mock.addReaction();
       } else {
-        addReactionEdge(projectId, code, emoji, timestamp);
+        addReactionEdge(projectId, code, emoji, timestamp, slugRef.current.provider);
       }
     }
   }, []);

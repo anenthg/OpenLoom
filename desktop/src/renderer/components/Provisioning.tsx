@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import type { AppSettings } from '../lib/types'
-import { runProvisioning, type ProvisioningStep, type StepStatus } from '../lib/provisioning'
+import { runProvisioning, runConvexProvisioning, type ProvisioningStep, type StepStatus } from '../lib/provisioning'
 import appIcon from '../assets/icon-64.png'
 
 interface Props {
@@ -28,7 +28,7 @@ function StatusIcon({ status }: { status: StepStatus }) {
   }
 }
 
-const INITIAL_STEPS: ProvisioningStep[] = [
+const FIREBASE_STEPS: ProvisioningStep[] = [
   { id: 'firestore', label: 'Verifying Firestore access...', status: 'pending' },
   { id: 'storage', label: 'Verifying Storage bucket...', status: 'pending' },
   { id: 'deploy-enable-apis', label: 'Enabling required GCP APIs...', status: 'pending' },
@@ -38,8 +38,16 @@ const INITIAL_STEPS: ProvisioningStep[] = [
   { id: 'deploy-public', label: 'Configuring public access...', status: 'pending' },
 ]
 
+const CONVEX_STEPS: ProvisioningStep[] = [
+  { id: 'verify-access', label: 'Verifying database access...', status: 'pending' },
+  { id: 'verify-storage', label: 'Verifying file storage...', status: 'pending' },
+  { id: 'deploy-functions', label: 'Deploying backend functions...', status: 'pending' },
+]
+
 export default function Provisioning({ settings, onComplete, onDisconnect }: Props) {
-  const [steps, setSteps] = useState<ProvisioningStep[]>(INITIAL_STEPS)
+  const provider = settings.provider || 'firebase'
+  const initialSteps = provider === 'convex' ? CONVEX_STEPS : FIREBASE_STEPS
+  const [steps, setSteps] = useState<ProvisioningStep[]>(initialSteps)
   const [finished, setFinished] = useState(false)
   const [hasError, setHasError] = useState(false)
   const [expandedError, setExpandedError] = useState<string | null>(null)
@@ -48,9 +56,10 @@ export default function Provisioning({ settings, onComplete, onDisconnect }: Pro
     setFinished(false)
     setHasError(false)
     setExpandedError(null)
-    setSteps(INITIAL_STEPS.map((s) => ({ ...s })))
+    setSteps(initialSteps.map((s) => ({ ...s })))
 
-    const ok = await runProvisioning(settings, (updatedSteps) => {
+    const runFn = provider === 'convex' ? runConvexProvisioning : runProvisioning
+    const ok = await runFn(settings, (updatedSteps) => {
       setSteps(updatedSteps)
     })
 
@@ -66,6 +75,8 @@ export default function Provisioning({ settings, onComplete, onDisconnect }: Pro
   }, [])
 
   const isInProgress = !finished && !hasError
+  const heading = provider === 'convex' ? 'Setting up Convex' : 'Setting up your project'
+  const subtitle = provider === 'convex' ? 'Verifying Convex services...' : 'Verifying Firebase services...'
 
   return (
     <div
@@ -75,10 +86,8 @@ export default function Provisioning({ settings, onComplete, onDisconnect }: Pro
       <div className={`${isInProgress ? 'stripe-divider-slow' : 'stripe-divider'} h-[3px] shrink-0`} />
       <div className="flex-1 flex flex-col items-center justify-center px-10">
       <img src={appIcon} alt="" className="w-14 h-14 mb-4 rounded-xl" />
-      <h1 className="text-2xl font-bold mb-2">Setting up your project</h1>
-      <p className="text-zinc-400 mb-8">
-        Verifying Firebase services...
-      </p>
+      <h1 className="text-2xl font-bold mb-2">{heading}</h1>
+      <p className="text-zinc-400 mb-8">{subtitle}</p>
 
       <div className="w-full max-w-md space-y-3 mb-8">
         {steps.map((step) => (

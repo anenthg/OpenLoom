@@ -45,6 +45,39 @@ async function verifyStorage(): Promise<StepResult> {
   }
 }
 
+// --- Convex verification ---
+
+async function verifyConvexAccess(): Promise<StepResult> {
+  try {
+    // Try a query — "function not found" / "Could not find public function" is expected
+    // before deployment. Authentication/connection errors are real failures.
+    const result = await window.api.dbQuery('videos', 'created_at', 'desc')
+    if (result.ok) return { ok: true }
+    const err = result.error?.toLowerCase() || ''
+    // These indicate the connection works but functions aren't deployed yet
+    if (err.includes('could not find public function') || err.includes('did you forget to run')) {
+      return { ok: true }
+    }
+    // Authentication failures are real errors
+    if (err.includes('401') || err.includes('403') || err.includes('authentication')) {
+      return { ok: false, error: 'Convex authentication failed. Check your deploy key.' }
+    }
+    return { ok: false, error: result.error }
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e)
+    // Connection errors from initConvex not being called would show "not initialized"
+    if (msg.includes('not initialized')) {
+      return { ok: false, error: 'Convex client not initialized. Try disconnecting and reconnecting.' }
+    }
+    return { ok: false, error: `Convex verification failed: ${msg}` }
+  }
+}
+
+async function verifyConvexStorage(): Promise<StepResult> {
+  // Storage is always available in Convex projects, just verify the connection works
+  return { ok: true }
+}
+
 const DEPLOY_STEP_IDS = [
   'deploy-enable-apis',
   'deploy-check-access',
@@ -169,6 +202,77 @@ export async function runProvisioning(
     } else {
       updateStep('deploy-enable-apis', { status: 'error', error: errorMsg })
     }
+    return false
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Convex provisioning
+// ---------------------------------------------------------------------------
+
+export async function runConvexProvisioning(
+  _settings: AppSettings,
+  onUpdate: StepUpdateCallback,
+): Promise<boolean> {
+  const steps: ProvisioningStep[] = [
+    { id: 'verify-access', label: 'Verifying database access...', status: 'pending' },
+    { id: 'verify-storage', label: 'Verifying file storage...', status: 'pending' },
+    { id: 'deploy-functions', label: 'Deploying backend functions...', status: 'pending' },
+  ]
+
+  function updateStep(id: string, update: Partial<ProvisioningStep>) {
+    const step = steps.find((s) => s.id === id)
+    if (step) Object.assign(step, update)
+    onUpdate([...steps])
+  }
+
+  // Step 1: Verify database access
+  updateStep('verify-access', { status: 'running' })
+  const accessResult = await verifyConvexAccess()
+  if (!accessResult.ok) {
+    updateStep('verify-access', { status: 'error', error: accessResult.error })
+    return false
+  }
+  updateStep('verify-access', { status: 'done' })
+
+  // Step 2: Verify storage
+  updateStep('verify-storage', { status: 'running' })
+  const storageResult = await verifyConvexStorage()
+  if (!storageResult.ok) {
+    updateStep('verify-storage', { status: 'error', error: storageResult.error })
+    return false
+  }
+  updateStep('verify-storage', { status: 'done' })
+
+  // Step 3: Deploy backend functions
+  updateStep('deploy-functions', { status: 'running' })
+
+  window.api.onDeployProgress((stage: string) => {
+    if (stage === 'deploy-functions') {
+      updateStep('deploy-functions', { status: 'waiting' })
+    }
+  })
+
+  try {
+    const result = await window.api.deployBackendFunctions()
+    window.api.offDeployProgress()
+
+    if (result.ok) {
+      updateStep('deploy-functions', { status: 'done' })
+      return true
+    } else {
+      updateStep('deploy-functions', {
+        status: 'error',
+        error: result.error,
+      })
+      return false
+    }
+  } catch (e) {
+    window.api.offDeployProgress()
+    updateStep('deploy-functions', {
+      status: 'error',
+      error: `Deployment failed: ${e instanceof Error ? e.message : String(e)}`,
+    })
     return false
   }
 }

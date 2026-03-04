@@ -1,11 +1,20 @@
 import { contextBridge, ipcRenderer } from 'electron'
 
+export type BackendProvider = 'firebase' | 'convex'
+
 export interface AppSettings {
+  provider?: BackendProvider
+  // Firebase fields
   firebaseProjectId?: string
   serviceAccountJson?: string
   isProvisioned?: boolean
   cloudFunctionVersion?: string
   cloudFunctionUrl?: string
+  // Convex fields
+  convexDeployKey?: string
+  convexDeploymentUrl?: string
+  convexDeploymentName?: string
+  convexHttpActionsUrl?: string
 }
 
 const api = {
@@ -83,6 +92,52 @@ const api = {
   offDeployProgress: () => {
     ipcRenderer.removeAllListeners('deploy-progress')
   },
+  // Provider-agnostic methods
+  validateConnection: (
+    credential: string,
+  ): Promise<{ ok: boolean; projectId?: string; deploymentName?: string; deploymentUrl?: string; httpActionsUrl?: string; error?: string }> =>
+    ipcRenderer.invoke('validate-connection', credential),
+  dbInsert: (
+    collection: string,
+    docId: string,
+    data: Record<string, unknown>,
+  ): Promise<{ ok: boolean; error?: string }> =>
+    ipcRenderer.invoke('db-insert', collection, docId, data),
+  dbQuery: (
+    collection: string,
+    orderBy: string,
+    direction: string,
+  ): Promise<{ ok: boolean; data?: Record<string, unknown>[]; error?: string }> =>
+    ipcRenderer.invoke('db-query', collection, orderBy, direction),
+  dbQueryByField: (
+    collection: string,
+    field: string,
+    value: string,
+  ): Promise<{ ok: boolean; data?: Record<string, unknown>[]; error?: string }> =>
+    ipcRenderer.invoke('db-query-by-field', collection, field, value),
+  dbDelete: (
+    collection: string,
+    docId: string,
+  ): Promise<{ ok: boolean; error?: string }> =>
+    ipcRenderer.invoke('db-delete', collection, docId),
+  fileUpload: (
+    remotePath: string,
+    fileData: ArrayBuffer,
+    contentType: string,
+  ): Promise<{ ok: boolean; url?: string; storageId?: string; error?: string }> =>
+    ipcRenderer.invoke('file-upload', remotePath, fileData, contentType),
+  fileDelete: (remotePath: string): Promise<{ ok: boolean; error?: string }> =>
+    ipcRenderer.invoke('file-delete', remotePath),
+  fileGetPublicUrl: (
+    remotePath: string,
+  ): Promise<{ ok: boolean; url?: string; error?: string }> =>
+    ipcRenderer.invoke('file-get-public-url', remotePath),
+  deployBackendFunctions: (): Promise<{
+    ok: boolean
+    skipped?: boolean
+    error?: string
+    enableUrls?: { label: string; url: string }[]
+  }> => ipcRenderer.invoke('deploy-backend-functions'),
 }
 
 contextBridge.exposeInMainWorld('api', api)

@@ -1,4 +1,4 @@
-import { isShortCodeTaken } from '../firebase'
+import { isShortCodeTaken } from '../backend'
 
 const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
 

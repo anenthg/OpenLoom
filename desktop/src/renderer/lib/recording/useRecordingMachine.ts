@@ -219,31 +219,36 @@ export function useRecordingMachine(): RecordingState & RecordingActions {
 
       try {
         const { generateShortCode } = await import('./shortCode')
-        const { uploadVideo, insertVideo, getShareURL } = await import('../firebase')
+        const { uploadVideo, insertVideo, getShareURL } = await import('../backend')
 
         setUploadProgress(10)
         const shortCode = await generateShortCode()
 
         setUploadProgress(30)
-        const storageUrl = await uploadVideo(shortCode, recordedBlob)
+        const { storageUrl, storageId } = await uploadVideo(shortCode, recordedBlob)
 
         setUploadProgress(70)
 
         const settings = await window.api.getSettings()
+        const provider = settings.provider || 'firebase'
+
+        // For Convex, the storage_url is the HTTP action proxy URL
+        let finalStorageUrl = storageUrl
+        if (provider === 'convex' && settings.convexHttpActionsUrl) {
+          finalStorageUrl = `${settings.convexHttpActionsUrl}/video?code=${shortCode}`
+        }
 
         await insertVideo({
           short_code: shortCode,
           title: title || 'Untitled Recording',
-          storage_url: storageUrl,
+          storage_url: finalStorageUrl,
           duration_ms: elapsedSeconds * 1000,
           capture_mode: 'screen',
-        })
+        }, storageId)
 
         setUploadProgress(100)
 
-        if (settings.firebaseProjectId) {
-          setShareURL(getShareURL(settings.firebaseProjectId, shortCode))
-        }
+        setShareURL(getShareURL(settings, shortCode))
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Upload failed')
         setPhase('review')
