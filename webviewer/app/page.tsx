@@ -450,7 +450,7 @@ function DataFlowDiagram() {
         <text x="360" y="89" textAnchor="middle" fill="#F5F5E8" fontSize="13" fontFamily="var(--font-space-grotesk), sans-serif" fontWeight="600">
           Your Backend
         </text>
-        <text x="360" y="103" textAnchor="middle" fill="#F5C518" fontSize="9" fontFamily="var(--font-jetbrains-mono), monospace" opacity="0.5">
+        <text x="360" y="103" textAnchor="middle" fill="#F5C518" fontSize="7" fontFamily="var(--font-jetbrains-mono), monospace" opacity="0.5">
           Supabase · Convex · Firebase
         </text>
 
