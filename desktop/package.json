@@ -26,7 +26,7 @@
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.0.0",
     "electron": "^33.0.0",
-    "electron-builder": "^25.0.0",
+    "electron-builder": "^26.8.1",
     "electron-vite": "^3.0.0",
     "tailwindcss": "^4.0.0",
     "typescript": "^5.7.0",
@@ -38,7 +38,10 @@
     "icon": "resources/icon.png",
     "artifactName": "${productName}-${arch}.${ext}",
     "mac": {
-      "target": ["dmg", "zip"],
+      "target": [
+        "dmg",
+        "zip"
+      ],
       "icon": "resources/icon.icns",
       "extendInfo": {
         "NSMicrophoneUsageDescription": "OpenLoom needs microphone access to record audio with your screen capture.",
@@ -66,7 +69,8 @@
           "x": 400,
           "y": 190,
           "type": "link",
-          "path": "/Applications"
+          "path": "/Applications",
+          "name": "Applications"
         }
       ]
     }
