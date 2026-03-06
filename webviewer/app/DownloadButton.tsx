@@ -259,12 +259,7 @@ export default function DownloadButton() {
   }, []);
 
   const isMac = platform === "mac";
-  const primaryOptions = isMac ? MAC_OPTIONS : WIN_OPTIONS;
-  const secondaryOptions = isMac ? WIN_OPTIONS : MAC_OPTIONS;
-  const allOptions = [...primaryOptions, ...secondaryOptions];
-  const defaultFile = primaryOptions[0].file;
-  const Icon = isMac ? AppleIcon : WindowsIcon;
-  const label = isMac ? "Download for Mac" : "Download for Windows";
+  const defaultFile = WIN_OPTIONS[0].file;
 
   return (
     <>
@@ -275,8 +270,8 @@ export default function DownloadButton() {
             onClick={() => handleDownloadClick(defaultFile)}
             className="flex items-center rounded-l-lg bg-[var(--crimson)] px-6 py-3 text-base font-semibold text-white transition-all hover:brightness-110 hover:shadow-[0_0_30px_rgba(217,43,43,0.3)] active:scale-[0.97]"
           >
-            <Icon />
-            {label}
+            <WindowsIcon />
+            Download for Windows
           </a>
           <button
             onClick={() => setOpen((v) => !v)}
@@ -291,26 +286,33 @@ export default function DownloadButton() {
 
         {open && (
           <div className="absolute left-0 top-full z-20 mt-2 w-56 overflow-hidden rounded-lg border border-[var(--cotton)]/10 bg-[var(--warp-indigo)] shadow-xl shadow-black/40">
-            {allOptions.map((opt, i) => (
+            {WIN_OPTIONS.map((opt) => (
               <a
                 key={opt.file}
                 href={`${RELEASE_URL}/${opt.file}`}
                 onClick={() => handleDownloadClick(opt.file)}
-                className={`flex items-center justify-between px-4 py-3 text-sm text-[var(--cotton)] transition-colors hover:bg-[var(--cotton)]/[0.08]${
-                  i === primaryOptions.length
-                    ? " border-t border-[var(--cotton)]/10"
-                    : ""
-                }`}
+                className="flex items-center justify-between px-4 py-3 text-sm text-[var(--cotton)] transition-colors hover:bg-[var(--cotton)]/[0.08]"
               >
                 <span className="font-medium">{opt.label}</span>
                 <span className="text-xs text-[var(--cotton)]/40">{opt.note}</span>
               </a>
             ))}
+            {/* Mac — coming soon */}
+            <div className="border-t border-[var(--cotton)]/10">
+              {MAC_OPTIONS.map((opt) => (
+                <div
+                  key={opt.file}
+                  className="flex items-center justify-between px-4 py-3 text-sm text-[var(--cotton)]/30"
+                >
+                  <span className="font-medium">{opt.label}</span>
+                  <span className="text-xs">Coming soon</span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
 
-      {showDialog === "mac" && <MacInstallDialog onClose={() => setShowDialog(null)} />}
       {showDialog === "win" && <WindowsInstallDialog onClose={() => setShowDialog(null)} />}
     </>
   );
