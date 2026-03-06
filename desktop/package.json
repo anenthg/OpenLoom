@@ -1,6 +1,6 @@
 {
   "name": "openloom",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Screen recorder with camera PiP — federated architecture",
   "author": "Anenth Guru",
   "repository": "https://github.com/anenthg/OpenLoom",
