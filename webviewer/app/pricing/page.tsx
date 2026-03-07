@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import DownloadButton from "../DownloadButton";
+import HeroCTA from "../ChromeExtensionButton";
 
 /* ------------------------------------------------------------------ */
 /* Types & Data                                                       */
@@ -1004,7 +1004,7 @@ export default function PricingPage() {
             {config.tldr.footnote}
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-            <DownloadButton />
+            <HeroCTA />
             <Link
               href="/technology"
               className="inline-flex items-center gap-2 rounded-lg border border-[var(--cotton)]/15 px-6 py-3 text-base font-medium text-[var(--cotton)]/70 transition-all hover:border-[var(--cotton)]/30 hover:text-[var(--cotton)]"

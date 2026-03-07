@@ -10,8 +10,8 @@ import HeroCTA from "./ChromeExtensionButton";
 
 const INFRA_PROVIDERS = [
   { name: "Supabase", color: "var(--emerald)", status: "ready" },
-  { name: "Convex", color: "var(--crimson)", status: "ready" },
-  { name: "Firebase", color: "var(--mustard)", status: "ready" },
+  { name: "Convex", color: "var(--crimson)", status: "soon" },
+  { name: "Firebase", color: "var(--mustard)", status: "soon" },
 ] as const;
 
 function BackendInfraDropdown() {
@@ -267,7 +267,7 @@ export default function LandingPage() {
             <div className="text-center">
               <span className="font-mono text-sm font-bold text-[var(--crimson)]">01 — Record</span>
               <p className="mt-2 text-sm leading-relaxed text-[var(--cotton)]/50">
-                Open the desktop app, choose your capture mode, and hit record. Your video uploads to your own backend.
+                Open the Chrome extension, choose your capture mode, and hit record. Your video uploads to your own backend.
               </p>
             </div>
             <div className="text-center">
@@ -416,16 +416,15 @@ function DataFlowDiagram() {
         viewBox="0 0 720 175"
         fill="none"
         className="w-full"
-        aria-label="Data flow: Desktop App uploads to your backend, OpenLoom Player reads from it"
+        aria-label="Data flow: Chrome Extension uploads to your backend, OpenLoom Player reads from it"
       >
-        {/* ---- Node: Desktop App (center 75) ---- */}
+        {/* ---- Node: Chrome Extension (center 75) ---- */}
         <rect x="0" y="5" width="150" height="100" rx="16" fill="#1A1A2E" stroke="#D92B2B" strokeWidth="2" />
-        <rect x="55" y="25" width="40" height="28" rx="4" stroke="#D92B2B" strokeWidth="1.5" fill="none" />
-        <line x1="75" y1="53" x2="75" y2="61" stroke="#D92B2B" strokeWidth="1.5" />
-        <line x1="63" y1="61" x2="87" y2="61" stroke="#D92B2B" strokeWidth="1.5" strokeLinecap="round" />
-        <circle cx="75" cy="39" r="4" fill="#D92B2B" className="animate-pulse" />
-        <text x="75" y="89" textAnchor="middle" fill="#F5F5E8" fontSize="13" fontFamily="var(--font-space-grotesk), sans-serif" fontWeight="600">
-          Desktop App
+        {/* Puzzle piece icon */}
+        <path d="M63 30h6v-2a3 3 0 116 0v2h6a2 2 0 012 2v5h-2a3 3 0 100 6h2v5a2 2 0 01-2 2h-5v-2a3 3 0 10-6 0v2h-5a2 2 0 01-2-2V32a2 2 0 012-2z" stroke="#D92B2B" strokeWidth="1.5" fill="none" strokeLinejoin="round" />
+        <circle cx="75" cy="39" r="2" fill="#D92B2B" className="animate-pulse" />
+        <text x="75" y="89" textAnchor="middle" fill="#F5F5E8" fontSize="12" fontFamily="var(--font-space-grotesk), sans-serif" fontWeight="600">
+          Chrome Ext.
         </text>
 
         {/* ---- Node: Firebase (center 360) ---- */}
@@ -436,8 +435,8 @@ function DataFlowDiagram() {
         <text x="360" y="89" textAnchor="middle" fill="#F5F5E8" fontSize="13" fontFamily="var(--font-space-grotesk), sans-serif" fontWeight="600">
           Your Backend
         </text>
-        <text x="360" y="103" textAnchor="middle" fill="#F5C518" fontSize="7" fontFamily="var(--font-jetbrains-mono), monospace" opacity="0.5">
-          Supabase · Convex · Firebase
+        <text x="360" y="103" textAnchor="middle" fill="#0E9A57" fontSize="9" fontFamily="var(--font-jetbrains-mono), monospace" opacity="0.5">
+          Supabase
         </text>
 
         {/* ---- Node: OpenLoom Player (center 645) ---- */}
@@ -554,12 +553,12 @@ function FeatureIcon({ type }: { type: string }) {
 
 const STEPS = [
   {
-    id: "desktop",
-    label: "Desktop App Setup",
+    id: "install",
+    label: "Install Extension",
     color: "var(--crimson)",
-    title: "Download & Configure",
+    title: "Install & Configure",
     description:
-      "Download the OpenLoom desktop app for macOS or Windows, open it, and connect your backend provider. Choose Firebase, Convex, or Supabase \u2014 paste your credentials and you\u2019re ready to record.",
+      "Download the OpenLoom Chrome extension, load it into Chrome, and connect your Supabase backend. Paste your project URL and access token \u2014 you\u2019re ready to record.",
   },
   {
     id: "setup",
@@ -567,7 +566,7 @@ const STEPS = [
     color: "var(--mustard)",
     title: "Configure Your Backend",
     description:
-      "Set up your chosen backend provider. Each platform requires a few services to be enabled \u2014 follow the checklist for your selected provider.",
+      "Create a Supabase project, generate an access token, and paste your project URL. The extension provisions everything automatically.",
   },
   {
     id: "share",
@@ -581,11 +580,10 @@ const STEPS = [
 
 function StepIcon({ id, active }: { id: string; active: boolean }) {
   const stroke = active ? "currentColor" : "currentColor";
-  if (id === "desktop") {
+  if (id === "install") {
     return (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="2" y="3" width="20" height="14" rx="2" />
-        <path d="M8 21h8M12 17v4" />
+        <path d="M9 4h2v2a2 2 0 104 0V4h2a2 2 0 012 2v3h-2a2 2 0 100 4h2v3a2 2 0 01-2 2h-3v-2a2 2 0 10-4 0v2H8a2 2 0 01-2-2V6a2 2 0 012-2z" />
       </svg>
     );
   }
@@ -606,9 +604,9 @@ function StepIcon({ id, active }: { id: string; active: boolean }) {
   );
 }
 
-function DesktopAppVisual() {
+function ExtensionInstallVisual() {
   return (
-    <svg viewBox="0 0 480 300" fill="none" className="w-full" aria-label="Desktop app setup mockup">
+    <svg viewBox="0 0 480 300" fill="none" className="w-full" aria-label="Chrome extension install steps">
       {/* Window chrome */}
       <rect x="0" y="0" width="480" height="300" rx="12" fill="#0A0A12" stroke="rgba(245,245,232,0.08)" strokeWidth="1" />
       <rect x="0" y="0" width="480" height="36" rx="12" fill="#141422" />
@@ -616,147 +614,72 @@ function DesktopAppVisual() {
       <circle cx="20" cy="18" r="5" fill="var(--crimson)" />
       <circle cx="36" cy="18" r="5" fill="var(--mustard)" />
       <circle cx="52" cy="18" r="5" fill="var(--emerald)" />
-      <text x="240" y="22" textAnchor="middle" fill="rgba(245,245,232,0.4)" fontSize="11" fontFamily="var(--font-jetbrains-mono), monospace">OpenLoom Setup</text>
+      <text x="240" y="22" textAnchor="middle" fill="rgba(245,245,232,0.4)" fontSize="11" fontFamily="var(--font-jetbrains-mono), monospace">chrome://extensions</text>
 
       {/* Step indicators */}
       <text x="100" y="68" textAnchor="middle" fill="var(--crimson)" fontSize="10" fontFamily="var(--font-jetbrains-mono), monospace" fontWeight="600">1. Download</text>
-      <text x="240" y="68" textAnchor="middle" fill="var(--mustard)" fontSize="10" fontFamily="var(--font-jetbrains-mono), monospace" fontWeight="600">2. Configure</text>
-      <text x="380" y="68" textAnchor="middle" fill="var(--emerald)" fontSize="10" fontFamily="var(--font-jetbrains-mono), monospace" fontWeight="600">3. Ready</text>
+      <text x="240" y="68" textAnchor="middle" fill="var(--mustard)" fontSize="10" fontFamily="var(--font-jetbrains-mono), monospace" fontWeight="600">2. Load unpacked</text>
+      <text x="380" y="68" textAnchor="middle" fill="var(--emerald)" fontSize="10" fontFamily="var(--font-jetbrains-mono), monospace" fontWeight="600">3. Connect</text>
       <line x1="140" y1="64" x2="200" y2="64" stroke="rgba(245,245,232,0.1)" strokeWidth="1" strokeDasharray="4 3" />
       <line x1="280" y1="64" x2="340" y2="64" stroke="rgba(245,245,232,0.1)" strokeWidth="1" strokeDasharray="4 3" />
 
-      {/* Provider selector */}
-      <text x="60" y="110" fill="rgba(245,245,232,0.5)" fontSize="11" fontFamily="var(--font-space-grotesk), sans-serif">Backend Provider</text>
-      <rect x="60" y="118" width="360" height="36" rx="8" fill="rgba(245,245,232,0.04)" stroke="rgba(245,245,232,0.1)" strokeWidth="1" />
-      <text x="76" y="141" fill="rgba(245,245,232,0.45)" fontSize="12" fontFamily="var(--font-jetbrains-mono), monospace">Firebase  ·  Convex  ·  Supabase</text>
+      {/* Extension card */}
+      <rect x="60" y="90" width="360" height="80" rx="10" fill="rgba(245,245,232,0.03)" stroke="rgba(245,245,232,0.1)" strokeWidth="1" />
+      {/* Extension icon placeholder */}
+      <rect x="76" y="106" width="48" height="48" rx="10" fill="rgba(217,43,43,0.15)" stroke="var(--crimson)" strokeWidth="1" />
+      <path d="M92 118h4v2a3 3 0 106 0v-2h4a1 1 0 011 1v4h-2a3 3 0 100 6h2v4a1 1 0 01-1 1h-4v-2a3 3 0 10-6 0v2h-4a1 1 0 01-1-1v-14a1 1 0 011-1z" stroke="var(--crimson)" strokeWidth="1" fill="none" />
+      <text x="140" y="126" fill="rgba(245,245,232,0.7)" fontSize="14" fontFamily="var(--font-space-grotesk), sans-serif" fontWeight="600">OpenLoom</text>
+      <text x="140" y="143" fill="rgba(245,245,232,0.35)" fontSize="11" fontFamily="var(--font-jetbrains-mono), monospace">v0.1.0 · Screen recorder</text>
+      {/* Toggle */}
+      <rect x="362" y="118" width="40" height="22" rx="11" fill="var(--emerald)" />
+      <circle cx="391" cy="129" r="8" fill="white" />
 
-      {/* Credential field */}
-      <text x="60" y="180" fill="rgba(245,245,232,0.5)" fontSize="11" fontFamily="var(--font-space-grotesk), sans-serif">Credentials</text>
-      <rect x="60" y="188" width="280" height="36" rx="8" fill="rgba(245,245,232,0.04)" stroke="rgba(245,245,232,0.1)" strokeWidth="1" />
-      <text x="76" y="211" fill="rgba(245,245,232,0.25)" fontSize="12" fontFamily="var(--font-jetbrains-mono), monospace">service-account.json</text>
-      <rect x="352" y="188" width="68" height="36" rx="8" fill="rgba(245,245,232,0.06)" stroke="rgba(245,245,232,0.12)" strokeWidth="1" />
-      <text x="386" y="211" textAnchor="middle" fill="rgba(245,245,232,0.5)" fontSize="11" fontFamily="var(--font-space-grotesk), sans-serif">Browse</text>
+      {/* Supabase connection */}
+      <text x="60" y="200" fill="rgba(245,245,232,0.5)" fontSize="11" fontFamily="var(--font-space-grotesk), sans-serif">Supabase Project URL</text>
+      <rect x="60" y="208" width="360" height="32" rx="8" fill="rgba(245,245,232,0.04)" stroke="rgba(245,245,232,0.1)" strokeWidth="1" />
+      <text x="76" y="229" fill="rgba(245,245,232,0.25)" fontSize="11" fontFamily="var(--font-jetbrains-mono), monospace">https://your-project.supabase.co</text>
 
       {/* Connect button */}
-      <rect x="160" y="248" width="160" height="40" rx="10" fill="var(--crimson)" />
-      <text x="240" y="273" textAnchor="middle" fill="white" fontSize="14" fontFamily="var(--font-space-grotesk), sans-serif" fontWeight="600">Connect</text>
+      <rect x="160" y="254" width="160" height="36" rx="10" fill="var(--crimson)" />
+      <text x="240" y="277" textAnchor="middle" fill="white" fontSize="13" fontFamily="var(--font-space-grotesk), sans-serif" fontWeight="600">Connect</text>
     </svg>
   );
 }
 
-const SETUP_PROVIDERS = [
-  { id: "supabase", label: "Supabase", color: "var(--emerald)" },
-  { id: "convex", label: "Convex", color: "var(--crimson)" },
-  { id: "firebase", label: "Firebase", color: "var(--mustard)" },
-] as const;
-
-type SetupProviderId = (typeof SETUP_PROVIDERS)[number]["id"];
-
-const PROVIDER_CHECKLIST: Record<SetupProviderId, { label: string; done: boolean }[]> = {
-  firebase: [
-    { label: "Cloud Storage", done: true },
-    { label: "Cloud Firestore", done: true },
-    { label: "Cloud Functions", done: true },
-    { label: "IAM Roles", done: false },
-  ],
-  convex: [
-    { label: "Create Project", done: true },
-    { label: "Generate Deploy Key", done: true },
-    { label: "Backend Functions", done: true },
-  ],
-  supabase: [
-    { label: "Create a Supabase project", done: true },
-    { label: "Generate an Access Token", done: true },
-    { label: "Paste Project URL + Access Token", done: true },
-  ],
-};
-
-const PROVIDER_CONSOLE: Record<SetupProviderId, string> = {
-  firebase: "Firebase Console",
-  convex: "Convex Dashboard",
-  supabase: "Supabase Dashboard",
-};
+const SUPABASE_CHECKLIST = [
+  { label: "Create a Supabase project", done: true },
+  { label: "Generate an Access Token", done: true },
+  { label: "Paste Project URL + Access Token", done: true },
+];
 
 function SetupVisual() {
-  const [provider, setProvider] = useState<SetupProviderId>("supabase");
-  const items = PROVIDER_CHECKLIST[provider];
-  const activeProvider = SETUP_PROVIDERS.find((p) => p.id === provider)!;
-  const isComingSoon = false;
+  const items = SUPABASE_CHECKLIST;
+  const accentColor = "var(--emerald)";
 
   return (
     <div>
-      {/* Provider tabs */}
-      <div className="flex border-b border-[var(--cotton)]/8">
-        {SETUP_PROVIDERS.map((p) => {
-          const isActive = p.id === provider;
-          return (
-            <button
-              key={p.id}
-              onClick={() => setProvider(p.id)}
-              className={`relative flex items-center gap-2 px-5 py-3 text-sm font-medium transition-all ${
-                isActive
-                  ? "text-[var(--cotton)]"
-                  : "text-[var(--cotton)]/35 hover:text-[var(--cotton)]/60"
-              }`}
-            >
-              <span
-                className="h-2 w-2 rounded-full"
-                style={{ backgroundColor: p.color, opacity: isActive ? 1 : 0.4 }}
-              />
-              {p.label}
-              {isActive && (
-                <span
-                  className="absolute bottom-0 left-0 right-0 h-[2px]"
-                  style={{ backgroundColor: p.color }}
-                />
-              )}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Checklist visual */}
-      <svg viewBox="0 0 480 250" fill="none" className="w-full" aria-label={`${activeProvider.label} setup checklist`}>
+      <svg viewBox="0 0 480 250" fill="none" className="w-full" aria-label="Supabase setup checklist">
         {/* Window chrome */}
-        <rect x="0" y="0" width="480" height="250" rx="0" fill="#0A0A12" />
-        <rect x="0" y="0" width="480" height="36" fill="#141422" />
+        <rect x="0" y="0" width="480" height="250" rx="12" fill="#0A0A12" stroke="rgba(245,245,232,0.08)" strokeWidth="1" />
+        <rect x="0" y="0" width="480" height="36" rx="12" fill="#141422" />
+        <rect x="0" y="24" width="480" height="12" fill="#141422" />
         <circle cx="20" cy="18" r="5" fill="var(--crimson)" />
         <circle cx="36" cy="18" r="5" fill="var(--mustard)" />
         <circle cx="52" cy="18" r="5" fill="var(--emerald)" />
         <text x="240" y="22" textAnchor="middle" fill="rgba(245,245,232,0.4)" fontSize="11" fontFamily="var(--font-jetbrains-mono), monospace">
-          {PROVIDER_CONSOLE[provider]}
+          Supabase Dashboard
         </text>
-
-        {/* Coming soon overlay for Supabase */}
-        {isComingSoon && (
-          <>
-            <rect x="0" y="36" width="480" height="214" fill="rgba(10,10,18,0.7)" />
-            <text x="240" y="140" textAnchor="middle" fill="rgba(245,245,232,0.3)" fontSize="16" fontFamily="var(--font-space-grotesk), sans-serif" fontWeight="600">
-              Coming soon
-            </text>
-            <text x="240" y="162" textAnchor="middle" fill="rgba(245,245,232,0.15)" fontSize="11" fontFamily="var(--font-jetbrains-mono), monospace">
-              Supabase support is on the roadmap
-            </text>
-          </>
-        )}
 
         {/* Checklist items */}
         {items.map((item, i) => {
           const y = 56 + i * 44;
-          const accentColor = activeProvider.color;
           return (
-            <g key={`${provider}-${item.label}`} opacity={isComingSoon ? 0.2 : 1}>
+            <g key={item.label}>
               <rect x="40" y={y} width="400" height="36" rx="8" fill="rgba(245,245,232,0.03)" stroke="rgba(245,245,232,0.06)" strokeWidth="1" />
-              {item.done ? (
-                <>
-                  <circle cx="64" cy={y + 18} r="10" fill={accentColor} opacity="0.15" />
-                  <path d={`M58 ${y + 18} l4 4 8-8`} stroke={accentColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </>
-              ) : (
-                <circle cx="64" cy={y + 18} r="10" stroke="rgba(245,245,232,0.15)" strokeWidth="1.5" fill="none" />
-              )}
-              <text x="88" y={y + 22} fill={item.done ? "rgba(245,245,232,0.7)" : "rgba(245,245,232,0.35)"} fontSize="13" fontFamily="var(--font-space-grotesk), sans-serif">{item.label}</text>
-              {item.done && <text x="400" y={y + 22} textAnchor="end" fill={accentColor} fontSize="10" fontFamily="var(--font-jetbrains-mono), monospace" opacity="0.6">enabled</text>}
+              <circle cx="64" cy={y + 18} r="10" fill={accentColor} opacity="0.15" />
+              <path d={`M58 ${y + 18} l4 4 8-8`} stroke={accentColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <text x="88" y={y + 22} fill="rgba(245,245,232,0.7)" fontSize="13" fontFamily="var(--font-space-grotesk), sans-serif">{item.label}</text>
+              <text x="400" y={y + 22} textAnchor="end" fill={accentColor} fontSize="10" fontFamily="var(--font-jetbrains-mono), monospace" opacity="0.6">done</text>
             </g>
           );
         })}
@@ -807,7 +730,7 @@ function ShareRecordingVisual() {
   );
 }
 
-const TAB_VISUALS = [DesktopAppVisual, SetupVisual, ShareRecordingVisual];
+const TAB_VISUALS = [ExtensionInstallVisual, SetupVisual, ShareRecordingVisual];
 
 function GetStartedSection() {
   const [activeTab, setActiveTab] = useState(0);

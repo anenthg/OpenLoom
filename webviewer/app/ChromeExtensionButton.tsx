@@ -3,8 +3,6 @@
 import { useState, useEffect, useCallback } from "react";
 
 const EXTENSION_ZIP_URL = "/release/openloom-chrome.zip";
-const RELEASE_URL =
-  "https://github.com/anenthg/OpenLoom/releases/latest/download";
 
 /* ------------------------------------------------------------------ */
 /* Install dialog                                                      */
@@ -156,13 +154,6 @@ function ChromeIcon({ className = "h-5 w-5" }: { className?: string }) {
 
 export default function HeroCTA() {
   const [showDialog, setShowDialog] = useState(false);
-  const [isWindows, setIsWindows] = useState(false);
-
-  useEffect(() => {
-    if (typeof navigator !== "undefined") {
-      setIsWindows(navigator.userAgent.toLowerCase().includes("win"));
-    }
-  }, []);
 
   const handleExtensionClick = useCallback(() => {
     const a = document.createElement("a");
@@ -193,18 +184,6 @@ export default function HeroCTA() {
           How it works
         </a>
       </div>
-
-      {/* Windows-only desktop client link */}
-      {isWindows && (
-        <div className="mt-3">
-          <a
-            href={`${RELEASE_URL}/OpenLoom-x64.exe`}
-            className="text-sm text-[var(--cotton)]/40 underline decoration-[var(--cotton)]/20 underline-offset-2 transition-colors hover:text-[var(--cotton)]/60 hover:decoration-[var(--cotton)]/40"
-          >
-            Download desktop client for Windows
-          </a>
-        </div>
-      )}
 
       {showDialog && <InstallDialog onClose={() => setShowDialog(false)} />}
     </>

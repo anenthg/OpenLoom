@@ -1,0 +1,47 @@
+name: Release Chrome Extension
+
+on:
+  push:
+    tags: ['ext-v*']
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: extension/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: extension
+
+      - name: Build extension
+        run: npm run build
+        working-directory: extension
+
+      - name: Get version from tag
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#ext-v}" >> "$GITHUB_OUTPUT"
+
+      - name: Create release zip
+        run: |
+          cd dist
+          zip -r "../openloom-chrome-${{ steps.version.outputs.version }}.zip" .
+        working-directory: extension
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Chrome Extension v${{ steps.version.outputs.version }}
+          files: extension/openloom-chrome-${{ steps.version.outputs.version }}.zip
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

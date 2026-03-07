@@ -378,10 +378,10 @@ function parseDeployKey(deployKey: string): {
  */
 function buildModules(): { path: string; source: string; environment: string }[] {
   return [
-    { path: 'schema.ts', source: CONVEX_SCHEMA_TS, environment: 'isolate' },
-    { path: 'videos.ts', source: CONVEX_VIDEOS_TS, environment: 'isolate' },
-    { path: 'reactions.ts', source: CONVEX_REACTIONS_TS, environment: 'isolate' },
-    { path: 'http.ts', source: CONVEX_HTTP_TS, environment: 'node' },
+    { path: 'schema.js', source: CONVEX_SCHEMA_TS, environment: 'isolate' },
+    { path: 'videos.js', source: CONVEX_VIDEOS_TS, environment: 'isolate' },
+    { path: 'reactions.js', source: CONVEX_REACTIONS_TS, environment: 'isolate' },
+    { path: 'http.js', source: CONVEX_HTTP_TS, environment: 'node' },
   ]
 }
 
@@ -392,13 +392,19 @@ function convexHeaders(adminKey: string): Record<string, string> {
   return {
     'Content-Type': 'application/json',
     Authorization: `Convex ${adminKey}`,
-    'Convex-Client': 'npm-cli-0.0.0',
+    'Convex-Client': 'npm-cli-1.32.0',
   }
 }
 
 /**
  * Start a push: sends module sources to the Convex deployment.
  * Returns schema change info if a schema migration is needed.
+ *
+ * Uses the deploy2 API which expects:
+ * - functions: string (directory name, e.g. "convex")
+ * - appDefinition: { schema, changedModules, unchangedModuleHashes, udfServerVersion }
+ * - componentDefinitions: []
+ * - nodeDependencies: []
  */
 async function startPush(
   deploymentUrl: string,
@@ -408,19 +414,33 @@ async function startPush(
   const url = `${deploymentUrl}/api/deploy2/start_push`
   log(`Starting push to ${url}`)
 
+  // Separate schema from function modules
+  const schemaModule = modules.find((m) => m.path === 'schema.js')
+  const functionModules = modules.filter((m) => m.path !== 'schema.js')
+
   const res = await fetch(url, {
     method: 'POST',
     headers: convexHeaders(adminKey),
     body: JSON.stringify({
       adminKey,
       dryRun: false,
-      functions: modules.map((m) => ({
-        path: m.path,
-        source: m.source,
-        sourceMap: null,
-        environment: m.environment,
-      })),
-      nodeDependencies: {},
+      functions: 'convex',
+      appDefinition: {
+        schema: schemaModule
+          ? { path: schemaModule.path, source: schemaModule.source, sourceMap: null, environment: schemaModule.environment }
+          : null,
+        changedModules: functionModules.map((m) => ({
+          path: m.path,
+          source: m.source,
+          sourceMap: null,
+          environment: m.environment,
+        })),
+        unchangedModuleHashes: [],
+        udfServerVersion: '1.32.0',
+        dependencies: [],
+      },
+      componentDefinitions: [],
+      nodeDependencies: [],
     }),
   })
 

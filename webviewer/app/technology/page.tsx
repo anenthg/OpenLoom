@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import DownloadButton from "../DownloadButton";
+import HeroCTA from "../ChromeExtensionButton";
 
 function useScrollReveal() {
   useEffect(() => {
@@ -976,7 +976,7 @@ export default function TechnologyPage() {
             rules.
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-            <DownloadButton />
+            <HeroCTA />
             <a
               href="https://github.com/anenthg/OpenLoom"
               target="_blank"
