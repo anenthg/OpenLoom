@@ -289,7 +289,7 @@ export default function LandingPage() {
 
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4" data-reveal data-delay="400">
             <a
-              href="https://openloom.live/v/Zi1hbmVudGgtaG9zdGVkLWJhY2t1cA/Dgt8PUUf"
+              href="https://openloom.live/v/cy1zb21teXFqa3F1ZWVwd3p4ZGJqcw/QAGRwxX8"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-lg border border-[var(--emerald)]/20 px-5 py-2.5 text-sm font-medium text-[var(--emerald)] transition-all hover:border-[var(--emerald)]/40 hover:bg-[var(--emerald)]/10"
@@ -675,7 +675,7 @@ function ShareRecordingVisual() {
       <rect x="52" y="154" width="120" height="76" rx="6" fill="rgba(0,0,0,0.3)" />
       <path d="M100 182 L118 192 L100 202Z" fill="var(--emerald)" opacity="0.6" />
       {/* Link details */}
-      <a href="https://openloom.live/v/Zi1hbmVudGgtaG9zdGVkLWJhY2t1cA/Dgt8PUUf" target="_blank" rel="noopener noreferrer" style={{ cursor: 'pointer' }}>
+      <a href="https://openloom.live/v/cy1zb21teXFqa3F1ZWVwd3p4ZGJqcw/QAGRwxX8" target="_blank" rel="noopener noreferrer" style={{ cursor: 'pointer' }}>
         <text x="188" y="175" fill="var(--emerald)" fontSize="12" fontFamily="var(--font-jetbrains-mono), monospace" textDecoration="underline">openloom.live/v/jfjf...</text>
         <text x="188" y="195" fill="rgba(245,245,232,0.35)" fontSize="11" fontFamily="var(--font-space-grotesk), sans-serif">Website walkthrough — 2:34</text>
         <text x="188" y="215" fill="rgba(245,245,232,0.25)" fontSize="10" fontFamily="var(--font-jetbrains-mono), monospace">Recorded just now</text>
