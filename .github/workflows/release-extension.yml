@@ -34,14 +34,14 @@ jobs:
       - name: Create release zip
         run: |
           cd dist
-          zip -r "../openloom-chrome-${{ steps.version.outputs.version }}.zip" .
+          zip -r "../openloom-chrome.zip" .
         working-directory: extension
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           name: Chrome Extension v${{ steps.version.outputs.version }}
-          files: extension/openloom-chrome-${{ steps.version.outputs.version }}.zip
+          files: extension/openloom-chrome.zip
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 
-const EXTENSION_ZIP_URL = "/release/openloom-chrome.zip";
+const EXTENSION_ZIP_URL =
+  "https://github.com/anenthg/OpenLoom/releases/latest/download/openloom-chrome.zip";
 
 /* ------------------------------------------------------------------ */
 /* Install dialog                                                      */
@@ -170,7 +171,7 @@ export default function HeroCTA() {
         {/* Primary CTA — Chrome Extension */}
         <button
           onClick={handleExtensionClick}
-          className="flex items-center rounded-lg bg-[var(--crimson)] px-6 py-3 text-base font-semibold text-white transition-all hover:brightness-110 hover:shadow-[0_0_30px_rgba(217,43,43,0.3)] active:scale-[0.97]"
+          className="flex items-center rounded-lg bg-[var(--crimson)] px-6 py-3 text-base font-semibold text-white transition-all cursor-pointer hover:brightness-110 hover:shadow-[0_0_30px_rgba(217,43,43,0.3)] active:scale-[0.97]"
         >
           <ChromeIcon className="mr-2 h-5 w-5" />
           Download Chrome Extension
