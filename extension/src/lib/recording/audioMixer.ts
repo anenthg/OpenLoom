@@ -3,6 +3,7 @@ export interface AudioMixer {
   setMicMuted: (muted: boolean) => void
   dispose: () => void
   getDebugLevels?: () => { system: number; mic: number; output: number }
+  getMicBars?: (barCount: number) => number[]
 }
 
 type LogFn = (msg: string) => void
@@ -132,6 +133,21 @@ export async function createAudioMixer(
           mic: micAnalyser ? readLevel(micAnalyser) : -1,
           output: outAnalyser ? readLevel(outAnalyser) : -1,
         }
+      },
+      getMicBars(barCount: number): number[] {
+        if (!micAnalyser) return new Array(barCount).fill(0)
+        const data = new Uint8Array(micAnalyser.frequencyBinCount)
+        micAnalyser.getByteFrequencyData(data)
+        const bars: number[] = []
+        const binSize = Math.floor(data.length / barCount)
+        for (let i = 0; i < barCount; i++) {
+          let sum = 0
+          for (let j = 0; j < binSize; j++) {
+            sum += data[i * binSize + j]
+          }
+          bars.push(Math.round((sum / binSize / 255) * 100))
+        }
+        return bars
       },
       dispose() {
         void _refs

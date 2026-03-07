@@ -4,6 +4,7 @@ import { MicIcon, MicOffIcon, StopIcon } from './icons'
 interface Props {
   elapsed: number
   previewDataUrl: string | null
+  micBars: number[]
 }
 
 function formatTime(seconds: number): string {
@@ -14,7 +15,32 @@ function formatTime(seconds: number): string {
   return `${m}:${s}`
 }
 
-export default function RecordingIndicator({ elapsed, previewDataUrl }: Props) {
+function AudioMeter({ bars, muted }: { bars: number[]; muted: boolean }) {
+  if (bars.length === 0) return null
+
+  return (
+    <div className="flex items-end justify-center gap-[3px] h-6 px-1">
+      {bars.map((level, i) => {
+        const height = muted ? 2 : Math.max(2, (level / 100) * 24)
+        const isActive = !muted && level > 5
+        return (
+          <div
+            key={i}
+            className="w-[3px] rounded-full transition-all duration-100"
+            style={{
+              height: `${height}px`,
+              backgroundColor: isActive
+                ? level > 70 ? 'var(--crimson)' : 'var(--emerald)'
+                : 'rgba(113, 113, 122, 0.4)',
+            }}
+          />
+        )
+      })}
+    </div>
+  )
+}
+
+export default function RecordingIndicator({ elapsed, previewDataUrl, micBars }: Props) {
   const [micMuted, setMicMuted] = useState(false)
 
   const handleMicToggle = () => {
@@ -52,8 +78,10 @@ export default function RecordingIndicator({ elapsed, previewDataUrl }: Props) {
         </span>
       </div>
 
-      {/* Recording status text */}
-      <p className="text-sm text-zinc-400 mb-6">Recording in progress...</p>
+      {/* Audio meter */}
+      <div className="mb-4">
+        <AudioMeter bars={micBars} muted={micMuted} />
+      </div>
 
       {/* Controls */}
       <div className="flex items-center gap-6">

@@ -192,6 +192,7 @@ async function handleMessage(message: ExtensionMessage): Promise<unknown> {
       return { ok: true }
 
     case 'PREVIEW_FRAME':
+    case 'MIC_LEVEL':
       chrome.runtime.sendMessage(message).catch(() => {})
       return { ok: true }
 

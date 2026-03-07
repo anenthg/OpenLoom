@@ -107,6 +107,11 @@ export interface PreviewFrameMessage {
   dataUrl: string
 }
 
+export interface MicLevelMessage {
+  type: 'MIC_LEVEL'
+  bars: number[]
+}
+
 // ─── Service Worker → Side Panel ────────────────────────────────────────────
 
 export interface StateUpdateMessage {
@@ -168,6 +173,7 @@ export type OffscreenResponse =
   | RecordingStoppedMessage
   | ElapsedUpdateMessage
   | PreviewFrameMessage
+  | MicLevelMessage
 
 export type ServiceWorkerMessage =
   | StateUpdateMessage

@@ -103,8 +103,32 @@ export default function Provisioning({ settings, onComplete, onDisconnect }: Pro
     >
       <div className={`${isInProgress ? 'stripe-divider-slow' : 'stripe-divider'} h-[3px] shrink-0`} />
       <div className="flex-1 flex flex-col items-center justify-center px-10">
-      <div className="w-14 h-14 mb-4 rounded-xl bg-zinc-800 flex items-center justify-center">
-        <span className="font-mono text-lg font-bold text-[var(--cotton)]">OL</span>
+      <div className="w-14 h-14 mb-4">
+        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+          <defs>
+            <pattern id="stripes-logo" x="0" y="0" width="18" height="48" patternUnits="userSpaceOnUse">
+              <rect width="18" height="48" fill="#1A1A2E"/>
+              <rect x="0" y="0" width="1" height="48" fill="#F5F5E8" opacity="0.7"/>
+              <rect x="2" y="0" width="4" height="48" fill="#0E9A57"/>
+              <rect x="6" y="0" width="2" height="48" fill="#F5C518"/>
+              <rect x="8" y="0" width="4" height="48" fill="#D92B2B"/>
+              <rect x="13" y="0" width="1" height="48" fill="#0A0A12"/>
+              <rect x="15" y="0" width="2" height="48" fill="#F5C518"/>
+            </pattern>
+            <clipPath id="outer-clip-logo">
+              <rect width="48" height="48" rx="9" ry="9"/>
+            </clipPath>
+          </defs>
+          <g clipPath="url(#outer-clip-logo)">
+            <rect width="48" height="48" fill="url(#stripes-logo)"/>
+          </g>
+          <rect x="6" y="6" width="36" height="36" rx="5" ry="5" fill="#1A1A2E" opacity="0.92"/>
+          <rect x="6" y="6" width="36" height="36" rx="5" ry="5" fill="none" stroke="#F5F5E8" strokeOpacity="0.08" strokeWidth="1"/>
+          <circle cx="11" cy="11" r="1" fill="#D92B2B"/>
+          <circle cx="14" cy="11" r="1" fill="#F5C518"/>
+          <circle cx="17" cy="11" r="1" fill="#0E9A57"/>
+          <polygon points="21.8,22 21.8,30 29,26" fill="#F5F5E8" opacity="0.85"/>
+        </svg>
       </div>
       <h1 className="text-2xl font-bold mb-2">{heading}</h1>
       <p className="text-zinc-400 mb-8">{subtitle}</p>

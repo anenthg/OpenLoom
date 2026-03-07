@@ -281,12 +281,12 @@ export default function SetupWizard({ onConnect }: Props) {
                 onClick={() => setProvider('supabase')}
                 className="w-full p-4 rounded-lg border border-zinc-700 hover:border-[var(--emerald)]/50 bg-zinc-800/50 hover:bg-zinc-800 transition-all text-left group"
               >
-                <div className="flex items-center justify-between">
-                  <div>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
                     <p className="text-sm font-medium text-[var(--cotton)]">Supabase</p>
                     <p className="text-xs text-zinc-400 mt-0.5">1 GB storage, 2 GB egress free</p>
                   </div>
-                  <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-[var(--emerald)]/10 text-[var(--emerald)]">
+                  <span className="shrink-0 text-[10px] font-mono leading-tight px-2 py-1 rounded-full bg-[var(--emerald)]/10 text-[var(--emerald)]">
                     Developer friendly
                   </span>
                 </div>
@@ -296,14 +296,11 @@ export default function SetupWizard({ onConnect }: Props) {
                 onClick={() => setProvider('convex')}
                 className="w-full p-4 rounded-lg border border-zinc-700 hover:border-[var(--crimson)]/50 bg-zinc-800/50 hover:bg-zinc-800 transition-all text-left group"
               >
-                <div className="flex items-center justify-between">
-                  <div>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
                     <p className="text-sm font-medium text-[var(--cotton)]">Convex</p>
                     <p className="text-xs text-zinc-400 mt-0.5">1 GB storage, 1 GB egress free</p>
                   </div>
-                  <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-[var(--emerald)]/10 text-[var(--emerald)]">
-                    Developer friendly
-                  </span>
                 </div>
               </button>
 
@@ -311,14 +308,19 @@ export default function SetupWizard({ onConnect }: Props) {
                 onClick={() => setProvider('firebase')}
                 className="w-full p-4 rounded-lg border border-zinc-700 hover:border-[var(--mustard)]/50 bg-zinc-800/50 hover:bg-zinc-800 transition-all text-left group"
               >
-                <div className="flex items-center justify-between">
-                  <div>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
                     <p className="text-sm font-medium text-[var(--cotton)]">Firebase</p>
                     <p className="text-xs text-zinc-400 mt-0.5">5 GB storage, 100 GB egress free</p>
                   </div>
-                  <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-[var(--mustard)]/10 text-[var(--mustard)]">
-                    Cost effective
-                  </span>
+                  <div className="shrink-0 flex flex-col items-end gap-1">
+                    <span className="text-[10px] font-mono leading-tight px-2 py-1 rounded-full bg-[var(--mustard)]/10 text-[var(--mustard)]">
+                      Cost effective
+                    </span>
+                    <span className="text-[10px] font-mono leading-tight px-2 py-1 rounded-full bg-zinc-700/50 text-zinc-400">
+                      Credit card required
+                    </span>
+                  </div>
                 </div>
               </button>
             </div>
@@ -540,8 +542,8 @@ export default function SetupWizard({ onConnect }: Props) {
                   2
                 </span>
                 <div>
-                  <p className="text-sm font-medium text-[var(--cotton)]">Generate a deploy key</p>
-                  <p className="text-xs text-zinc-400 mt-0.5">Project Settings → Deploy Key → Generate</p>
+                  <p className="text-sm font-medium text-[var(--cotton)]">Generate a deploy keys</p>
+                  <p className="text-xs text-zinc-400 mt-0.5">Production (header) → Settings (Sidebar) → General → Deploy Keys → Generate</p>
                 </div>
               </div>
 

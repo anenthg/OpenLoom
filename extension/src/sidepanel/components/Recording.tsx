@@ -21,6 +21,7 @@ export default function Recording({ settings }: Props) {
   const [uploadProgress, setUploadProgress] = useState(0)
   const [countdownValue, setCountdownValue] = useState(3)
   const [previewDataUrl, setPreviewDataUrl] = useState<string | null>(null)
+  const [micBars, setMicBars] = useState<number[]>([])
   const [showPipLayout, setShowPipLayout] = useState(false)
   const [pendingRecordingConfig, setPendingRecordingConfig] = useState<{
     camera: boolean; mic: boolean; hd: boolean; cameraDeviceId?: string; micDeviceId?: string
@@ -33,7 +34,7 @@ export default function Recording({ settings }: Props) {
 
   // Listen for state updates
   useEffect(() => {
-    const listener = (message: { type: string; state?: StateUpdateMessage['state']; settings?: StateUpdateMessage['settings']; dataUrl?: string }) => {
+    const listener = (message: { type: string; state?: StateUpdateMessage['state']; settings?: StateUpdateMessage['settings']; dataUrl?: string; bars?: number[] }) => {
       if (message.type === 'STATE_UPDATE' && message.state) {
         const s = message.state
         setPhase(s.phase)
@@ -45,6 +46,9 @@ export default function Recording({ settings }: Props) {
       }
       if (message.type === 'PREVIEW_FRAME' && message.dataUrl) {
         setPreviewDataUrl(message.dataUrl)
+      }
+      if (message.type === 'MIC_LEVEL' && message.bars) {
+        setMicBars(message.bars)
       }
     }
 
@@ -70,10 +74,11 @@ export default function Recording({ settings }: Props) {
     return () => clearInterval(interval)
   }, [phase])
 
-  // Clear preview when leaving recording phase
+  // Clear preview and mic bars when leaving recording phase
   useEffect(() => {
     if (phase !== 'recording') {
       setPreviewDataUrl(null)
+      setMicBars([])
     }
   }, [phase])
 
@@ -128,7 +133,7 @@ export default function Recording({ settings }: Props) {
   let content: React.ReactNode
 
   if (showPipLayout) {
-    content = <PipLayoutPreview onContinue={handlePipContinue} onBack={handlePipBack} />
+    content = <PipLayoutPreview onContinue={handlePipContinue} onBack={handlePipBack} cameraDeviceId={pendingRecordingConfig?.cameraDeviceId} />
   } else switch (phase) {
     case 'idle':
       content = <RecordingSetup onStart={handleRecordingStart} />
@@ -139,7 +144,7 @@ export default function Recording({ settings }: Props) {
       break
 
     case 'recording':
-      content = <RecordingIndicator elapsed={elapsed} previewDataUrl={previewDataUrl} />
+      content = <RecordingIndicator elapsed={elapsed} previewDataUrl={previewDataUrl} micBars={micBars} />
       break
 
     case 'review':

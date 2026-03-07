@@ -9,6 +9,7 @@ let mixer: AudioMixer | null = null
 let recorder: Recorder | null = null
 let elapsedTimer: ReturnType<typeof setInterval> | null = null
 let previewTimer: ReturnType<typeof setInterval> | null = null
+let micLevelTimer: ReturnType<typeof setInterval> | null = null
 
 function debugLog(msg: string) {
   console.log(`[offscreen] ${msg}`)
@@ -164,8 +165,9 @@ async function handleCaptureAndRecord(options: {
     }
   }, 1000)
 
-  // Start preview frame stream (5fps)
+  // Start preview frame stream (5fps) and mic level stream
   startPreviewStream()
+  startMicLevelStream()
 
   chrome.runtime.sendMessage({ type: 'CAPTURE_STARTED' })
 }
@@ -188,8 +190,25 @@ function stopPreviewStream() {
   }
 }
 
+function startMicLevelStream() {
+  stopMicLevelStream()
+  micLevelTimer = setInterval(() => {
+    if (!mixer?.getMicBars) return
+    const bars = mixer.getMicBars(12)
+    chrome.runtime.sendMessage({ type: 'MIC_LEVEL', bars }).catch(() => {})
+  }, 120)
+}
+
+function stopMicLevelStream() {
+  if (micLevelTimer) {
+    clearInterval(micLevelTimer)
+    micLevelTimer = null
+  }
+}
+
 async function handleStopCapture() {
   stopPreviewStream()
+  stopMicLevelStream()
 
   if (elapsedTimer) {
     clearInterval(elapsedTimer)

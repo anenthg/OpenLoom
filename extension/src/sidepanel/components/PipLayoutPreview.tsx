@@ -1,28 +1,58 @@
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import type { PipConfig } from '../../lib/types'
 import { DEFAULT_PIP_CONFIG } from '../../lib/types'
-import { CameraIcon } from './icons'
 
 interface Props {
   onContinue: (pipConfig: PipConfig) => void
   onBack: () => void
+  cameraDeviceId?: string
 }
 
 const MIN_SIZE = 0.05
 const MAX_SIZE = 0.25
 const SIZE_STEP = 0.02
 
-const CORNER_PRESETS: { label: string; x: number; y: number }[] = [
-  { label: 'TL', x: 0.15, y: 0.15 },
-  { label: 'TR', x: 0.85, y: 0.15 },
-  { label: 'BL', x: 0.15, y: 0.85 },
-  { label: 'BR', x: 0.85, y: 0.85 },
-]
 
-export default function PipLayoutPreview({ onContinue, onBack }: Props) {
+export default function PipLayoutPreview({ onContinue, onBack, cameraDeviceId }: Props) {
   const [config, setConfig] = useState<PipConfig>(DEFAULT_PIP_CONFIG)
   const containerRef = useRef<HTMLDivElement>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
   const draggingRef = useRef(false)
+  const streamRef = useRef<MediaStream | null>(null)
+
+  // Start camera preview
+  useEffect(() => {
+    let cancelled = false
+
+    async function startCamera() {
+      try {
+        const constraints: MediaTrackConstraints = { width: 320, height: 320 }
+        if (cameraDeviceId) constraints.deviceId = { exact: cameraDeviceId }
+        const stream = await navigator.mediaDevices.getUserMedia({ video: constraints })
+        if (cancelled) {
+          stream.getTracks().forEach((t) => t.stop())
+          return
+        }
+        streamRef.current = stream
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream
+          videoRef.current.play().catch(() => {})
+        }
+      } catch {
+        // Camera unavailable — circle will show dark background
+      }
+    }
+
+    startCamera()
+
+    return () => {
+      cancelled = true
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((t) => t.stop())
+        streamRef.current = null
+      }
+    }
+  }, [cameraDeviceId])
 
   const clamp = (val: number, min: number, max: number) => Math.min(max, Math.max(min, val))
 
@@ -56,10 +86,6 @@ export default function PipLayoutPreview({ onContinue, onBack }: Props) {
     })
   }
 
-  const snapToCorner = (cx: number, cy: number) => {
-    setConfig((prev) => ({ ...prev, x: cx, y: cy }))
-  }
-
   // Convert normalized to % for positioning
   const pipLeft = `${(config.x - config.size / 2) * 100}%`
   const pipTop = `${(config.y - config.size / 2) * 100}%`
@@ -88,13 +114,18 @@ export default function PipLayoutPreview({ onContinue, onBack }: Props) {
           <div className="absolute top-2/3 left-0 right-0 h-px bg-zinc-700/40" />
         </div>
 
-        {/* Draggable PIP circle */}
+        {/* Draggable PIP circle with live camera */}
         <div
-          className="absolute rounded-full bg-zinc-700 border-2 border-white/30 flex items-center justify-center cursor-grab active:cursor-grabbing touch-none"
-          style={{ left: pipLeft, top: pipTop, width: pipW, aspectRatio: '1', }}
+          className="absolute rounded-full border-2 border-white/30 overflow-hidden cursor-grab active:cursor-grabbing touch-none bg-zinc-800"
+          style={{ left: pipLeft, top: pipTop, width: pipW, aspectRatio: '1' }}
           onPointerDown={handlePointerDown}
         >
-          <CameraIcon className="w-5 h-5 text-zinc-400 pointer-events-none" />
+          <video
+            ref={videoRef}
+            muted
+            playsInline
+            className="w-full h-full object-cover pointer-events-none scale-[1.15]"
+          />
         </div>
       </div>
 
@@ -115,23 +146,6 @@ export default function PipLayoutPreview({ onContinue, onBack }: Props) {
         >
           +
         </button>
-      </div>
-
-      {/* Corner presets */}
-      <div className="flex items-center gap-2">
-        {CORNER_PRESETS.map((p) => (
-          <button
-            key={p.label}
-            onClick={() => snapToCorner(p.x, p.y)}
-            className={`px-2.5 py-1 text-[10px] font-medium rounded transition-colors ${
-              Math.abs(config.x - p.x) < 0.05 && Math.abs(config.y - p.y) < 0.05
-                ? 'bg-[var(--emerald)]/20 text-[var(--emerald)]'
-                : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
-            }`}
-          >
-            {p.label}
-          </button>
-        ))}
       </div>
 
       {/* Action buttons */}

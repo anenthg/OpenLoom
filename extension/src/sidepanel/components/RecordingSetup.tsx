@@ -11,7 +11,16 @@ interface DeviceInfo {
 async function queryPermission(name: 'camera' | 'microphone'): Promise<PermState> {
   try {
     const result = await navigator.permissions.query({ name: name as PermissionName })
-    return result.state as PermState
+    if (result.state === 'granted') return 'granted'
+    if (result.state === 'denied') return 'denied'
+
+    // "prompt" may mean a temporary "Allow this time" grant that the
+    // Permissions API doesn't surface as "granted". Check whether
+    // enumerateDevices returns labelled devices — if so, access works.
+    const kind = name === 'camera' ? 'videoinput' : 'audioinput'
+    const devices = await navigator.mediaDevices.enumerateDevices()
+    const hasLabelled = devices.some((d) => d.kind === kind && d.label)
+    return hasLabelled ? 'granted' : 'prompt'
   } catch {
     return 'unknown'
   }
@@ -109,7 +118,10 @@ export default function RecordingSetup({ onStart }: Props) {
       if (message.type === 'PERMISSIONS_GRANTED') {
         setWaitingForPermission(false)
         setError(null)
-        refreshPermissions()
+        // Set granted directly — navigator.permissions.query may still
+        // report "prompt" for temporary "Allow this time" grants.
+        setCameraPerm('granted')
+        setMicPerm('granted')
         refreshDevices()
       }
       if (message.type === 'PERMISSIONS_DENIED') {
