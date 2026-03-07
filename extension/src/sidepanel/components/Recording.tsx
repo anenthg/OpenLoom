@@ -21,7 +21,6 @@ export default function Recording({ settings }: Props) {
   const [uploadProgress, setUploadProgress] = useState(0)
   const [countdownValue, setCountdownValue] = useState(3)
   const [previewDataUrl, setPreviewDataUrl] = useState<string | null>(null)
-  const [debugLogs, setDebugLogs] = useState<string[]>([])
   const [showPipLayout, setShowPipLayout] = useState(false)
   const [pendingRecordingConfig, setPendingRecordingConfig] = useState<{
     camera: boolean; mic: boolean; hd: boolean; cameraDeviceId?: string; micDeviceId?: string
@@ -32,9 +31,9 @@ export default function Recording({ settings }: Props) {
     chrome.runtime.sendMessage({ type: 'GET_STATE' })
   }, [])
 
-  // Listen for state updates and debug logs
+  // Listen for state updates
   useEffect(() => {
-    const listener = (message: { type: string; state?: StateUpdateMessage['state']; settings?: StateUpdateMessage['settings']; message?: string; dataUrl?: string }) => {
+    const listener = (message: { type: string; state?: StateUpdateMessage['state']; settings?: StateUpdateMessage['settings']; dataUrl?: string }) => {
       if (message.type === 'STATE_UPDATE' && message.state) {
         const s = message.state
         setPhase(s.phase)
@@ -47,17 +46,11 @@ export default function Recording({ settings }: Props) {
       if (message.type === 'PREVIEW_FRAME' && message.dataUrl) {
         setPreviewDataUrl(message.dataUrl)
       }
-      if (message.type === 'DEBUG_LOG' && message.message) {
-        setDebugLogs((prev) => [...prev.slice(-50), message.message!])
-      }
     }
 
     chrome.runtime.onMessage.addListener(listener)
     return () => chrome.runtime.onMessage.removeListener(listener)
   }, [])
-
-  // Clear debug logs when starting a new recording
-  const clearLogs = useCallback(() => setDebugLogs([]), [])
 
   // Countdown timer (local, runs 3-2-1 then SW takes over)
   useEffect(() => {
@@ -115,41 +108,20 @@ export default function Recording({ settings }: Props) {
     setUploadProgress(0)
     setError(null)
     setPreviewDataUrl(null)
-    setDebugLogs([])
     chrome.runtime.sendMessage({ type: 'GET_STATE' })
   }, [])
 
-  // Debug log panel (shown in all phases when there are logs)
-  const debugPanel = debugLogs.length > 0 ? (
-    <div className="fixed bottom-12 left-0 right-0 max-h-[40vh] overflow-y-auto bg-black/90 border-t border-zinc-700 p-2 z-50">
-      <div className="flex items-center justify-between mb-1">
-        <span className="text-[10px] font-mono text-zinc-500">DEBUG LOG ({debugLogs.length})</span>
-        <button onClick={clearLogs} className="text-[10px] text-zinc-500 hover:text-zinc-300">Clear</button>
-      </div>
-      <div className="space-y-0.5">
-        {debugLogs.map((log, i) => (
-          <div key={i} className="text-[10px] font-mono text-zinc-400 leading-tight whitespace-pre-wrap break-all">
-            {log}
-          </div>
-        ))}
-      </div>
-    </div>
-  ) : null
-
   if (error) {
     return (
-      <>
-        <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-          <p className="text-red-400 text-sm mb-4">{error}</p>
-          <button
-            onClick={handleNewRecording}
-            className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 rounded-lg text-sm font-medium transition-colors"
-          >
-            Try Again
-          </button>
-        </div>
-        {debugPanel}
-      </>
+      <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+        <p className="text-red-400 text-sm mb-4">{error}</p>
+        <button
+          onClick={handleNewRecording}
+          className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 rounded-lg text-sm font-medium transition-colors"
+        >
+          Try Again
+        </button>
+      </div>
     )
   }
 
@@ -201,10 +173,5 @@ export default function Recording({ settings }: Props) {
       content = <RecordingSetup onStart={handleRecordingStart} />
   }
 
-  return (
-    <>
-      {content}
-      {debugPanel}
-    </>
-  )
+  return content
 }
