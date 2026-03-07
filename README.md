@@ -2,7 +2,7 @@
 
 Open-source, self-hosted alternative to Loom. Record your screen, share a link, keep your data.
 
-Your recordings live on **your own Firebase project** — no third-party servers, no vendor lock-in.
+Your recordings live on **your own Supabase project** — no third-party servers, no vendor lock-in.
 
 > *thari (தறி)* — Tamil for loom. Design inspired by [Bhavani Jamakkalam](https://en.wikipedia.org/wiki/Bhavani_Jamakkalam).
 
@@ -11,17 +11,17 @@ Your recordings live on **your own Firebase project** — no third-party servers
 ## How it works
 
 ```
-Desktop App                      Firebase (yours)                 Web Viewer
-+-----------+    upload video    +-------------------+    fetch    +-----------+
-|  Electron | ──────────────────>|  Cloud Storage    |            |  Next.js  |
-|  + React  |    insert meta    |  Firestore        |<───────────|  + Plyr   |
-|           | ──────────────────>|  Cloud Functions  |───────────>|           |
-+-----------+    deploy func    +-------------------+   serve    +-----------+
+Chrome Extension                 Supabase (yours)                 Web Viewer
++--------------+   upload video  +-------------------+   fetch    +-----------+
+|  Side Panel  | ───────────────>|  Storage bucket   |            |  Next.js  |
+|  + Offscreen |   insert meta   |  PostgreSQL       |<───────────|  (static) |
+|  Document    | ───────────────>|  Edge Functions   |───────────>|           |
++--------------+   provision     +-------------------+   serve    +-----------+
 ```
 
-1. **Record** — Open the desktop app, pick a screen/window/tab, hit record
-2. **Store** — Video uploads to your Firebase project with a shareable short link
-3. **Watch** — Anyone with the link watches via the web viewer, which fetches directly from your Firebase
+1. **Record** — Click the extension icon, pick a tab or window, hit record
+2. **Store** — Video uploads directly to your Supabase project with a shareable link
+3. **Watch** — Anyone with the link watches via the web viewer, which fetches directly from your Supabase
 
 No central server sits between the recorder and the viewer.
 
@@ -29,12 +29,14 @@ No central server sits between the recorder and the viewer.
 
 ## Features
 
-- **Screen + Camera PiP** — Capture your screen with a draggable camera overlay
-- **Self-hosted** — All data stays in your Firebase project (free tier includes 5 GB storage)
-- **Instant sharing** — Shareable link copied to clipboard the moment you stop recording
-- **Emoji reactions** — Viewers leave timestamped reactions that appear on the video timeline
-- **Playback controls** — Speed adjustment, PiP, fullscreen via Plyr
-- **One-click setup** — Paste a service account key and the app provisions everything
+- **Screen + Camera PiP** — Capture your screen with a configurable camera overlay (drag to reposition, resize)
+- **Self-hosted** — All data stays in your Supabase project
+- **Microphone + system audio** — Record narration with a live audio meter and mute toggle
+- **HD recording** — Up to 1080p capture with VP9/WebM encoding
+- **Instant sharing** — Shareable link copied to clipboard after upload
+- **Password protection** — Optionally encrypt shared links with AES-256-GCM
+- **One-click setup** — Paste a Supabase connection string and the extension provisions storage, database tables, and edge functions automatically via the Management API
+- **Privacy-first** — No analytics, no telemetry, no account required
 
 ---
 
@@ -42,11 +44,11 @@ No central server sits between the recorder and the viewer.
 
 | Component | Technology |
 |-----------|-----------|
-| Desktop app | Electron 33, React 19, Tailwind CSS 4, electron-vite 3 |
-| Web viewer | Next.js 16, Plyr, Tailwind CSS 4 |
-| Cloud functions | Firebase Functions v5, Node.js 20 |
-| Packaging | electron-builder 25 (DMG + ZIP for macOS) |
-| CI/CD | GitHub Actions (release on tag push) |
+| Chrome extension | TypeScript, React 19, Tailwind CSS 4, Vite, Chrome APIs (sidePanel, offscreen, storage) |
+| Recording pipeline | getDisplayMedia, getUserMedia, Canvas compositor, MediaRecorder (VP9/Opus) |
+| Web viewer | Next.js 16, static export, GitHub Pages |
+| Backend | Supabase (Storage, PostgreSQL, Edge Functions) |
+| CI/CD | GitHub Actions (extension release on `ext-v*` tag, web viewer auto-deploy) |
 
 ---
 
@@ -55,25 +57,24 @@ No central server sits between the recorder and the viewer.
 ### Prerequisites
 
 - Node.js 20+
-- A Firebase project on the Blaze (pay-as-you-go) plan
-- A service account key JSON for that project
+- A Supabase project (free tier works)
 
-### Install the desktop app
+### Install the Chrome extension
 
-Download the latest DMG from the [Releases page](https://github.com/anenthg/OpenLoom/releases/latest) — pick **Apple Silicon** (M1/M2/M3/M4) or **Intel** depending on your Mac.
+Download the latest zip from the [Releases page](https://github.com/anenthg/OpenLoom/releases/latest).
 
-> **macOS Gatekeeper note:** The app is not yet code-signed. macOS may show *"OpenLoom is damaged and can't be opened"*. To fix this, run the following after dragging the app to `/Applications`:
->
-> ```bash
-> xattr -cr /Applications/OpenLoom.app
-> ```
+1. Unzip `openloom-chrome.zip` to a folder
+2. Open `chrome://extensions` in Chrome
+3. Enable **Developer mode** (top-right toggle)
+4. Click **Load unpacked** and select the unzipped folder
 
-On first launch the setup wizard will ask for your service account key. It then:
-1. Verifies Firestore and Cloud Storage access
-2. Detects or creates a storage bucket
-3. Deploys the Cloud Function that serves the public API
+On first launch the setup wizard will ask for your Supabase connection string. It then:
+1. Verifies your Supabase project access
+2. Creates the `videos` storage bucket
+3. Creates database tables
+4. Deploys edge functions via the Management API
 
-### Web viewer
+### Web viewer (local development)
 
 ```bash
 cd webviewer
@@ -81,76 +82,93 @@ npm install
 npm run dev
 ```
 
-Runs on `http://localhost:3001`. Video links follow the pattern `/v/{projectId}/{shortCode}`.
+Runs on `http://localhost:3000`. Video links follow the pattern `/v/{encodedProject}/{shortCode}`.
 
 ---
 
 ## Project structure
 
 ```
-├── desktop/                 Electron desktop app
-│   ├── src/main/            Main process (Firebase Admin, IPC)
-│   ├── src/preload/         Context bridge
-│   ├── src/renderer/        React UI (recording, library, settings)
-│   └── cloud-functions/     Reference copy of deployed function source
-├── webviewer/               Next.js web viewer + landing site
-│   ├── app/                 App Router pages
-│   ├── app/v/[...slug]/     Video player route
-│   └── lib/                 API client, types, mock data
-├── .github/workflows/       CI/CD (release.yml)
-├── ARCHITECTURE.md          Detailed technical architecture
-└── firebase.md              Firebase services & permissions guide
+├── extension/                Chrome extension
+│   ├── src/sidepanel/        React UI (recording setup, library, settings)
+│   ├── src/offscreen/        Media capture, canvas compositor, recorder
+│   ├── src/service-worker/   Message routing, state management, provisioning
+│   ├── src/lib/              Shared types, backend clients, recording utilities
+│   ├── src/options/          Extension options page
+│   └── src/permissions/      Permission request page
+├── webviewer/                Next.js web viewer + marketing site
+│   ├── app/                  App Router pages (home, technology, pricing, privacy)
+│   ├── app/v/[...slug]/      Video player route
+│   └── lib/                  API client, types
+├── desktop/                  Electron desktop app (paused — coming back later)
+├── .github/workflows/        CI/CD
+│   ├── release-extension.yml   Extension release (ext-v* tags)
+│   └── deploy-pages.yml       Web viewer deploy to GitHub Pages
+└── LICENSE
 ```
 
 ---
 
-## Building for release
-
-### Manual build
+## Building the extension
 
 ```bash
-cd desktop
-npm run release
+cd extension
+npm install
+npm run build
 ```
 
-Produces DMG and ZIP installers for macOS (arm64 + x64) in `desktop/release/`.
+The built extension is output to `extension/dist/`. Load it as an unpacked extension in Chrome.
 
-### Automated release via GitHub Actions
+### Creating a release
 
-Tag a version and push:
+Tag and push to trigger the GitHub Actions release workflow:
 
 ```bash
-git tag v0.2.0
-git push origin v0.2.0
+git tag ext-v0.1.3
+git push origin ext-v0.1.3
 ```
 
-The workflow builds the installers and publishes them as a GitHub Release.
+The workflow builds the extension, creates `openloom-chrome.zip`, and publishes it as a GitHub Release.
 
 ---
 
-## Deployment (web viewer)
+## Web viewer deployment
 
-The web viewer is configured for Netlify:
+The web viewer auto-deploys to GitHub Pages on push to `main` when files in `webviewer/` change.
+
+To build manually:
 
 ```bash
 cd webviewer
 npm run build
 ```
 
-The `netlify.toml` at the repo root handles build settings. Alternatively, deploy the static export from `webviewer/.next` to any static host.
+Produces a static export in `webviewer/out/` that can be deployed to any static host.
 
 ---
 
-## Documentation
+## Backend support
 
-- **[ARCHITECTURE.md](./ARCHITECTURE.md)** — Process architecture, recording pipeline, data flow
-- **[firebase.md](./firebase.md)** — Firebase/GCP services, permissions, provisioning details
+| Provider | Status |
+|----------|--------|
+| **Supabase** | Supported — fully integrated with auto-provisioning |
+| Firebase | Coming soon |
+| Convex | Coming soon |
+
+---
+
+## Privacy
+
+- The extension collects **no analytics, telemetry, or personal data**
+- The marketing site (openloom.live) uses [GoatCounter](https://www.goatcounter.com) — cookieless, privacy-friendly, open-source analytics
+- Video player pages (`/v/...`) are **excluded** from analytics
+- Full [Privacy Policy](https://openloom.live/privacy)
 
 ---
 
 ## Contributing
 
-PRs and issues are welcome. This project is in early development (v0.2.0).
+PRs and issues are welcome.
 
 1. Fork the repo
 2. Create a feature branch
