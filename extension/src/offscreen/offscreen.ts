@@ -24,6 +24,12 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     return true // async response
   }
 
+  if (message.type === 'BEGIN_RECORDING') {
+    beginRecording()
+    sendResponse({ ok: true })
+    return false
+  }
+
   if (message.type === 'STOP_CAPTURE') {
     handleStopCapture().then(() => sendResponse({ ok: true })).catch((e) => {
       sendResponse({ ok: false, error: e instanceof Error ? e.message : String(e) })
@@ -143,12 +149,22 @@ async function handleCaptureAndRecord(options: {
   mixer = await createAudioMixer(screenStream, micStream)
   describeStream('mixer.audioStream', mixer.audioStream).forEach(debugLog)
 
-  // Create recorder
+  // Create recorder (but don't start yet — wait for BEGIN_RECORDING after countdown)
   const bitrate = options.hd ? 5_000_000 : 2_500_000
   debugLog(`Creating recorder with bitrate=${bitrate}...`)
   recorder = createRecorder(compositor.stream, mixer.audioStream, bitrate)
 
-  // Start recording
+  // Signal that display was selected and streams are ready
+  debugLog('Display selected, waiting for BEGIN_RECORDING...')
+  chrome.runtime.sendMessage({ type: 'DISPLAY_SELECTED' })
+}
+
+function beginRecording() {
+  if (!recorder) {
+    debugLog('beginRecording called but no recorder available')
+    return
+  }
+
   recorder.start()
   debugLog('Recording started')
 

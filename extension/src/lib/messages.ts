@@ -86,7 +86,15 @@ export interface ReadBlobMessage {
   blobId: string
 }
 
+export interface BeginRecordingMessage {
+  type: 'BEGIN_RECORDING'
+}
+
 // ─── Offscreen → Service Worker ─────────────────────────────────────────────
+
+export interface DisplaySelectedMessage {
+  type: 'DISPLAY_SELECTED'
+}
 
 export interface CaptureStartedMessage {
   type: 'CAPTURE_STARTED'
@@ -167,8 +175,10 @@ export type OffscreenMessage =
   | CaptureAndRecordMessage
   | StopCaptureMessage
   | ReadBlobMessage
+  | BeginRecordingMessage
 
 export type OffscreenResponse =
+  | DisplaySelectedMessage
   | CaptureStartedMessage
   | RecordingStoppedMessage
   | ElapsedUpdateMessage

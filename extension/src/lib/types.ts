@@ -52,6 +52,7 @@ export interface VideoInsert {
 
 export type RecordingPhase =
   | 'idle'
+  | 'preparing'
   | 'countdown'
   | 'recording'
   | 'review'

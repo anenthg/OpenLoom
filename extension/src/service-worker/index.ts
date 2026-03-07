@@ -183,6 +183,19 @@ async function handleMessage(message: ExtensionMessage): Promise<unknown> {
       return chrome.runtime.sendMessage({ type: 'SET_MIC_MUTED', muted: message.muted })
 
     // ─── Offscreen events ─────────────────────────────
+    case 'DISPLAY_SELECTED':
+      // User picked a tab/window — now start the countdown
+      updateState({ phase: 'countdown', error: null })
+      // After 3s countdown, tell offscreen to begin recording
+      setTimeout(async () => {
+        try {
+          await chrome.runtime.sendMessage({ type: 'BEGIN_RECORDING' })
+        } catch (e) {
+          console.error('[sw] Failed to send BEGIN_RECORDING:', e)
+        }
+      }, 3000)
+      return { ok: true }
+
     case 'CAPTURE_STARTED':
       updateState({ phase: 'recording', elapsed: 0 })
       return { ok: true }
@@ -278,7 +291,7 @@ async function handleStartRecording(
 ): Promise<unknown> {
   try {
     startKeepAlive()
-    updateState({ phase: 'countdown', error: null })
+    updateState({ phase: 'preparing', error: null })
 
     // Create offscreen document
     await ensureOffscreenDocument()
@@ -286,8 +299,8 @@ async function handleStartRecording(
     // Small delay for offscreen to be ready
     await new Promise((r) => setTimeout(r, 200))
 
-    // Tell offscreen to start capturing (countdown happens in the side panel UI)
-    // The offscreen document handles getDisplayMedia + compositor + recording
+    // Tell offscreen to get display media (shows browser picker)
+    // Countdown starts only after user selects a tab/window (DISPLAY_SELECTED)
     const result = await chrome.runtime.sendMessage({
       type: 'CAPTURE_AND_RECORD',
       camera,

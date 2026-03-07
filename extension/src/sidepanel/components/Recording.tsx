@@ -139,6 +139,15 @@ export default function Recording({ settings }: Props) {
       content = <RecordingSetup onStart={handleRecordingStart} />
       break
 
+    case 'preparing':
+      content = (
+        <div className="flex flex-col items-center justify-center h-full p-8 text-center gap-3">
+          <div className="w-8 h-8 border-2 border-zinc-600 border-t-white rounded-full animate-spin" />
+          <p className="text-sm text-zinc-400">Select a tab or window to record</p>
+        </div>
+      )
+      break
+
     case 'countdown':
       content = <Countdown value={countdownValue} />
       break
