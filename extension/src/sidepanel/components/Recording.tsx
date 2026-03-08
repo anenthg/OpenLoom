@@ -144,6 +144,9 @@ export default function Recording({ settings }: Props) {
         <div className="flex flex-col items-center justify-center h-full p-8 text-center gap-3">
           <div className="w-8 h-8 border-2 border-zinc-600 border-t-white rounded-full animate-spin" />
           <p className="text-sm text-zinc-400">Select a tab or window to record</p>
+          <p className="text-xs text-zinc-500 max-w-[220px]">
+            Can&apos;t see the window you want? Exit Chrome fullscreen first (F11 or Esc).
+          </p>
         </div>
       )
       break

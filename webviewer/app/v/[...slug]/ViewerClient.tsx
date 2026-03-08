@@ -672,6 +672,27 @@ export default function VideoViewerPage() {
                 </svg>
                 {copied ? "Copied!" : "Share"}
               </button>
+              {videoSrc && (
+                <button
+                  onClick={async () => {
+                    const res = await fetch(videoSrc);
+                    const blob = await res.blob();
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = `${videoMeta.title || "recording"}.webm`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  }}
+                  className="group relative flex cursor-pointer items-center gap-2 overflow-hidden rounded-lg bg-[var(--warp-indigo)] px-5 py-2.5 text-sm font-semibold text-[var(--cotton)] transition-all hover:shadow-[0_0_20px_rgba(217,43,43,0.2)] active:scale-[0.97]"
+                >
+                  <span className="pointer-events-none absolute inset-x-0 bottom-0 h-[3px] bg-[repeating-linear-gradient(90deg,var(--crimson)_0px,var(--crimson)_8px,var(--mustard)_8px,var(--mustard)_16px,var(--emerald)_16px,var(--emerald)_24px)] opacity-60 transition-opacity group-hover:opacity-100" />
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                  </svg>
+                  Download
+                </button>
+              )}
             </div>
           </div>
         </div>

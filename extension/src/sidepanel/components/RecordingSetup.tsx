@@ -283,13 +283,20 @@ export default function RecordingSetup({ onStart }: Props) {
 
       {/* Grant permission button */}
       {needsPermission && (
-        <button
-          onClick={handleGrantPermission}
-          disabled={waitingForPermission}
-          className="mb-4 px-5 py-2.5 bg-[var(--mustard)] hover:brightness-110 active:scale-[0.97] disabled:bg-zinc-700 disabled:text-zinc-400 text-zinc-900 rounded-lg text-sm font-semibold transition-all"
-        >
-          {waitingForPermission ? 'Waiting for permission...' : 'Grant Camera & Mic Access'}
-        </button>
+        <>
+          <button
+            onClick={handleGrantPermission}
+            disabled={waitingForPermission}
+            className="mb-4 px-5 py-2.5 bg-[var(--mustard)] hover:brightness-110 active:scale-[0.97] disabled:bg-zinc-700 disabled:text-zinc-400 text-zinc-900 rounded-lg text-sm font-semibold transition-all"
+          >
+            {waitingForPermission ? 'Waiting for permission...' : 'Grant Camera & Mic Access'}
+          </button>
+          <img
+            src="../assets-static/permission.png"
+            alt="How to grant camera and mic permission"
+            className="mb-4 w-full max-w-xs rounded-lg border border-zinc-700/50"
+          />
+        </>
       )}
 
       {waitingForPermission && (

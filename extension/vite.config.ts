@@ -22,6 +22,11 @@ export default defineConfig({
         if (existsSync(iconsDir)) {
           cpSync(iconsDir, resolve(dist, 'icons'), { recursive: true })
         }
+        // Copy static assets (images) if they exist
+        const assetsStaticDir = resolve(__dirname, 'assets')
+        if (existsSync(assetsStaticDir)) {
+          cpSync(assetsStaticDir, resolve(dist, 'assets-static'), { recursive: true })
+        }
       },
     },
   ],
