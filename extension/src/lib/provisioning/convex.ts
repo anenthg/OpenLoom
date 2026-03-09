@@ -1,5 +1,11 @@
 import type { AppSettings } from '../types'
 import type { ProvisioningStep, StepUpdateCallback } from './types'
+import {
+  SCHEMA_BUNDLE,
+  VIDEOS_BUNDLE,
+  REACTIONS_BUNDLE,
+  HTTP_BUNDLE,
+} from './convex-bundles.generated'
 
 export const CONVEX_FUNCTIONS_VERSION = '1.0.0'
 
@@ -15,334 +21,6 @@ function log(msg: string, data?: unknown): void {
     console.log(`[deploy-convex ${ts}] ${msg}`)
   }
 }
-
-// ---------------------------------------------------------------------------
-// Embedded Convex function sources (same as desktop)
-// ---------------------------------------------------------------------------
-
-const CONVEX_SCHEMA_TS = `
-import { defineSchema, defineTable } from "convex/server";
-import { v } from "convex/values";
-
-export default defineSchema({
-  videos: defineTable({
-    short_code: v.string(),
-    title: v.string(),
-    description: v.optional(v.union(v.string(), v.null())),
-    storage_url: v.string(),
-    storage_id: v.optional(v.id("_storage")),
-    view_count: v.number(),
-    duration_ms: v.optional(v.union(v.number(), v.null())),
-    capture_mode: v.string(),
-    created_at: v.string(),
-    is_protected: v.optional(v.boolean()),
-    password_salt: v.optional(v.string()),
-  })
-    .index("by_short_code", ["short_code"])
-    .index("by_created_at", ["created_at"]),
-
-  reactions: defineTable({
-    video_short_code: v.string(),
-    emoji: v.string(),
-    timestamp: v.number(),
-    created_at: v.string(),
-  }).index("by_video_short_code", ["video_short_code"]),
-});
-`.trim()
-
-const CONVEX_VIDEOS_TS = `
-import { query, mutation } from "./_generated/server";
-import { v } from "convex/values";
-
-export const getByShortCode = query({
-  args: { shortCode: v.string() },
-  handler: async (ctx, args) => {
-    return await ctx.db
-      .query("videos")
-      .withIndex("by_short_code", (q) => q.eq("short_code", args.shortCode))
-      .first();
-  },
-});
-
-export const list = query({
-  args: {},
-  handler: async (ctx) => {
-    return await ctx.db
-      .query("videos")
-      .withIndex("by_created_at")
-      .order("desc")
-      .collect();
-  },
-});
-
-export const insert = mutation({
-  args: {
-    short_code: v.string(),
-    title: v.string(),
-    description: v.optional(v.union(v.string(), v.null())),
-    storage_url: v.string(),
-    storage_id: v.optional(v.id("_storage")),
-    view_count: v.number(),
-    duration_ms: v.optional(v.union(v.number(), v.null())),
-    capture_mode: v.string(),
-    created_at: v.string(),
-    is_protected: v.optional(v.boolean()),
-    password_salt: v.optional(v.string()),
-  },
-  handler: async (ctx, args) => {
-    return await ctx.db.insert("videos", args);
-  },
-});
-
-export const incrementViewCount = mutation({
-  args: { shortCode: v.string() },
-  handler: async (ctx, args) => {
-    const video = await ctx.db
-      .query("videos")
-      .withIndex("by_short_code", (q) => q.eq("short_code", args.shortCode))
-      .first();
-    if (!video) throw new Error("Video not found");
-    await ctx.db.patch(video._id, { view_count: video.view_count + 1 });
-  },
-});
-
-export const remove = mutation({
-  args: { shortCode: v.string() },
-  handler: async (ctx, args) => {
-    const video = await ctx.db
-      .query("videos")
-      .withIndex("by_short_code", (q) => q.eq("short_code", args.shortCode))
-      .first();
-    if (!video) return;
-
-    // Delete from storage if storage_id exists
-    if (video.storage_id) {
-      await ctx.storage.delete(video.storage_id);
-    }
-
-    // Delete all reactions for this video
-    const reactions = await ctx.db
-      .query("reactions")
-      .withIndex("by_video_short_code", (q) =>
-        q.eq("video_short_code", args.shortCode)
-      )
-      .collect();
-    for (const reaction of reactions) {
-      await ctx.db.delete(reaction._id);
-    }
-
-    // Delete the video
-    await ctx.db.delete(video._id);
-  },
-});
-
-export const generateUploadUrl = mutation({
-  args: {},
-  handler: async (ctx) => {
-    return await ctx.storage.generateUploadUrl();
-  },
-});
-`.trim()
-
-const CONVEX_REACTIONS_TS = `
-import { query, mutation } from "./_generated/server";
-import { v } from "convex/values";
-
-export const listByVideo = query({
-  args: { videoShortCode: v.string() },
-  handler: async (ctx, args) => {
-    return await ctx.db
-      .query("reactions")
-      .withIndex("by_video_short_code", (q) =>
-        q.eq("video_short_code", args.videoShortCode)
-      )
-      .collect();
-  },
-});
-
-export const add = mutation({
-  args: {
-    video_short_code: v.string(),
-    emoji: v.string(),
-    timestamp: v.number(),
-  },
-  handler: async (ctx, args) => {
-    return await ctx.db.insert("reactions", {
-      video_short_code: args.video_short_code,
-      emoji: args.emoji,
-      timestamp: args.timestamp,
-      created_at: new Date().toISOString(),
-    });
-  },
-});
-`.trim()
-
-const CONVEX_HTTP_TS = `
-import { httpRouter } from "convex/server";
-import { httpAction } from "./_generated/server";
-
-const http = httpRouter();
-
-// GET /v?code=xxx -- video metadata
-http.route({
-  path: "/v",
-  method: "GET",
-  handler: httpAction(async (ctx, request) => {
-    const url = new URL(request.url);
-    const code = url.searchParams.get("code");
-    if (!code) {
-      return new Response(JSON.stringify({ error: "code is required" }), {
-        status: 400,
-        headers: corsHeaders(),
-      });
-    }
-    const video = await ctx.runQuery("videos:getByShortCode" as any, { shortCode: code });
-    if (!video) {
-      return new Response(JSON.stringify({ error: "Video not found" }), {
-        status: 404,
-        headers: corsHeaders(),
-      });
-    }
-    return new Response(JSON.stringify(video), { headers: corsHeaders() });
-  }),
-});
-
-// POST /view -- increment view count
-http.route({
-  path: "/view",
-  method: "POST",
-  handler: httpAction(async (ctx, request) => {
-    const body = await request.json();
-    const code = (body as any).code;
-    if (!code) {
-      return new Response(JSON.stringify({ error: "code is required" }), {
-        status: 400,
-        headers: corsHeaders(),
-      });
-    }
-    await ctx.runMutation("videos:incrementViewCount" as any, { shortCode: code });
-    return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders() });
-  }),
-});
-
-// GET /reactions?code=xxx -- list reactions
-http.route({
-  path: "/reactions",
-  method: "GET",
-  handler: httpAction(async (ctx, request) => {
-    const url = new URL(request.url);
-    const code = url.searchParams.get("code");
-    if (!code) {
-      return new Response(JSON.stringify({ error: "code is required" }), {
-        status: 400,
-        headers: corsHeaders(),
-      });
-    }
-    const reactions = await ctx.runQuery("reactions:listByVideo" as any, {
-      videoShortCode: code,
-    });
-    return new Response(JSON.stringify(reactions), { headers: corsHeaders() });
-  }),
-});
-
-// POST /reactions/add -- add reaction
-http.route({
-  path: "/reactions/add",
-  method: "POST",
-  handler: httpAction(async (ctx, request) => {
-    const body = await request.json();
-    const { code, emoji, timestamp } = body as any;
-    if (!code || !emoji || typeof timestamp !== "number") {
-      return new Response(
-        JSON.stringify({ error: "code, emoji, and timestamp are required" }),
-        { status: 400, headers: corsHeaders() }
-      );
-    }
-    await ctx.runMutation("reactions:add" as any, {
-      video_short_code: code,
-      emoji,
-      timestamp,
-    });
-    return new Response(JSON.stringify({ ok: true }), {
-      status: 201,
-      headers: corsHeaders(),
-    });
-  }),
-});
-
-// GET /video -- 302 redirect to fresh signed storage URL
-http.route({
-  path: "/video",
-  method: "GET",
-  handler: httpAction(async (ctx, request) => {
-    const url = new URL(request.url);
-    const code = url.searchParams.get("code");
-    if (!code) {
-      return new Response("code is required", { status: 400 });
-    }
-    const video = await ctx.runQuery("videos:getByShortCode" as any, { shortCode: code });
-    if (!video || !video.storage_id) {
-      return new Response("Video not found", { status: 404 });
-    }
-    const storageUrl = await ctx.storage.getUrl(video.storage_id);
-    if (!storageUrl) {
-      return new Response("Storage URL not available", { status: 404 });
-    }
-    return new Response(null, {
-      status: 302,
-      headers: { Location: storageUrl, "Cache-Control": "no-cache" },
-    });
-  }),
-});
-
-function corsHeaders() {
-  return {
-    "Content-Type": "application/json",
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type",
-  };
-}
-
-// Handle CORS preflight for all routes
-http.route({
-  path: "/v",
-  method: "OPTIONS",
-  handler: httpAction(async () => {
-    return new Response(null, { status: 204, headers: corsHeaders() });
-  }),
-});
-http.route({
-  path: "/view",
-  method: "OPTIONS",
-  handler: httpAction(async () => {
-    return new Response(null, { status: 204, headers: corsHeaders() });
-  }),
-});
-http.route({
-  path: "/reactions",
-  method: "OPTIONS",
-  handler: httpAction(async () => {
-    return new Response(null, { status: 204, headers: corsHeaders() });
-  }),
-});
-http.route({
-  path: "/reactions/add",
-  method: "OPTIONS",
-  handler: httpAction(async () => {
-    return new Response(null, { status: 204, headers: corsHeaders() });
-  }),
-});
-http.route({
-  path: "/video",
-  method: "OPTIONS",
-  handler: httpAction(async () => {
-    return new Response(null, { status: 204, headers: corsHeaders() });
-  }),
-});
-
-export default http;
-`.trim()
 
 // ---------------------------------------------------------------------------
 // Convex deployment API helpers
@@ -378,10 +56,10 @@ function parseDeployKey(deployKey: string): {
  */
 function buildModules(): { path: string; source: string; environment: string }[] {
   return [
-    { path: 'schema.js', source: CONVEX_SCHEMA_TS, environment: 'isolate' },
-    { path: 'videos.js', source: CONVEX_VIDEOS_TS, environment: 'isolate' },
-    { path: 'reactions.js', source: CONVEX_REACTIONS_TS, environment: 'isolate' },
-    { path: 'http.js', source: CONVEX_HTTP_TS, environment: 'node' },
+    { path: 'schema.js', source: SCHEMA_BUNDLE, environment: 'isolate' },
+    { path: 'videos.js', source: VIDEOS_BUNDLE, environment: 'isolate' },
+    { path: 'reactions.js', source: REACTIONS_BUNDLE, environment: 'isolate' },
+    { path: 'http.js', source: HTTP_BUNDLE, environment: 'node' },
   ]
 }
 
@@ -426,18 +104,18 @@ async function startPush(
       dryRun: false,
       functions: 'convex',
       appDefinition: {
+        definition: null,
+        dependencies: [],
         schema: schemaModule
-          ? { path: schemaModule.path, source: schemaModule.source, sourceMap: null, environment: schemaModule.environment }
+          ? { path: schemaModule.path, source: schemaModule.source, environment: schemaModule.environment }
           : null,
         changedModules: functionModules.map((m) => ({
           path: m.path,
           source: m.source,
-          sourceMap: null,
           environment: m.environment,
         })),
         unchangedModuleHashes: [],
         udfServerVersion: '1.32.0',
-        dependencies: [],
       },
       componentDefinitions: [],
       nodeDependencies: [],

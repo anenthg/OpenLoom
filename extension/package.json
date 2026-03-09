@@ -4,9 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite build --watch",
-    "build": "tsc && vite build",
-    "typecheck": "tsc --noEmit"
+    "dev": "node scripts/bundle-convex.mjs && vite build --watch",
+    "build": "node scripts/bundle-convex.mjs && tsc && vite build",
+    "typecheck": "node scripts/bundle-convex.mjs && tsc --noEmit",
+    "test:e2e": "npx playwright test"
   },
   "dependencies": {
     "fflate": "^0.8.2",
@@ -14,11 +15,15 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@tailwindcss/vite": "^4.0.0",
     "@types/chrome": "^0.0.287",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.0.0",
+    "convex": "^1.32.0",
+    "esbuild": "^0.27.3",
+    "serve": "^14.2.6",
     "tailwindcss": "^4.0.0",
     "typescript": "^5.7.0",
     "vite": "^6.0.0"

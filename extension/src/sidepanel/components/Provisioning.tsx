@@ -39,9 +39,10 @@ const FIREBASE_STEPS: ProvisioningStep[] = [
 ]
 
 const CONVEX_STEPS: ProvisioningStep[] = [
-  { id: 'verify-access', label: 'Verifying database access...', status: 'pending' },
-  { id: 'verify-storage', label: 'Verifying file storage...', status: 'pending' },
-  { id: 'deploy-functions', label: 'Deploying backend functions...', status: 'pending' },
+  { id: 'verify-access', label: 'Verifying Convex deployment access...', status: 'pending' },
+  { id: 'push-functions', label: 'Pushing schema & functions...', status: 'pending' },
+  { id: 'wait-schema', label: 'Validating schema...', status: 'pending' },
+  { id: 'finalize', label: 'Finalizing deployment...', status: 'pending' },
 ]
 
 const SUPABASE_STEPS: ProvisioningStep[] = [
