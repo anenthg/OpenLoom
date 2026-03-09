@@ -297,12 +297,44 @@ async function setupDatabase(
 // Storage setup
 // ---------------------------------------------------------------------------
 
+const DESIRED_FILE_SIZE_LIMIT = 524_288_000 // 500 MB
+const FREE_TIER_FILE_SIZE_LIMIT = 52_428_800 // 50 MB
+
+/** Sets up the storage bucket and returns the effective file size limit in bytes. */
 async function setupStorage(
   projectUrl: string,
   serviceRoleKey: string,
-): Promise<void> {
+  projectRef: string,
+  accessToken: string,
+): Promise<number> {
   log('Setting up storage bucket...')
   const url = projectUrl.replace(/\/+$/, '')
+
+  // Try to raise the project-level upload size limit via Management API.
+  // Free-tier projects are capped at 50 MB; paid plans allow higher.
+  let effectiveLimit = FREE_TIER_FILE_SIZE_LIMIT
+  try {
+    const configRes = await fetch(
+      `https://api.supabase.com/v1/projects/${projectRef}/config/storage`,
+      {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ fileSizeLimit: DESIRED_FILE_SIZE_LIMIT }),
+      },
+    )
+    if (configRes.ok) {
+      effectiveLimit = DESIRED_FILE_SIZE_LIMIT
+      log('Project-level storage file size limit set to 500 MB')
+    } else {
+      // 402 = plan doesn't allow this limit; stay at free-tier default
+      log(`Project storage config returned ${configRes.status}, using ${effectiveLimit} byte limit`)
+    }
+  } catch (e) {
+    log(`Failed to update project storage config: ${e instanceof Error ? e.message : String(e)}`)
+  }
 
   // Create 'videos' bucket with public read
   const res = await fetch(`${url}/storage/v1/bucket`, {
@@ -321,28 +353,31 @@ async function setupStorage(
 
   if (!res.ok) {
     const text = await res.text()
-    // 409 = bucket already exists -- ensure it's public
-    if (res.status === 409 || text.includes('already exists')) {
-      log('Storage bucket already exists, ensuring it is public...')
-      const updateRes = await fetch(`${url}/storage/v1/bucket/videos`, {
-        method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${serviceRoleKey}`,
-          apikey: serviceRoleKey,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ public: true }),
-      })
-      if (!updateRes.ok) {
-        const updateText = await updateRes.text()
-        log(`Warning: could not update bucket to public: ${updateRes.status} ${updateText}`)
-      }
-      return
+    if (res.status !== 409 && !text.includes('already exists')) {
+      throw new Error(`Storage bucket creation failed: ${res.status} ${text}`)
     }
-    throw new Error(`Storage bucket creation failed: ${res.status} ${text}`)
+    log('Storage bucket already exists, will update settings...')
+  } else {
+    log('Storage bucket created successfully')
   }
 
-  log('Storage bucket created successfully')
+  // Update bucket with the effective limit
+  const updateRes = await fetch(`${url}/storage/v1/bucket/videos`, {
+    method: 'PUT',
+    headers: {
+      Authorization: `Bearer ${serviceRoleKey}`,
+      apikey: serviceRoleKey,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ public: true, file_size_limit: effectiveLimit }),
+  })
+  if (!updateRes.ok) {
+    const updateText = await updateRes.text()
+    log(`Warning: could not update bucket settings: ${updateRes.status} ${updateText}`)
+  }
+
+  log(`Effective file size limit: ${(effectiveLimit / 1024 / 1024).toFixed(0)} MB`)
+  return effectiveLimit
 }
 
 // ---------------------------------------------------------------------------
@@ -468,7 +503,8 @@ export async function deploySupabase(
     // Step 2: Create storage bucket
     updateStep('setup-storage', { status: 'running' })
     log('Step 2/3: Setting up storage bucket...')
-    await setupStorage(projectUrl, serviceRoleKey)
+    const fileSizeLimit = await setupStorage(projectUrl, serviceRoleKey, projectRef, accessToken)
+    settings.supabaseFileSizeLimit = fileSizeLimit
     updateStep('setup-storage', { status: 'done' })
     log('Step 2/3: Storage setup complete')
 

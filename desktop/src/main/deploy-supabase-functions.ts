@@ -309,10 +309,38 @@ export async function setupSupabaseDatabase(
 export async function setupSupabaseStorage(
   projectUrl: string,
   serviceRoleKey: string,
+  projectRef: string,
+  accessToken: string,
 ): Promise<{ ok: boolean; error?: string }> {
   try {
     log('Setting up storage bucket...')
     const url = projectUrl.replace(/\/+$/, '')
+    const FILE_SIZE_LIMIT = 524288000 // 500 MB
+
+    // Raise the project-level upload size limit (default 50 MB) via Management API.
+    // Without this, TUS CREATE rejects large files with 413 before the bucket limit
+    // is even checked.
+    try {
+      const configRes = await net.fetch(
+        `https://api.supabase.com/v1/projects/${projectRef}/config/storage`,
+        {
+          method: 'PATCH',
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ fileSizeLimit: FILE_SIZE_LIMIT }),
+        },
+      )
+      if (!configRes.ok) {
+        const text = await configRes.text()
+        log(`Warning: could not update project storage config: ${configRes.status} ${text}`)
+      } else {
+        log('Project-level storage file size limit set to 500 MB')
+      }
+    } catch (e) {
+      log(`Warning: failed to update project storage config: ${e instanceof Error ? e.message : String(e)}`)
+    }
 
     // Create 'videos' bucket with public read
     const res = await net.fetch(`${url}/storage/v1/bucket`, {
@@ -331,28 +359,30 @@ export async function setupSupabaseStorage(
 
     if (!res.ok) {
       const text = await res.text()
-      // 409 = bucket already exists — ensure it's public
-      if (res.status === 409 || text.includes('already exists')) {
-        log('Storage bucket already exists, ensuring it is public...')
-        const updateRes = await net.fetch(`${url}/storage/v1/bucket/videos`, {
-          method: 'PUT',
-          headers: {
-            Authorization: `Bearer ${serviceRoleKey}`,
-            apikey: serviceRoleKey,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ public: true }),
-        })
-        if (!updateRes.ok) {
-          const updateText = await updateRes.text()
-          log(`Warning: could not update bucket to public: ${updateRes.status} ${updateText}`)
-        }
-        return { ok: true }
+      // 409 = bucket already exists — that's fine, we'll update below
+      if (res.status !== 409 && !text.includes('already exists')) {
+        throw new Error(`Storage bucket creation failed: ${res.status} ${text}`)
       }
-      throw new Error(`Storage bucket creation failed: ${res.status} ${text}`)
+      log('Storage bucket already exists, will update settings...')
+    } else {
+      log('Storage bucket created successfully')
     }
 
-    log('Storage bucket created successfully')
+    // Always update bucket to ensure public access + file size limit
+    const updateRes = await net.fetch(`${url}/storage/v1/bucket/videos`, {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${serviceRoleKey}`,
+        apikey: serviceRoleKey,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ public: true, file_size_limit: FILE_SIZE_LIMIT }),
+    })
+    if (!updateRes.ok) {
+      const updateText = await updateRes.text()
+      log(`Warning: could not update bucket settings: ${updateRes.status} ${updateText}`)
+    }
+
     return { ok: true }
   } catch (e) {
     return { ok: false, error: `Storage setup failed: ${e instanceof Error ? e.message : String(e)}` }
@@ -458,7 +488,7 @@ export async function deploySupabaseFunctions(
   if (!dbResult.ok) return dbResult
 
   // Step 2: Setup storage
-  const storageResult = await setupSupabaseStorage(projectUrl, serviceRoleKey)
+  const storageResult = await setupSupabaseStorage(projectUrl, serviceRoleKey, projectRef, accessToken)
   if (!storageResult.ok) return storageResult
 
   // Step 3: Deploy edge function

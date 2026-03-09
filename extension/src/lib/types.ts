@@ -23,6 +23,7 @@ export interface AppSettings {
   supabaseServiceRoleKey?: string
   supabaseAnonKey?: string
   supabaseFunctionsVersion?: string
+  supabaseFileSizeLimit?: number // bytes; detected during provisioning
 }
 
 export interface Video {

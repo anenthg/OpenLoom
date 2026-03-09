@@ -5,6 +5,7 @@ interface Props {
   elapsed: number
   previewDataUrl: string | null
   micBars: number[]
+  warning: string | null
 }
 
 function formatTime(seconds: number): string {
@@ -40,7 +41,7 @@ function AudioMeter({ bars, muted }: { bars: number[]; muted: boolean }) {
   )
 }
 
-export default function RecordingIndicator({ elapsed, previewDataUrl, micBars }: Props) {
+export default function RecordingIndicator({ elapsed, previewDataUrl, micBars, warning }: Props) {
   const [micMuted, setMicMuted] = useState(false)
 
   const handleMicToggle = () => {
@@ -77,6 +78,13 @@ export default function RecordingIndicator({ elapsed, previewDataUrl, micBars }:
           {formatTime(elapsed)}
         </span>
       </div>
+
+      {/* Duration warning */}
+      {warning && (
+        <div className="mb-3 px-3 py-1.5 rounded-lg bg-amber-500/15 text-amber-400 text-xs text-center">
+          {warning}
+        </div>
+      )}
 
       {/* Audio meter */}
       <div className="mb-4">

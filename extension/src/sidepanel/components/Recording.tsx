@@ -22,6 +22,7 @@ export default function Recording({ settings }: Props) {
   const [countdownValue, setCountdownValue] = useState(3)
   const [previewDataUrl, setPreviewDataUrl] = useState<string | null>(null)
   const [micBars, setMicBars] = useState<number[]>([])
+  const [recordingWarning, setRecordingWarning] = useState<string | null>(null)
   const [showPipLayout, setShowPipLayout] = useState(false)
   const [pendingRecordingConfig, setPendingRecordingConfig] = useState<{
     camera: boolean; mic: boolean; hd: boolean; cameraDeviceId?: string; micDeviceId?: string
@@ -43,6 +44,7 @@ export default function Recording({ settings }: Props) {
         setError(s.error)
         setShareURL(s.shareURL)
         setUploadProgress(s.uploadProgress)
+        setRecordingWarning(s.recordingWarning)
       }
       if (message.type === 'PREVIEW_FRAME' && message.dataUrl) {
         setPreviewDataUrl(message.dataUrl)
@@ -136,7 +138,7 @@ export default function Recording({ settings }: Props) {
     content = <PipLayoutPreview onContinue={handlePipContinue} onBack={handlePipBack} cameraDeviceId={pendingRecordingConfig?.cameraDeviceId} />
   } else switch (phase) {
     case 'idle':
-      content = <RecordingSetup onStart={handleRecordingStart} />
+      content = <RecordingSetup settings={settings} onStart={handleRecordingStart} />
       break
 
     case 'preparing':
@@ -156,7 +158,7 @@ export default function Recording({ settings }: Props) {
       break
 
     case 'recording':
-      content = <RecordingIndicator elapsed={elapsed} previewDataUrl={previewDataUrl} micBars={micBars} />
+      content = <RecordingIndicator elapsed={elapsed} previewDataUrl={previewDataUrl} micBars={micBars} warning={recordingWarning} />
       break
 
     case 'review':
@@ -187,7 +189,7 @@ export default function Recording({ settings }: Props) {
       break
 
     default:
-      content = <RecordingSetup onStart={handleRecordingStart} />
+      content = <RecordingSetup settings={settings} onStart={handleRecordingStart} />
   }
 
   return content

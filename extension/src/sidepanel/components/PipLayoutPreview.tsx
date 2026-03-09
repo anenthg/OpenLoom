@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 import type { PipConfig } from '../../lib/types'
 import { DEFAULT_PIP_CONFIG } from '../../lib/types'
+import { loadPreferences, savePreferences } from '../../lib/preferences'
 
 interface Props {
   onContinue: (pipConfig: PipConfig) => void
@@ -15,10 +16,19 @@ const SIZE_STEP = 0.02
 
 export default function PipLayoutPreview({ onContinue, onBack, cameraDeviceId }: Props) {
   const [config, setConfig] = useState<PipConfig>(DEFAULT_PIP_CONFIG)
+  const [prefsLoaded, setPrefsLoaded] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const draggingRef = useRef(false)
   const streamRef = useRef<MediaStream | null>(null)
+
+  // Load saved PIP config on mount
+  useEffect(() => {
+    loadPreferences().then((prefs) => {
+      if (prefs.pipConfig) setConfig(prefs.pipConfig)
+      setPrefsLoaded(true)
+    })
+  }, [])
 
   // Start camera preview
   useEffect(() => {
@@ -91,6 +101,8 @@ export default function PipLayoutPreview({ onContinue, onBack, cameraDeviceId }:
   const pipTop = `${(config.y - config.size / 2) * 100}%`
   const pipW = `${config.size * 100}%`
 
+  if (!prefsLoaded) return null
+
   return (
     <div className="flex flex-col items-center justify-center h-full p-6 gap-5">
       <div className="text-center">
@@ -157,7 +169,10 @@ export default function PipLayoutPreview({ onContinue, onBack, cameraDeviceId }:
           Back
         </button>
         <button
-          onClick={() => onContinue(config)}
+          onClick={() => {
+            savePreferences({ pipConfig: config })
+            onContinue(config)
+          }}
           className="px-5 py-2.5 bg-[var(--crimson)] hover:brightness-110 active:scale-[0.97] text-white rounded-lg text-sm font-semibold transition-all"
         >
           Continue

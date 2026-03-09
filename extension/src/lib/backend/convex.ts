@@ -204,7 +204,7 @@ export async function convexDelete(
 
 export async function convexUpload(
   _remotePath: string,
-  fileData: ArrayBuffer,
+  fileData: Blob,
   contentType: string,
 ): Promise<{ ok: boolean; url?: string; storageId?: string; error?: string }> {
   try {

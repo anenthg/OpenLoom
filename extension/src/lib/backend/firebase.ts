@@ -387,7 +387,7 @@ function getBucket(): string {
 
 export async function firebaseUpload(
   remotePath: string,
-  fileData: ArrayBuffer,
+  fileData: Blob,
   contentType: string,
 ): Promise<{ ok: boolean; url?: string; error?: string }> {
   try {

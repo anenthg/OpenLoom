@@ -193,12 +193,13 @@ export async function dbDelete(
 export async function fileUpload(
   settings: AppSettings,
   remotePath: string,
-  fileData: ArrayBuffer,
+  fileData: Blob,
   contentType: string,
+  onProgress?: (fraction: number) => void,
 ): Promise<{ ok: boolean; url?: string; storageId?: string; error?: string }> {
   const provider = settings.provider || 'firebase'
   if (provider === 'convex') return convexUpload(remotePath, fileData, contentType)
-  if (provider === 'supabase') return supabaseUpload(remotePath, fileData, contentType)
+  if (provider === 'supabase') return supabaseUpload(remotePath, fileData, contentType, onProgress)
   return firebaseUpload(remotePath, fileData, contentType)
 }
 

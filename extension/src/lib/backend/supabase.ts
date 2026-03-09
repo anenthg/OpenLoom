@@ -234,30 +234,125 @@ export async function supabaseDelete(
 
 export async function supabaseUpload(
   remotePath: string,
-  fileData: ArrayBuffer,
+  fileData: Blob,
   contentType: string,
+  onProgress?: (fraction: number) => void,
 ): Promise<{ ok: boolean; url?: string; error?: string }> {
   try {
     // remotePath is "videos/shortCode.webm" — first segment is the bucket name
     const slashIdx = remotePath.indexOf('/')
     const bucket = slashIdx > 0 ? remotePath.slice(0, slashIdx) : 'videos'
     const filePath = slashIdx > 0 ? remotePath.slice(slashIdx + 1) : remotePath
-    const res = await fetch(
-      `${getProjectUrl()}/storage/v1/object/${bucket}/${filePath}`,
-      {
-        method: 'POST',
-        headers: {
-          ...authHeaders(),
-          'Content-Type': contentType,
-        },
-        body: new Uint8Array(fileData),
+
+    const totalSize = fileData.size
+    const baseUrl = getProjectUrl()
+    const headers = authHeaders()
+
+    // --- TUS resumable upload ---
+
+    // 1. Create upload session
+    const metadataFields = [
+      `bucketName ${btoa(bucket)}`,
+      `objectName ${btoa(filePath)}`,
+      `contentType ${btoa(contentType)}`,
+    ]
+
+    const createRes = await fetch(`${baseUrl}/storage/v1/upload/resumable`, {
+      method: 'POST',
+      headers: {
+        ...headers,
+        'Tus-Resumable': '1.0.0',
+        'Upload-Length': String(totalSize),
+        'Upload-Metadata': metadataFields.join(','),
+        'x-upsert': 'true',
       },
-    )
-    if (!res.ok) {
-      const text = await res.text()
-      throw new Error(`Storage upload failed: ${res.status} ${text}`)
+    })
+
+    if (!createRes.ok) {
+      const text = await createRes.text()
+      const sizeMB = (totalSize / 1024 / 1024).toFixed(1)
+      if (createRes.status === 413) {
+        throw new Error(
+          `File too large (${sizeMB} MB). Supabase free plan allows up to 50 MB per upload. ` +
+          `Use SD quality, record a shorter clip, or upgrade to a paid Supabase plan.`
+        )
+      }
+      throw new Error(`TUS create failed: ${createRes.status} ${text}`)
     }
-    const publicUrl = `${getProjectUrl()}/storage/v1/object/public/${bucket}/${filePath}`
+
+    const uploadUrl = createRes.headers.get('Location')
+    if (!uploadUrl) {
+      throw new Error('TUS create response missing Location header')
+    }
+
+    // 2. Upload in 6MB chunks with retry + exponential backoff
+    const CHUNK_SIZE = 6 * 1024 * 1024
+    const MAX_RETRIES = 5
+    let offset = 0
+
+    while (offset < totalSize) {
+      const end = Math.min(offset + CHUNK_SIZE, totalSize)
+      const chunk = await fileData.slice(offset, end).arrayBuffer()
+
+      let success = false
+      for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+        if (attempt > 0) {
+          // Exponential backoff: 2s, 4s, 8s, 16s
+          await new Promise((r) => setTimeout(r, Math.min(2000 * 2 ** (attempt - 1), 16000)))
+        }
+
+        try {
+          const patchRes = await fetch(uploadUrl, {
+            method: 'PATCH',
+            headers: {
+              ...headers,
+              'Tus-Resumable': '1.0.0',
+              'Upload-Offset': String(offset),
+              'Content-Type': 'application/offset+octet-stream',
+            },
+            body: chunk,
+          })
+
+          if (patchRes.ok || patchRes.status === 204) {
+            const newOffset = patchRes.headers.get('Upload-Offset')
+            offset = newOffset ? parseInt(newOffset, 10) : end
+            success = true
+            break
+          }
+
+          // Non-retryable status
+          if (patchRes.status >= 400 && patchRes.status < 500 && patchRes.status !== 409) {
+            const text = await patchRes.text()
+            throw new Error(`TUS upload failed: ${patchRes.status} ${text}`)
+          }
+        } catch (e) {
+          if (attempt === MAX_RETRIES - 1) throw e
+        }
+
+        // Resume: ask server for current offset
+        try {
+          const headRes = await fetch(uploadUrl, {
+            method: 'HEAD',
+            headers: {
+              ...headers,
+              'Tus-Resumable': '1.0.0',
+            },
+          })
+          const serverOffset = headRes.headers.get('Upload-Offset')
+          if (serverOffset) offset = parseInt(serverOffset, 10)
+        } catch {
+          // HEAD failed — retry with current offset
+        }
+      }
+
+      if (!success) {
+        throw new Error('TUS upload failed after max retries')
+      }
+
+      onProgress?.(offset / totalSize)
+    }
+
+    const publicUrl = `${baseUrl}/storage/v1/object/public/${bucket}/${filePath}`
     return { ok: true, url: publicUrl }
   } catch (e) {
     return { ok: false, error: `Supabase upload failed: ${e instanceof Error ? e.message : String(e)}` }
