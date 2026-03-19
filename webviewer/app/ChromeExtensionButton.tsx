@@ -1,135 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-
-const EXTENSION_ZIP_URL =
-  "https://github.com/anenthg/OpenLoom/releases/latest/download/openloom-chrome.zip";
-
-/* ------------------------------------------------------------------ */
-/* Install dialog                                                      */
-/* ------------------------------------------------------------------ */
-
-function InstallDialog({ onClose }: { onClose: () => void }) {
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
-    }
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [onClose]);
-
-  const steps = [
-    {
-      num: "1",
-      title: "Unzip the download",
-      desc: (
-        <>
-          Extract{" "}
-          <strong className="text-[var(--cotton)]/80">
-            openloom-chrome.zip
-          </strong>{" "}
-          to a folder on your computer.
-        </>
-      ),
-    },
-    {
-      num: "2",
-      title: "Open chrome://extensions",
-      desc: (
-        <>
-          Paste{" "}
-          <code className="rounded bg-[var(--deep-black)] px-1.5 py-0.5 font-mono text-xs text-[var(--emerald)]">
-            chrome://extensions
-          </code>{" "}
-          into your Chrome address bar and hit Enter.
-        </>
-      ),
-    },
-    {
-      num: "3",
-      title: "Enable Developer mode",
-      desc: (
-        <>
-          Toggle{" "}
-          <strong className="text-[var(--cotton)]/80">Developer mode</strong>{" "}
-          on using the switch in the top-right corner.
-        </>
-      ),
-    },
-    {
-      num: "4",
-      title: "Load unpacked",
-      desc: (
-        <>
-          Click{" "}
-          <strong className="text-[var(--cotton)]/80">Load unpacked</strong>{" "}
-          and select the folder you unzipped.
-        </>
-      ),
-    },
-  ];
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--deep-black)]/90 backdrop-blur-sm animate-[fadeIn_0.3s_ease]"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-    >
-      <div className="relative mx-4 w-full max-w-lg rounded-2xl border border-[var(--cotton)]/10 bg-[var(--warp-indigo)] p-8 shadow-2xl shadow-black/60 animate-[slideUp_0.3s_ease]">
-        {/* Close */}
-        <button
-          onClick={onClose}
-          className="absolute right-4 top-4 text-[var(--cotton)]/30 transition-colors hover:text-[var(--cotton)]/70"
-          aria-label="Close"
-        >
-          <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-            <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
-          </svg>
-        </button>
-
-        {/* Chrome icon */}
-        <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--crimson)]/10">
-          <ChromeIcon className="h-6 w-6" />
-        </div>
-
-        <h2 className="mb-2 text-xl font-semibold text-[var(--cotton)]">
-          Install Chrome Extension
-        </h2>
-        <p className="mb-5 text-sm leading-relaxed text-[var(--cotton)]/60">
-          The extension isn&apos;t on the Chrome Web Store yet, so you&apos;ll
-          load it manually. It only takes a minute.
-        </p>
-
-        {/* Steps */}
-        <div className="mb-6 space-y-4">
-          {steps.map((s) => (
-            <div key={s.num} className="flex gap-3">
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--cotton)]/[0.06] font-mono text-xs font-bold text-[var(--cotton)]/60">
-                {s.num}
-              </span>
-              <div>
-                <p className="text-sm font-medium text-[var(--cotton)]/80">
-                  {s.title}
-                </p>
-                <p className="mt-0.5 text-sm leading-relaxed text-[var(--cotton)]/50">
-                  {s.desc}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <button
-          onClick={onClose}
-          className="w-full rounded-lg bg-[var(--crimson)] px-6 py-3 text-sm font-semibold text-white transition-all hover:brightness-110 active:scale-[0.98]"
-        >
-          Got it
-        </button>
-      </div>
-    </div>
-  );
-}
+const CHROME_WEB_STORE_URL =
+  "https://chromewebstore.google.com/detail/openloom/hmpllnbkmfmmjnfdllckpngaljppnoec?utm_source=website";
 
 /* ------------------------------------------------------------------ */
 /* Chrome logo SVG                                                     */
@@ -154,37 +26,31 @@ function ChromeIcon({ className = "h-5 w-5" }: { className?: string }) {
 /* ------------------------------------------------------------------ */
 
 export default function HeroCTA() {
-  const [showDialog, setShowDialog] = useState(false);
-
-  const handleExtensionClick = useCallback(() => {
-    const a = document.createElement("a");
-    a.href = EXTENSION_ZIP_URL;
-    a.download = "openloom-chrome.zip";
-    a.click();
-
-    setTimeout(() => setShowDialog(true), 800);
-  }, []);
-
   return (
     <>
       {/* Primary CTA — Chrome Extension */}
-      <button
-        onClick={handleExtensionClick}
+      <a
+        href={CHROME_WEB_STORE_URL}
+        target="_blank"
+        rel="noopener noreferrer"
         className="flex items-center rounded-lg bg-[var(--crimson)] px-6 py-3 text-base font-semibold text-white transition-all cursor-pointer hover:brightness-110 hover:shadow-[0_0_30px_rgba(217,43,43,0.3)] active:scale-[0.97]"
       >
         <ChromeIcon className="mr-2 h-5 w-5" />
-        Download Chrome Extension
-      </button>
-
-      {/* How it works */}
-      <a
-        href="#how-it-works"
-        className="rounded-lg border border-[var(--cotton)]/15 px-6 py-3 text-base font-medium text-[var(--cotton)]/70 transition-all hover:border-[var(--cotton)]/30 hover:text-[var(--cotton)]"
-      >
-        How it works
+        Add to Chrome
       </a>
 
-      {showDialog && <InstallDialog onClose={() => setShowDialog(false)} />}
+      {/* See it in action */}
+      <a
+        href="https://openloom.live/v/cy1nZmVuZmljcml5amZjdWhkc2pidw/0tZYznu3"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-2 rounded-lg border border-[var(--emerald)]/20 px-6 py-3 text-base font-medium text-[var(--emerald)] transition-all hover:border-[var(--emerald)]/40 hover:bg-[var(--emerald)]/10"
+      >
+        See it in action
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M5 12h14M12 5l7 7-7 7" />
+        </svg>
+      </a>
     </>
   );
 }

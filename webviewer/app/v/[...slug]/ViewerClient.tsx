@@ -57,30 +57,6 @@ function formatDuration(ms: number | null): string {
   return `${min}:${sec.toString().padStart(2, "0")}`;
 }
 
-function decodeBase64Url(encoded: string): string {
-  const base64 = encoded.replace(/-/g, "+").replace(/_/g, "/");
-  const pad = (4 - (base64.length % 4)) % 4;
-  return atob(base64 + "=".repeat(pad));
-}
-
-function parseSlug(): { projectId: string; code: string; provider: string } | null {
-  if (typeof window === "undefined") return null;
-  const parts = window.location.pathname.split("/").filter(Boolean);
-  if (parts.length >= 3 && parts[0] === "v") {
-    try {
-      const decoded = decodeBase64Url(parts[1]);
-      const dashIdx = decoded.indexOf("-");
-      if (dashIdx < 1) return null;
-      const provider = decoded.slice(0, dashIdx);
-      const projectId = decoded.slice(dashIdx + 1);
-      if (!provider || !projectId) return null;
-      return { projectId, code: parts[2], provider };
-    } catch {
-      return null;
-    }
-  }
-  return null;
-}
 
 // ---------------------------------------------------------------------------
 // Sub-components
@@ -245,7 +221,15 @@ function ReactionTimeline({
 
 type Phase = "loading" | "not_found" | "error" | "password_gate" | "player";
 
-export default function VideoViewerPage() {
+export default function VideoViewerPage({
+  provider,
+  projectId,
+  code,
+}: {
+  provider: string;
+  projectId: string;
+  code: string;
+}) {
   const [phase, setPhase] = useState<Phase>("loading");
   const [errorMsg, setErrorMsg] = useState("");
   const [videoMeta, setVideoMeta] = useState<VideoMeta | null>(null);
@@ -266,22 +250,13 @@ export default function VideoViewerPage() {
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const plyrRef = useRef<unknown>(null);
-  const slugRef = useRef<{ projectId: string; code: string; provider: string } | null>(null);
-
   // -------------------------------------------------------------------------
-  // 1. Parse URL and fetch video metadata
+  // 1. Fetch video metadata (slug already parsed by server component)
   // -------------------------------------------------------------------------
   useEffect(() => {
-    const slug = parseSlug();
-    if (!slug) {
-      setPhase("not_found");
-      return;
-    }
-    slugRef.current = slug;
-
     (USE_MOCK
-      ? mock.fetchVideoMeta(slug.projectId, slug.code)
-      : fetchVideoMeta(slug.projectId, slug.code, slug.provider)
+      ? mock.fetchVideoMeta(projectId, code)
+      : fetchVideoMeta(projectId, code, provider)
     )
       .then((meta) => {
         setVideoMeta(meta);
@@ -297,19 +272,18 @@ export default function VideoViewerPage() {
           setPhase("error");
         }
       });
-  }, []);
+  }, [projectId, code, provider]);
 
   // -------------------------------------------------------------------------
   // 2. When entering player phase, load video blob and reactions
   // -------------------------------------------------------------------------
   useEffect(() => {
-    if (phase !== "player" || !slugRef.current) return;
-    const { projectId, code } = slugRef.current;
+    if (phase !== "player") return;
 
     if (USE_MOCK) {
       mock.incrementView();
     } else {
-      incrementView(projectId, code, slugRef.current.provider);
+      incrementView(projectId, code, provider);
     }
 
     if (USE_MOCK) {
@@ -321,10 +295,10 @@ export default function VideoViewerPage() {
       setPhase("error");
     }
 
-    (USE_MOCK ? mock.fetchReactions() : fetchReactionsEdge(projectId, code, slugRef.current.provider))
+    (USE_MOCK ? mock.fetchReactions() : fetchReactionsEdge(projectId, code, provider))
       .then((data) => setReactions(data))
       .catch(() => {});
-  }, [phase, videoMeta]);
+  }, [phase, videoMeta, projectId, code, provider]);
 
   // -------------------------------------------------------------------------
   // 3. Initialize Plyr when video src is ready
@@ -422,13 +396,10 @@ export default function VideoViewerPage() {
       setFloatingEmojis((prev) => prev.filter((f) => f.id !== id));
     }, 1600);
 
-    if (slugRef.current) {
-      const { projectId, code } = slugRef.current;
-      if (USE_MOCK) {
-        mock.addReaction();
-      } else {
-        addReactionEdge(projectId, code, emoji, timestamp, slugRef.current.provider);
-      }
+    if (USE_MOCK) {
+      mock.addReaction();
+    } else {
+      addReactionEdge(projectId, code, emoji, timestamp, provider);
     }
   }, []);
 

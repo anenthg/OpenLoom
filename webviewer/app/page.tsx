@@ -318,7 +318,7 @@ export default function LandingPage() {
 
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4" data-reveal data-delay="400">
             <a
-              href="https://openloom.live/v/cy1zb21teXFqa3F1ZWVwd3p4ZGJqcw/QAGRwxX8"
+              href="https://openloom.live/v/cy1nZmVuZmljcml5amZjdWhkc2pidw/0tZYznu3"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-lg border border-[var(--emerald)]/20 px-5 py-2.5 text-sm font-medium text-[var(--emerald)] transition-all hover:border-[var(--emerald)]/40 hover:bg-[var(--emerald)]/10"
