@@ -12,7 +12,7 @@
   "dependencies": {
     "gray-matter": "^4.0.3",
     "next": "^16",
-    "next-mdx-remote": "^5.0.0",
+    "next-mdx-remote": "^6.0.0",
     "plyr": "^3.8",
     "react": "^19",
     "react-dom": "^19"
