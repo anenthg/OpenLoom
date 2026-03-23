@@ -19,11 +19,14 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "OpenLoom — Open Source Video Messaging",
   description: "Open-source Loom alternative you self-host. Own your threads.",
-  metadataBase: new URL("https://openloom.live"),
+  metadataBase: new URL("https://www.openloom.live"),
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
     title: "OpenLoom — Open Source Video Messaging",
     description: "Open-source Loom alternative you self-host. Own your threads.",
-    url: "https://openloom.live",
+    url: "https://www.openloom.live",
     siteName: "OpenLoom",
     type: "website",
   },
@@ -32,6 +35,34 @@ export const metadata: Metadata = {
     title: "OpenLoom — Open Source Video Messaging",
     description: "Open-source Loom alternative you self-host. Own your threads.",
   },
+  robots: {
+    index: true,
+    follow: true,
+  },
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "OpenLoom",
+  applicationCategory: "MultimediaApplication",
+  operatingSystem: "macOS, Windows, Linux",
+  description:
+    "Open-source Loom alternative you self-host. Record your screen, store on your own Supabase, share instantly.",
+  url: "https://www.openloom.live",
+  downloadUrl: "https://github.com/anenthg/OpenLoom/releases",
+  softwareVersion: "1.0",
+  author: {
+    "@type": "Organization",
+    name: "OpenLoom",
+    url: "https://www.openloom.live",
+  },
+  offers: {
+    "@type": "Offer",
+    price: "0",
+    priceCurrency: "USD",
+  },
+  aggregateRating: undefined, // Add when you have reviews
 };
 
 export default function RootLayout({
@@ -41,6 +72,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body
         suppressHydrationWarning
         className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} antialiased min-h-screen bg-[var(--warp-indigo)] text-[var(--cotton)]`}
