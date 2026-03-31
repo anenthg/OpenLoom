@@ -5,13 +5,22 @@ import type {
   DeployProgressMessage,
 } from '../lib/messages'
 import type { ProvisioningStep } from '../lib/provisioning/types'
-import { initBackend, validateConnection, fileUpload, fileDelete, dbInsert, dbQuery, dbDelete, getShareURL, isShortCodeTaken } from '../lib/backend/index'
+import type { BackendProvider } from '../lib/types'
+import { initBackend, validateConnection, fileUpload, fileDelete, dbInsert, dbQuery, dbDelete, getShareURL, isShortCodeTaken, getFileSizeLimit, resolveStorageUrl, shouldDeleteFilesOnVideoRemove } from '../lib/backend/index'
 import { generateShortCode } from '../lib/recording/shortCode'
 import { encryptUrl } from '../lib/crypto'
 import { getBlob, deleteBlob } from '../lib/idb'
 import { deployFirebase } from '../lib/provisioning/firebase'
 import { deployConvex } from '../lib/provisioning/convex'
 import { deploySupabase } from '../lib/provisioning/supabase'
+
+// ─── Provisioning deployers ────────────────────────────────────────────────
+
+const deployers: Record<BackendProvider, (settings: AppSettings, onProgress: (steps: ProvisioningStep[]) => void) => Promise<boolean>> = {
+  firebase: deployFirebase,
+  convex: deployConvex,
+  supabase: deploySupabase,
+}
 
 // ─── State ──────────────────────────────────────────────────────────────────
 
@@ -205,8 +214,7 @@ async function handleMessage(message: ExtensionMessage): Promise<unknown> {
       return { ok: true }
 
     case 'ELAPSED_UPDATE': {
-      // Use detected limit (from provisioning) or fall back to free-tier 50 MB
-      const sizeLimit = settings.supabaseFileSizeLimit ?? (settings.provider === 'supabase' ? 52_428_800 : 524_288_000)
+      const sizeLimit = getFileSizeLimit(settings)
       const recordedBytes: number = message.recordedBytes ?? 0
       const remaining = sizeLimit - recordedBytes
       const elapsed: number = message.seconds
@@ -291,15 +299,9 @@ async function handleDeployBackend(provider: string): Promise<unknown> {
       chrome.runtime.sendMessage(msg).catch(() => {})
     }
 
-    let ok = false
-
-    if (provider === 'firebase') {
-      ok = await deployFirebase(settings, onProgress)
-    } else if (provider === 'convex') {
-      ok = await deployConvex(settings, onProgress)
-    } else if (provider === 'supabase') {
-      ok = await deploySupabase(settings, onProgress)
-    }
+    const p = (provider as BackendProvider) || 'firebase'
+    const deploy = deployers[p]
+    const ok = deploy ? await deploy(settings, onProgress) : false
 
     // Persist any settings mutated during deploy (e.g. supabaseFileSizeLimit)
     if (ok) {
@@ -410,11 +412,7 @@ async function handleUpload(
     }
 
     // Determine storage URL
-    const provider = settings.provider || 'firebase'
-    let finalStorageUrl = uploadResult.url!
-    if (provider === 'convex' && settings.convexHttpActionsUrl) {
-      finalStorageUrl = `${settings.convexHttpActionsUrl}/video?code=${shortCode}`
-    }
+    const finalStorageUrl = resolveStorageUrl(settings, shortCode, uploadResult)
 
     // Encrypt if password provided
     let videoStorageUrl = finalStorageUrl
@@ -482,9 +480,8 @@ async function handleListVideos(): Promise<unknown> {
 
 async function handleDeleteVideo(shortCode: string): Promise<unknown> {
   await loadSettings()
-  const provider = settings.provider || 'firebase'
 
-  if (provider === 'firebase' || provider === 'supabase') {
+  if (!shouldDeleteFilesOnVideoRemove(settings)) {
     await fileDelete(settings, `videos/${shortCode}.webm`)
     await fileDelete(settings, `videos/${shortCode}.mp4`)
   }

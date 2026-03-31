@@ -1,79 +1,37 @@
 /**
  * Provider-agnostic backend facade for OpenLoom Chrome Extension.
  *
- * Takes AppSettings and routes every call to the correct backend
- * (Firebase, Convex, or Supabase).
+ * Routes every call to the correct backend via the StorageProvider
+ * interface. Adding a new provider requires only registering it in
+ * the `providers` map below.
  */
 
-import type { AppSettings } from '../types'
+import type { AppSettings, BackendProvider } from '../types'
+import type { StorageProvider, ConnectionResult, OpResult, QueryResult, UploadResult } from './provider'
+import { createFirebaseProvider } from './firebase'
+import { createConvexProvider } from './convex'
+import { createSupabaseProvider } from './supabase'
 
-import {
-  initFirebase,
-  validateFirebaseConnection,
-  firebaseInsert,
-  firebaseQuery,
-  firebaseQueryByField,
-  firebaseDelete,
-  firebaseUpload,
-  firebaseDeleteFile,
-} from './firebase'
+// ---------------------------------------------------------------------------
+// Provider registry
+// ---------------------------------------------------------------------------
 
-import {
-  initConvex,
-  validateConvexConnection,
-  convexInsert,
-  convexQuery,
-  convexQueryByField,
-  convexDelete,
-  convexUpload,
-  convexDeleteFile,
-} from './convex'
+const providers: Record<BackendProvider, StorageProvider> = {
+  firebase: createFirebaseProvider(),
+  convex: createConvexProvider(),
+  supabase: createSupabaseProvider(),
+}
 
-import {
-  initSupabase,
-  validateSupabaseConnection,
-  supabaseInsert,
-  supabaseQuery,
-  supabaseQueryByField,
-  supabaseDelete,
-  supabaseUpload,
-  supabaseDeleteFile,
-} from './supabase'
+function getProvider(settings: AppSettings): StorageProvider {
+  return providers[settings.provider || 'firebase']
+}
 
 // ---------------------------------------------------------------------------
 // Backend initialisation
 // ---------------------------------------------------------------------------
 
-/**
- * Initialise the correct backend module based on current settings.
- * Call this whenever settings change (e.g. after connection validation
- * or on extension startup when settings are loaded from storage).
- */
 export async function initBackend(settings: AppSettings): Promise<void> {
-  const provider = settings.provider || 'firebase'
-
-  if (provider === 'convex') {
-    if (settings.convexDeployKey && settings.convexDeploymentUrl) {
-      initConvex(settings.convexDeployKey, settings.convexDeploymentUrl)
-    }
-    return
-  }
-
-  if (provider === 'supabase') {
-    if (settings.supabaseProjectUrl && settings.supabaseServiceRoleKey) {
-      initSupabase(settings.supabaseProjectUrl, settings.supabaseServiceRoleKey)
-    }
-    return
-  }
-
-  // Firebase
-  if (settings.serviceAccountJson) {
-    await initFirebase({
-      serviceAccountJson: settings.serviceAccountJson,
-      firestoreDbId: settings.firestoreDbId,
-      resolvedBucket: settings.resolvedBucket,
-    })
-  }
+  return getProvider(settings).init(settings)
 }
 
 // ---------------------------------------------------------------------------
@@ -83,56 +41,8 @@ export async function initBackend(settings: AppSettings): Promise<void> {
 export async function validateConnection(
   settings: AppSettings,
   credential: string,
-): Promise<{
-  ok: boolean
-  projectId?: string
-  projectRef?: string
-  deploymentUrl?: string
-  deploymentName?: string
-  httpActionsUrl?: string
-  serviceRoleKey?: string
-  anonKey?: string
-  firestoreDbId?: string
-  resolvedBucket?: string
-  error?: string
-}> {
-  const provider = settings.provider || 'firebase'
-
-  if (provider === 'convex') {
-    const result = await validateConvexConnection(credential)
-    if (result.ok && result.deploymentUrl) {
-      initConvex(credential, result.deploymentUrl)
-    }
-    return result
-  }
-
-  if (provider === 'supabase') {
-    const { projectUrl, accessToken } = JSON.parse(credential) as {
-      projectUrl: string
-      accessToken: string
-    }
-    const result = await validateSupabaseConnection(projectUrl, accessToken)
-    if (result.ok && result.serviceRoleKey) {
-      initSupabase(projectUrl, result.serviceRoleKey)
-    }
-    return {
-      ok: result.ok,
-      projectRef: result.projectRef,
-      serviceRoleKey: result.serviceRoleKey,
-      anonKey: result.anonKey,
-      error: result.error,
-    }
-  }
-
-  // Firebase
-  const result = await validateFirebaseConnection(credential)
-  return {
-    ok: result.ok,
-    projectId: result.projectId,
-    firestoreDbId: result.firestoreDbId,
-    resolvedBucket: result.resolvedBucket,
-    error: result.error,
-  }
+): Promise<ConnectionResult> {
+  return getProvider(settings).validateConnection(credential)
 }
 
 // ---------------------------------------------------------------------------
@@ -144,11 +54,8 @@ export async function dbInsert(
   collection: string,
   docId: string,
   data: Record<string, unknown>,
-): Promise<{ ok: boolean; error?: string }> {
-  const provider = settings.provider || 'firebase'
-  if (provider === 'convex') return convexInsert(collection, docId, data)
-  if (provider === 'supabase') return supabaseInsert(collection, docId, data)
-  return firebaseInsert(collection, docId, data)
+): Promise<OpResult> {
+  return getProvider(settings).insert(collection, docId, data)
 }
 
 export async function dbQuery(
@@ -156,11 +63,8 @@ export async function dbQuery(
   collection: string,
   orderBy: string,
   direction: string,
-): Promise<{ ok: boolean; data?: Record<string, unknown>[]; error?: string }> {
-  const provider = settings.provider || 'firebase'
-  if (provider === 'convex') return convexQuery(collection, orderBy, direction)
-  if (provider === 'supabase') return supabaseQuery(collection, orderBy, direction)
-  return firebaseQuery(collection, orderBy, direction)
+): Promise<QueryResult> {
+  return getProvider(settings).query(collection, orderBy, direction)
 }
 
 export async function dbQueryByField(
@@ -168,22 +72,16 @@ export async function dbQueryByField(
   collection: string,
   field: string,
   value: string,
-): Promise<{ ok: boolean; data?: Record<string, unknown>[]; error?: string }> {
-  const provider = settings.provider || 'firebase'
-  if (provider === 'convex') return convexQueryByField(collection, field, value)
-  if (provider === 'supabase') return supabaseQueryByField(collection, field, value)
-  return firebaseQueryByField(collection, field, value)
+): Promise<QueryResult> {
+  return getProvider(settings).queryByField(collection, field, value)
 }
 
 export async function dbDelete(
   settings: AppSettings,
   collection: string,
   docId: string,
-): Promise<{ ok: boolean; error?: string }> {
-  const provider = settings.provider || 'firebase'
-  if (provider === 'convex') return convexDelete(collection, docId)
-  if (provider === 'supabase') return supabaseDelete(collection, docId)
-  return firebaseDelete(collection, docId)
+): Promise<OpResult> {
+  return getProvider(settings).delete(collection, docId)
 }
 
 // ---------------------------------------------------------------------------
@@ -196,55 +94,44 @@ export async function fileUpload(
   fileData: Blob,
   contentType: string,
   onProgress?: (fraction: number) => void,
-): Promise<{ ok: boolean; url?: string; storageId?: string; error?: string }> {
-  const provider = settings.provider || 'firebase'
-  if (provider === 'convex') return convexUpload(remotePath, fileData, contentType, onProgress)
-  if (provider === 'supabase') return supabaseUpload(remotePath, fileData, contentType, onProgress)
-  return firebaseUpload(remotePath, fileData, contentType)
+): Promise<UploadResult> {
+  return getProvider(settings).upload(remotePath, fileData, contentType, onProgress)
 }
 
 export async function fileDelete(
   settings: AppSettings,
   remotePath: string,
-): Promise<{ ok: boolean; error?: string }> {
-  const provider = settings.provider || 'firebase'
-  if (provider === 'convex') return convexDeleteFile(remotePath)
-  if (provider === 'supabase') return supabaseDeleteFile(remotePath)
-  return firebaseDeleteFile(remotePath)
+): Promise<OpResult> {
+  return getProvider(settings).deleteFile(remotePath)
 }
 
 // ---------------------------------------------------------------------------
-// Share URL
+// Provider-aware helpers
 // ---------------------------------------------------------------------------
 
 export function getShareURL(settings: AppSettings, shortCode: string): string {
-  const provider = settings.provider || 'firebase'
-
-  if (provider === 'convex') {
-    if (!settings.convexDeploymentName) {
-      throw new Error('Cannot generate share URL: Convex deployment name is not configured')
-    }
-    const encoded = btoa(`c-${settings.convexDeploymentName}`)
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_')
-      .replace(/=+$/, '')
-    return `https://openloom.live/v/${encoded}/${shortCode}`
-  }
-
-  if (provider === 'supabase') {
-    const encoded = btoa(`s-${settings.supabaseProjectRef || ''}`)
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_')
-      .replace(/=+$/, '')
-    return `https://openloom.live/v/${encoded}/${shortCode}`
-  }
-
-  // Firebase
-  const encoded = btoa(`f-${settings.firebaseProjectId || ''}`)
+  const prefix = getProvider(settings).getShareUrlPrefix(settings)
+  const encoded = btoa(prefix)
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
     .replace(/=+$/, '')
   return `https://openloom.live/v/${encoded}/${shortCode}`
+}
+
+export function getFileSizeLimit(settings: AppSettings): number {
+  return getProvider(settings).getFileSizeLimit(settings)
+}
+
+export function resolveStorageUrl(
+  settings: AppSettings,
+  shortCode: string,
+  uploadResult: UploadResult,
+): string {
+  return getProvider(settings).resolveStorageUrl(settings, shortCode, uploadResult)
+}
+
+export function shouldDeleteFilesOnVideoRemove(settings: AppSettings): boolean {
+  return getProvider(settings).deletesFilesOnVideoRemove
 }
 
 // ---------------------------------------------------------------------------

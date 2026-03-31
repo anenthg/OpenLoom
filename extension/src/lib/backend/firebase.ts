@@ -6,6 +6,8 @@
  * or page context.
  */
 
+import type { StorageProvider } from './provider'
+
 // ---------------------------------------------------------------------------
 // Module state
 // ---------------------------------------------------------------------------
@@ -693,5 +695,40 @@ export async function validateFirebaseConnection(
       ok: false,
       error: `Firebase connection failed: ${e instanceof Error ? e.message : String(e)}`,
     }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// StorageProvider factory
+// ---------------------------------------------------------------------------
+
+export function createFirebaseProvider(): StorageProvider {
+  return {
+    async init(settings) {
+      if (settings.serviceAccountJson) {
+        await initFirebase({
+          serviceAccountJson: settings.serviceAccountJson,
+          firestoreDbId: settings.firestoreDbId,
+          resolvedBucket: settings.resolvedBucket,
+        })
+      }
+    },
+    validateConnection: validateFirebaseConnection,
+    insert: firebaseInsert,
+    query: firebaseQuery,
+    queryByField: firebaseQueryByField,
+    delete: firebaseDelete,
+    upload: firebaseUpload,
+    deleteFile: firebaseDeleteFile,
+    getShareUrlPrefix(settings) {
+      return `f-${settings.firebaseProjectId || ''}`
+    },
+    getFileSizeLimit() {
+      return 524_288_000 // 500 MB
+    },
+    resolveStorageUrl(_settings, _shortCode, uploadResult) {
+      return uploadResult.url!
+    },
+    deletesFilesOnVideoRemove: false,
   }
 }

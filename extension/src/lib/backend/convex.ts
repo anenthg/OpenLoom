@@ -5,6 +5,8 @@
  * Uses global `fetch` instead of Electron's `net.fetch`.
  */
 
+import type { StorageProvider } from './provider'
+
 // ---------------------------------------------------------------------------
 // Module state
 // ---------------------------------------------------------------------------
@@ -269,4 +271,47 @@ export async function convexGetFileUrl(
   const shortCode = fileName.replace(/\.[^.]+$/, '')
   const url = `${httpActionsUrl}/video?code=${encodeURIComponent(shortCode)}`
   return { ok: true, url }
+}
+
+// ---------------------------------------------------------------------------
+// StorageProvider factory
+// ---------------------------------------------------------------------------
+
+export function createConvexProvider(): StorageProvider {
+  return {
+    async init(settings) {
+      if (settings.convexDeployKey && settings.convexDeploymentUrl) {
+        initConvex(settings.convexDeployKey, settings.convexDeploymentUrl)
+      }
+    },
+    async validateConnection(credential) {
+      const result = await validateConvexConnection(credential)
+      if (result.ok && result.deploymentUrl) {
+        initConvex(credential, result.deploymentUrl)
+      }
+      return result
+    },
+    insert: convexInsert,
+    query: convexQuery,
+    queryByField: convexQueryByField,
+    delete: convexDelete,
+    upload: convexUpload,
+    deleteFile: convexDeleteFile,
+    getShareUrlPrefix(settings) {
+      if (!settings.convexDeploymentName) {
+        throw new Error('Cannot generate share URL: Convex deployment name is not configured')
+      }
+      return `c-${settings.convexDeploymentName}`
+    },
+    getFileSizeLimit() {
+      return 524_288_000 // 500 MB
+    },
+    resolveStorageUrl(settings, shortCode) {
+      if (settings.convexHttpActionsUrl) {
+        return `${settings.convexHttpActionsUrl}/video?code=${shortCode}`
+      }
+      return ''
+    },
+    deletesFilesOnVideoRemove: true,
+  }
 }

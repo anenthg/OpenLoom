@@ -5,6 +5,8 @@
  * Uses global `fetch` instead of Electron's `net.fetch`.
  */
 
+import type { StorageProvider } from './provider'
+
 // ---------------------------------------------------------------------------
 // Module state
 // ---------------------------------------------------------------------------
@@ -388,4 +390,51 @@ export async function supabaseGetFileUrl(
   const filePath = slashIdx > 0 ? remotePath.slice(slashIdx + 1) : remotePath
   const publicUrl = `${getProjectUrl()}/storage/v1/object/public/${bucket}/${filePath}`
   return { ok: true, url: publicUrl }
+}
+
+// ---------------------------------------------------------------------------
+// StorageProvider factory
+// ---------------------------------------------------------------------------
+
+export function createSupabaseProvider(): StorageProvider {
+  return {
+    async init(settings) {
+      if (settings.supabaseProjectUrl && settings.supabaseServiceRoleKey) {
+        initSupabase(settings.supabaseProjectUrl, settings.supabaseServiceRoleKey)
+      }
+    },
+    async validateConnection(credential) {
+      const { projectUrl, accessToken } = JSON.parse(credential) as {
+        projectUrl: string
+        accessToken: string
+      }
+      const result = await validateSupabaseConnection(projectUrl, accessToken)
+      if (result.ok && result.serviceRoleKey) {
+        initSupabase(projectUrl, result.serviceRoleKey)
+      }
+      return {
+        ok: result.ok,
+        projectRef: result.projectRef,
+        serviceRoleKey: result.serviceRoleKey,
+        anonKey: result.anonKey,
+        error: result.error,
+      }
+    },
+    insert: supabaseInsert,
+    query: supabaseQuery,
+    queryByField: supabaseQueryByField,
+    delete: supabaseDelete,
+    upload: supabaseUpload,
+    deleteFile: supabaseDeleteFile,
+    getShareUrlPrefix(settings) {
+      return `s-${settings.supabaseProjectRef || ''}`
+    },
+    getFileSizeLimit(settings) {
+      return settings.supabaseFileSizeLimit ?? 52_428_800 // detected or 50 MB default
+    },
+    resolveStorageUrl(_settings, _shortCode, uploadResult) {
+      return uploadResult.url!
+    },
+    deletesFilesOnVideoRemove: false,
+  }
 }
