@@ -292,19 +292,20 @@ export default function SetupWizard({ onConnect }: Props) {
                 </div>
               </button>
 
-              <div
-                className="w-full p-4 rounded-lg border border-zinc-700/50 bg-zinc-800/30 text-left opacity-50 cursor-not-allowed"
+              <button
+                onClick={() => setProvider('convex')}
+                className="w-full p-4 rounded-lg border border-zinc-700 hover:border-[var(--emerald)]/50 bg-zinc-800/50 hover:bg-zinc-800 transition-all text-left group"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-zinc-500">Convex</p>
-                    <p className="text-xs text-zinc-600 mt-0.5">1 GB storage, 1 GB egress free</p>
+                    <p className="text-sm font-medium text-[var(--cotton)]">Convex</p>
+                    <p className="text-xs text-zinc-400 mt-0.5">1 GB storage, 1 GB egress free</p>
                   </div>
-                  <span className="shrink-0 text-[10px] font-mono leading-tight px-2 py-1 rounded-full bg-zinc-700/50 text-zinc-500">
-                    Coming soon
+                  <span className="shrink-0 text-[10px] font-mono leading-tight px-2 py-1 rounded-full bg-[var(--emerald)]/10 text-[var(--emerald)]">
+                    Real-time backend
                   </span>
                 </div>
-              </div>
+              </button>
 
               <div
                 className="w-full p-4 rounded-lg border border-zinc-700/50 bg-zinc-800/30 text-left opacity-50 cursor-not-allowed"

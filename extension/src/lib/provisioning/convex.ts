@@ -1,5 +1,11 @@
 import type { AppSettings } from '../types'
 import type { ProvisioningStep, StepUpdateCallback } from './types'
+import {
+  SCHEMA_BUNDLE,
+  VIDEOS_BUNDLE,
+  REACTIONS_BUNDLE,
+  HTTP_BUNDLE,
+} from './convex-bundles.generated'
 
 export const CONVEX_FUNCTIONS_VERSION = '1.0.0'
 
@@ -15,334 +21,6 @@ function log(msg: string, data?: unknown): void {
     console.log(`[deploy-convex ${ts}] ${msg}`)
   }
 }
-
-// ---------------------------------------------------------------------------
-// Embedded Convex function sources (same as desktop)
-// ---------------------------------------------------------------------------
-
-const CONVEX_SCHEMA_TS = `
-import { defineSchema, defineTable } from "convex/server";
-import { v } from "convex/values";
-
-export default defineSchema({
-  videos: defineTable({
-    short_code: v.string(),
-    title: v.string(),
-    description: v.optional(v.union(v.string(), v.null())),
-    storage_url: v.string(),
-    storage_id: v.optional(v.id("_storage")),
-    view_count: v.number(),
-    duration_ms: v.optional(v.union(v.number(), v.null())),
-    capture_mode: v.string(),
-    created_at: v.string(),
-    is_protected: v.optional(v.boolean()),
-    password_salt: v.optional(v.string()),
-  })
-    .index("by_short_code", ["short_code"])
-    .index("by_created_at", ["created_at"]),
-
-  reactions: defineTable({
-    video_short_code: v.string(),
-    emoji: v.string(),
-    timestamp: v.number(),
-    created_at: v.string(),
-  }).index("by_video_short_code", ["video_short_code"]),
-});
-`.trim()
-
-const CONVEX_VIDEOS_TS = `
-import { query, mutation } from "./_generated/server";
-import { v } from "convex/values";
-
-export const getByShortCode = query({
-  args: { shortCode: v.string() },
-  handler: async (ctx, args) => {
-    return await ctx.db
-      .query("videos")
-      .withIndex("by_short_code", (q) => q.eq("short_code", args.shortCode))
-      .first();
-  },
-});
-
-export const list = query({
-  args: {},
-  handler: async (ctx) => {
-    return await ctx.db
-      .query("videos")
-      .withIndex("by_created_at")
-      .order("desc")
-      .collect();
-  },
-});
-
-export const insert = mutation({
-  args: {
-    short_code: v.string(),
-    title: v.string(),
-    description: v.optional(v.union(v.string(), v.null())),
-    storage_url: v.string(),
-    storage_id: v.optional(v.id("_storage")),
-    view_count: v.number(),
-    duration_ms: v.optional(v.union(v.number(), v.null())),
-    capture_mode: v.string(),
-    created_at: v.string(),
-    is_protected: v.optional(v.boolean()),
-    password_salt: v.optional(v.string()),
-  },
-  handler: async (ctx, args) => {
-    return await ctx.db.insert("videos", args);
-  },
-});
-
-export const incrementViewCount = mutation({
-  args: { shortCode: v.string() },
-  handler: async (ctx, args) => {
-    const video = await ctx.db
-      .query("videos")
-      .withIndex("by_short_code", (q) => q.eq("short_code", args.shortCode))
-      .first();
-    if (!video) throw new Error("Video not found");
-    await ctx.db.patch(video._id, { view_count: video.view_count + 1 });
-  },
-});
-
-export const remove = mutation({
-  args: { shortCode: v.string() },
-  handler: async (ctx, args) => {
-    const video = await ctx.db
-      .query("videos")
-      .withIndex("by_short_code", (q) => q.eq("short_code", args.shortCode))
-      .first();
-    if (!video) return;
-
-    // Delete from storage if storage_id exists
-    if (video.storage_id) {
-      await ctx.storage.delete(video.storage_id);
-    }
-
-    // Delete all reactions for this video
-    const reactions = await ctx.db
-      .query("reactions")
-      .withIndex("by_video_short_code", (q) =>
-        q.eq("video_short_code", args.shortCode)
-      )
-      .collect();
-    for (const reaction of reactions) {
-      await ctx.db.delete(reaction._id);
-    }
-
-    // Delete the video
-    await ctx.db.delete(video._id);
-  },
-});
-
-export const generateUploadUrl = mutation({
-  args: {},
-  handler: async (ctx) => {
-    return await ctx.storage.generateUploadUrl();
-  },
-});
-`.trim()
-
-const CONVEX_REACTIONS_TS = `
-import { query, mutation } from "./_generated/server";
-import { v } from "convex/values";
-
-export const listByVideo = query({
-  args: { videoShortCode: v.string() },
-  handler: async (ctx, args) => {
-    return await ctx.db
-      .query("reactions")
-      .withIndex("by_video_short_code", (q) =>
-        q.eq("video_short_code", args.videoShortCode)
-      )
-      .collect();
-  },
-});
-
-export const add = mutation({
-  args: {
-    video_short_code: v.string(),
-    emoji: v.string(),
-    timestamp: v.number(),
-  },
-  handler: async (ctx, args) => {
-    return await ctx.db.insert("reactions", {
-      video_short_code: args.video_short_code,
-      emoji: args.emoji,
-      timestamp: args.timestamp,
-      created_at: new Date().toISOString(),
-    });
-  },
-});
-`.trim()
-
-const CONVEX_HTTP_TS = `
-import { httpRouter } from "convex/server";
-import { httpAction } from "./_generated/server";
-
-const http = httpRouter();
-
-// GET /v?code=xxx -- video metadata
-http.route({
-  path: "/v",
-  method: "GET",
-  handler: httpAction(async (ctx, request) => {
-    const url = new URL(request.url);
-    const code = url.searchParams.get("code");
-    if (!code) {
-      return new Response(JSON.stringify({ error: "code is required" }), {
-        status: 400,
-        headers: corsHeaders(),
-      });
-    }
-    const video = await ctx.runQuery("videos:getByShortCode" as any, { shortCode: code });
-    if (!video) {
-      return new Response(JSON.stringify({ error: "Video not found" }), {
-        status: 404,
-        headers: corsHeaders(),
-      });
-    }
-    return new Response(JSON.stringify(video), { headers: corsHeaders() });
-  }),
-});
-
-// POST /view -- increment view count
-http.route({
-  path: "/view",
-  method: "POST",
-  handler: httpAction(async (ctx, request) => {
-    const body = await request.json();
-    const code = (body as any).code;
-    if (!code) {
-      return new Response(JSON.stringify({ error: "code is required" }), {
-        status: 400,
-        headers: corsHeaders(),
-      });
-    }
-    await ctx.runMutation("videos:incrementViewCount" as any, { shortCode: code });
-    return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders() });
-  }),
-});
-
-// GET /reactions?code=xxx -- list reactions
-http.route({
-  path: "/reactions",
-  method: "GET",
-  handler: httpAction(async (ctx, request) => {
-    const url = new URL(request.url);
-    const code = url.searchParams.get("code");
-    if (!code) {
-      return new Response(JSON.stringify({ error: "code is required" }), {
-        status: 400,
-        headers: corsHeaders(),
-      });
-    }
-    const reactions = await ctx.runQuery("reactions:listByVideo" as any, {
-      videoShortCode: code,
-    });
-    return new Response(JSON.stringify(reactions), { headers: corsHeaders() });
-  }),
-});
-
-// POST /reactions/add -- add reaction
-http.route({
-  path: "/reactions/add",
-  method: "POST",
-  handler: httpAction(async (ctx, request) => {
-    const body = await request.json();
-    const { code, emoji, timestamp } = body as any;
-    if (!code || !emoji || typeof timestamp !== "number") {
-      return new Response(
-        JSON.stringify({ error: "code, emoji, and timestamp are required" }),
-        { status: 400, headers: corsHeaders() }
-      );
-    }
-    await ctx.runMutation("reactions:add" as any, {
-      video_short_code: code,
-      emoji,
-      timestamp,
-    });
-    return new Response(JSON.stringify({ ok: true }), {
-      status: 201,
-      headers: corsHeaders(),
-    });
-  }),
-});
-
-// GET /video -- 302 redirect to fresh signed storage URL
-http.route({
-  path: "/video",
-  method: "GET",
-  handler: httpAction(async (ctx, request) => {
-    const url = new URL(request.url);
-    const code = url.searchParams.get("code");
-    if (!code) {
-      return new Response("code is required", { status: 400 });
-    }
-    const video = await ctx.runQuery("videos:getByShortCode" as any, { shortCode: code });
-    if (!video || !video.storage_id) {
-      return new Response("Video not found", { status: 404 });
-    }
-    const storageUrl = await ctx.storage.getUrl(video.storage_id);
-    if (!storageUrl) {
-      return new Response("Storage URL not available", { status: 404 });
-    }
-    return new Response(null, {
-      status: 302,
-      headers: { Location: storageUrl, "Cache-Control": "no-cache" },
-    });
-  }),
-});
-
-function corsHeaders() {
-  return {
-    "Content-Type": "application/json",
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type",
-  };
-}
-
-// Handle CORS preflight for all routes
-http.route({
-  path: "/v",
-  method: "OPTIONS",
-  handler: httpAction(async () => {
-    return new Response(null, { status: 204, headers: corsHeaders() });
-  }),
-});
-http.route({
-  path: "/view",
-  method: "OPTIONS",
-  handler: httpAction(async () => {
-    return new Response(null, { status: 204, headers: corsHeaders() });
-  }),
-});
-http.route({
-  path: "/reactions",
-  method: "OPTIONS",
-  handler: httpAction(async () => {
-    return new Response(null, { status: 204, headers: corsHeaders() });
-  }),
-});
-http.route({
-  path: "/reactions/add",
-  method: "OPTIONS",
-  handler: httpAction(async () => {
-    return new Response(null, { status: 204, headers: corsHeaders() });
-  }),
-});
-http.route({
-  path: "/video",
-  method: "OPTIONS",
-  handler: httpAction(async () => {
-    return new Response(null, { status: 204, headers: corsHeaders() });
-  }),
-});
-
-export default http;
-`.trim()
 
 // ---------------------------------------------------------------------------
 // Convex deployment API helpers
@@ -378,10 +56,10 @@ function parseDeployKey(deployKey: string): {
  */
 function buildModules(): { path: string; source: string; environment: string }[] {
   return [
-    { path: 'schema.js', source: CONVEX_SCHEMA_TS, environment: 'isolate' },
-    { path: 'videos.js', source: CONVEX_VIDEOS_TS, environment: 'isolate' },
-    { path: 'reactions.js', source: CONVEX_REACTIONS_TS, environment: 'isolate' },
-    { path: 'http.js', source: CONVEX_HTTP_TS, environment: 'node' },
+    { path: 'schema.js', source: SCHEMA_BUNDLE, environment: 'isolate' },
+    { path: 'videos.js', source: VIDEOS_BUNDLE, environment: 'isolate' },
+    { path: 'reactions.js', source: REACTIONS_BUNDLE, environment: 'isolate' },
+    { path: 'http.js', source: HTTP_BUNDLE, environment: 'isolate' },
   ]
 }
 
@@ -410,7 +88,7 @@ async function startPush(
   deploymentUrl: string,
   adminKey: string,
   modules: { path: string; source: string; environment: string }[],
-): Promise<{ schemaChange?: { schemaId: string } }> {
+): Promise<Record<string, unknown>> {
   const url = `${deploymentUrl}/api/deploy2/start_push`
   log(`Starting push to ${url}`)
 
@@ -426,18 +104,18 @@ async function startPush(
       dryRun: false,
       functions: 'convex',
       appDefinition: {
+        definition: null,
+        dependencies: [],
         schema: schemaModule
-          ? { path: schemaModule.path, source: schemaModule.source, sourceMap: null, environment: schemaModule.environment }
+          ? { path: schemaModule.path, source: schemaModule.source, environment: schemaModule.environment }
           : null,
         changedModules: functionModules.map((m) => ({
           path: m.path,
           source: m.source,
-          sourceMap: null,
           environment: m.environment,
         })),
         unchangedModuleHashes: [],
         udfServerVersion: '1.32.0',
-        dependencies: [],
       },
       componentDefinitions: [],
       nodeDependencies: [],
@@ -451,7 +129,7 @@ async function startPush(
 
   const body = await res.json()
   log('start_push response:', body)
-  return body as { schemaChange?: { schemaId: string } }
+  return body as Record<string, unknown>
 }
 
 /**
@@ -461,11 +139,11 @@ async function startPush(
 async function waitForSchema(
   deploymentUrl: string,
   adminKey: string,
-  schemaId: string,
+  schemaChange: Record<string, unknown>,
   timeoutMs = 60_000,
 ): Promise<void> {
   const url = `${deploymentUrl}/api/deploy2/wait_for_schema`
-  log(`Waiting for schema validation: schemaId=${schemaId}`)
+  log(`Waiting for schema validation...`)
 
   const start = Date.now()
   while (Date.now() - start < timeoutMs) {
@@ -474,25 +152,23 @@ async function waitForSchema(
       headers: convexHeaders(adminKey),
       body: JSON.stringify({
         adminKey,
-        schemaId,
+        schemaChange,
+        timeoutMs: 10_000,
+        dryRun: false,
       }),
     })
 
-    if (res.ok) {
-      const body = await res.json()
-      log('wait_for_schema response:', body)
-      return
+    if (!res.ok) {
+      const text = await res.text()
+      throw new Error(`wait_for_schema failed: ${res.status} ${text}`)
     }
 
-    const text = await res.text()
-    // Schema may still be validating -- retry
-    if (res.status === 400 || res.status === 409) {
-      log(`Schema still validating (${res.status}), retrying in 2s...`)
-      await new Promise((r) => setTimeout(r, 2_000))
-      continue
-    }
+    const body = (await res.json()) as { type: string }
+    log('wait_for_schema response:', body)
 
-    throw new Error(`wait_for_schema failed: ${res.status} ${text}`)
+    if (body.type === 'complete') return
+    if (body.type === 'failed') throw new Error('Schema validation failed')
+    // type === 'inProgress' — keep polling
   }
 
   throw new Error('Timed out waiting for Convex schema validation')
@@ -504,6 +180,7 @@ async function waitForSchema(
 async function finishPush(
   deploymentUrl: string,
   adminKey: string,
+  startPushResponse: Record<string, unknown>,
 ): Promise<void> {
   const url = `${deploymentUrl}/api/deploy2/finish_push`
   log(`Finishing push to ${url}`)
@@ -513,6 +190,7 @@ async function finishPush(
     headers: convexHeaders(adminKey),
     body: JSON.stringify({
       adminKey,
+      startPush: startPushResponse,
       dryRun: false,
     }),
   })
@@ -554,6 +232,7 @@ export async function deployConvex(
     { id: 'push-functions', label: 'Pushing schema & functions...', status: 'pending' },
     { id: 'wait-schema', label: 'Validating schema...', status: 'pending' },
     { id: 'finalize', label: 'Finalizing deployment...', status: 'pending' },
+    { id: 'validate', label: 'Validating deployed functions...', status: 'pending' },
   ]
 
   function updateStep(id: string, update: Partial<ProvisioningStep>) {
@@ -573,7 +252,7 @@ export async function deployConvex(
 
     // Step 1: Verify access by testing the deployment endpoint
     updateStep('verify-access', { status: 'running' })
-    log('Step 1/4: Verifying Convex access...')
+    log('Step 1/5: Verifying Convex access...')
 
     const testRes = await fetch(`${deploymentUrl}/api/query`, {
       method: 'POST',
@@ -594,34 +273,53 @@ export async function deployConvex(
     }
 
     updateStep('verify-access', { status: 'done' })
-    log('Step 1/4: Convex access verified')
+    log('Step 1/5: Convex access verified')
 
     // Step 2: Start push with schema and function definitions
     updateStep('push-functions', { status: 'running' })
-    log('Step 2/4: Pushing schema & function definitions...')
+    log('Step 2/5: Pushing schema & function definitions...')
 
     const modules = buildModules()
     const pushResult = await startPush(deploymentUrl, deployKey, modules)
     updateStep('push-functions', { status: 'done' })
-    log('Step 2/4: Push started successfully')
+    log('Step 2/5: Push started successfully')
 
     // Step 3: Wait for schema validation if there is a schema change
     updateStep('wait-schema', { status: 'running' })
-    if (pushResult.schemaChange?.schemaId) {
-      log('Step 3/4: Schema change detected, waiting for validation...')
-      await waitForSchema(deploymentUrl, deployKey, pushResult.schemaChange.schemaId)
+    const schemaChange = pushResult.schemaChange as Record<string, unknown> | undefined
+    if (schemaChange) {
+      log('Step 3/5: Schema change detected, waiting for validation...')
+      await waitForSchema(deploymentUrl, deployKey, schemaChange)
     } else {
-      log('Step 3/4: No schema change, skipping validation wait')
+      log('Step 3/5: No schema change, skipping validation wait')
     }
     updateStep('wait-schema', { status: 'done' })
-    log('Step 3/4: Schema validation complete')
+    log('Step 3/5: Schema validation complete')
 
     // Step 4: Finalize the push
     updateStep('finalize', { status: 'running' })
-    log('Step 4/4: Finalizing deployment...')
-    await finishPush(deploymentUrl, deployKey)
+    log('Step 4/5: Finalizing deployment...')
+    await finishPush(deploymentUrl, deployKey, pushResult)
     updateStep('finalize', { status: 'done' })
-    log('Step 4/4: Deployment finalized')
+    log('Step 4/5: Deployment finalized')
+
+    // Step 5: Validate deployed functions by running a test query
+    updateStep('validate', { status: 'running' })
+    log('Step 5/5: Validating deployed functions...')
+    const validateRes = await fetch(`${deploymentUrl}/api/query`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Convex ${deployKey}`,
+      },
+      body: JSON.stringify({ path: 'videos:list', args: {} }),
+    })
+    if (!validateRes.ok) {
+      const text = await validateRes.text()
+      throw new Error(`Post-deployment validation failed: videos:list returned ${validateRes.status} ${text}`)
+    }
+    updateStep('validate', { status: 'done' })
+    log('Step 5/5: Deployed functions validated successfully')
 
     log('=== Convex deployment finished ===')
     return true

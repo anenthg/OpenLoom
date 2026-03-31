@@ -198,7 +198,7 @@ export async function fileUpload(
   onProgress?: (fraction: number) => void,
 ): Promise<{ ok: boolean; url?: string; storageId?: string; error?: string }> {
   const provider = settings.provider || 'firebase'
-  if (provider === 'convex') return convexUpload(remotePath, fileData, contentType)
+  if (provider === 'convex') return convexUpload(remotePath, fileData, contentType, onProgress)
   if (provider === 'supabase') return supabaseUpload(remotePath, fileData, contentType, onProgress)
   return firebaseUpload(remotePath, fileData, contentType)
 }
@@ -221,7 +221,10 @@ export function getShareURL(settings: AppSettings, shortCode: string): string {
   const provider = settings.provider || 'firebase'
 
   if (provider === 'convex') {
-    const encoded = btoa(`c-${settings.convexDeploymentName || ''}`)
+    if (!settings.convexDeploymentName) {
+      throw new Error('Cannot generate share URL: Convex deployment name is not configured')
+    }
+    const encoded = btoa(`c-${settings.convexDeploymentName}`)
       .replace(/\+/g, '-')
       .replace(/\//g, '_')
       .replace(/=+$/, '')
