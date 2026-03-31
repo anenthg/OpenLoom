@@ -110,7 +110,7 @@ test.describe('Convex Provisioning', () => {
     isProvisioned: false,
   }
 
-  test('provisioning screen shows all 4 Convex steps', async ({ page }) => {
+  test('provisioning screen shows all 5 Convex steps', async ({ page }) => {
     await openSidepanel(page, { initialSettings: convexSettings })
 
     await expect(page.getByTestId('provisioning-screen')).toBeVisible()
@@ -119,6 +119,7 @@ test.describe('Convex Provisioning', () => {
     await expect(page.getByTestId('step-push-functions')).toBeVisible()
     await expect(page.getByTestId('step-wait-schema')).toBeVisible()
     await expect(page.getByTestId('step-finalize')).toBeVisible()
+    await expect(page.getByTestId('step-validate')).toBeVisible()
   })
 
   test('successful provisioning completes all steps', async ({ page }) => {
@@ -132,8 +133,8 @@ test.describe('Convex Provisioning', () => {
     // Wait for the Continue button (all steps done)
     await expect(page.getByTestId('provisioning-continue')).toBeVisible({ timeout: 10000 })
 
-    // All 4 steps should show green checkmarks
-    for (const stepId of ['verify-access', 'push-functions', 'wait-schema', 'finalize']) {
+    // All 5 steps should show green checkmarks
+    for (const stepId of ['verify-access', 'push-functions', 'wait-schema', 'finalize', 'validate']) {
       const step = page.getByTestId(`step-${stepId}`)
       await expect(step).toBeVisible()
       await expect(step.locator('text=✓')).toBeVisible()

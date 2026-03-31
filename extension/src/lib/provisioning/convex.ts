@@ -59,7 +59,7 @@ function buildModules(): { path: string; source: string; environment: string }[]
     { path: 'schema.js', source: SCHEMA_BUNDLE, environment: 'isolate' },
     { path: 'videos.js', source: VIDEOS_BUNDLE, environment: 'isolate' },
     { path: 'reactions.js', source: REACTIONS_BUNDLE, environment: 'isolate' },
-    { path: 'http.js', source: HTTP_BUNDLE, environment: 'node' },
+    { path: 'http.js', source: HTTP_BUNDLE, environment: 'isolate' },
   ]
 }
 
@@ -88,7 +88,7 @@ async function startPush(
   deploymentUrl: string,
   adminKey: string,
   modules: { path: string; source: string; environment: string }[],
-): Promise<{ schemaChange?: { schemaId: string } }> {
+): Promise<Record<string, unknown>> {
   const url = `${deploymentUrl}/api/deploy2/start_push`
   log(`Starting push to ${url}`)
 
@@ -129,7 +129,7 @@ async function startPush(
 
   const body = await res.json()
   log('start_push response:', body)
-  return body as { schemaChange?: { schemaId: string } }
+  return body as Record<string, unknown>
 }
 
 /**
@@ -139,11 +139,11 @@ async function startPush(
 async function waitForSchema(
   deploymentUrl: string,
   adminKey: string,
-  schemaId: string,
+  schemaChange: Record<string, unknown>,
   timeoutMs = 60_000,
 ): Promise<void> {
   const url = `${deploymentUrl}/api/deploy2/wait_for_schema`
-  log(`Waiting for schema validation: schemaId=${schemaId}`)
+  log(`Waiting for schema validation...`)
 
   const start = Date.now()
   while (Date.now() - start < timeoutMs) {
@@ -152,25 +152,23 @@ async function waitForSchema(
       headers: convexHeaders(adminKey),
       body: JSON.stringify({
         adminKey,
-        schemaId,
+        schemaChange,
+        timeoutMs: 10_000,
+        dryRun: false,
       }),
     })
 
-    if (res.ok) {
-      const body = await res.json()
-      log('wait_for_schema response:', body)
-      return
+    if (!res.ok) {
+      const text = await res.text()
+      throw new Error(`wait_for_schema failed: ${res.status} ${text}`)
     }
 
-    const text = await res.text()
-    // Schema may still be validating -- retry
-    if (res.status === 400 || res.status === 409) {
-      log(`Schema still validating (${res.status}), retrying in 2s...`)
-      await new Promise((r) => setTimeout(r, 2_000))
-      continue
-    }
+    const body = (await res.json()) as { type: string }
+    log('wait_for_schema response:', body)
 
-    throw new Error(`wait_for_schema failed: ${res.status} ${text}`)
+    if (body.type === 'complete') return
+    if (body.type === 'failed') throw new Error('Schema validation failed')
+    // type === 'inProgress' — keep polling
   }
 
   throw new Error('Timed out waiting for Convex schema validation')
@@ -182,6 +180,7 @@ async function waitForSchema(
 async function finishPush(
   deploymentUrl: string,
   adminKey: string,
+  startPushResponse: Record<string, unknown>,
 ): Promise<void> {
   const url = `${deploymentUrl}/api/deploy2/finish_push`
   log(`Finishing push to ${url}`)
@@ -191,6 +190,7 @@ async function finishPush(
     headers: convexHeaders(adminKey),
     body: JSON.stringify({
       adminKey,
+      startPush: startPushResponse,
       dryRun: false,
     }),
   })
@@ -232,6 +232,7 @@ export async function deployConvex(
     { id: 'push-functions', label: 'Pushing schema & functions...', status: 'pending' },
     { id: 'wait-schema', label: 'Validating schema...', status: 'pending' },
     { id: 'finalize', label: 'Finalizing deployment...', status: 'pending' },
+    { id: 'validate', label: 'Validating deployed functions...', status: 'pending' },
   ]
 
   function updateStep(id: string, update: Partial<ProvisioningStep>) {
@@ -251,7 +252,7 @@ export async function deployConvex(
 
     // Step 1: Verify access by testing the deployment endpoint
     updateStep('verify-access', { status: 'running' })
-    log('Step 1/4: Verifying Convex access...')
+    log('Step 1/5: Verifying Convex access...')
 
     const testRes = await fetch(`${deploymentUrl}/api/query`, {
       method: 'POST',
@@ -272,34 +273,53 @@ export async function deployConvex(
     }
 
     updateStep('verify-access', { status: 'done' })
-    log('Step 1/4: Convex access verified')
+    log('Step 1/5: Convex access verified')
 
     // Step 2: Start push with schema and function definitions
     updateStep('push-functions', { status: 'running' })
-    log('Step 2/4: Pushing schema & function definitions...')
+    log('Step 2/5: Pushing schema & function definitions...')
 
     const modules = buildModules()
     const pushResult = await startPush(deploymentUrl, deployKey, modules)
     updateStep('push-functions', { status: 'done' })
-    log('Step 2/4: Push started successfully')
+    log('Step 2/5: Push started successfully')
 
     // Step 3: Wait for schema validation if there is a schema change
     updateStep('wait-schema', { status: 'running' })
-    if (pushResult.schemaChange?.schemaId) {
-      log('Step 3/4: Schema change detected, waiting for validation...')
-      await waitForSchema(deploymentUrl, deployKey, pushResult.schemaChange.schemaId)
+    const schemaChange = pushResult.schemaChange as Record<string, unknown> | undefined
+    if (schemaChange) {
+      log('Step 3/5: Schema change detected, waiting for validation...')
+      await waitForSchema(deploymentUrl, deployKey, schemaChange)
     } else {
-      log('Step 3/4: No schema change, skipping validation wait')
+      log('Step 3/5: No schema change, skipping validation wait')
     }
     updateStep('wait-schema', { status: 'done' })
-    log('Step 3/4: Schema validation complete')
+    log('Step 3/5: Schema validation complete')
 
     // Step 4: Finalize the push
     updateStep('finalize', { status: 'running' })
-    log('Step 4/4: Finalizing deployment...')
-    await finishPush(deploymentUrl, deployKey)
+    log('Step 4/5: Finalizing deployment...')
+    await finishPush(deploymentUrl, deployKey, pushResult)
     updateStep('finalize', { status: 'done' })
-    log('Step 4/4: Deployment finalized')
+    log('Step 4/5: Deployment finalized')
+
+    // Step 5: Validate deployed functions by running a test query
+    updateStep('validate', { status: 'running' })
+    log('Step 5/5: Validating deployed functions...')
+    const validateRes = await fetch(`${deploymentUrl}/api/query`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Convex ${deployKey}`,
+      },
+      body: JSON.stringify({ path: 'videos:list', args: {} }),
+    })
+    if (!validateRes.ok) {
+      const text = await validateRes.text()
+      throw new Error(`Post-deployment validation failed: videos:list returned ${validateRes.status} ${text}`)
+    }
+    updateStep('validate', { status: 'done' })
+    log('Step 5/5: Deployed functions validated successfully')
 
     log('=== Convex deployment finished ===')
     return true

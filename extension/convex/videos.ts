@@ -64,7 +64,11 @@ export const remove = mutation({
 
     // Delete from storage if storage_id exists
     if (video.storage_id) {
-      await ctx.storage.delete(video.storage_id);
+      try {
+        await ctx.storage.delete(video.storage_id);
+      } catch (e) {
+        console.warn("Failed to delete storage object (may already be gone):", e);
+      }
     }
 
     // Delete all reactions for this video

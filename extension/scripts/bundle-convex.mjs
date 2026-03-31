@@ -37,7 +37,8 @@ async function bundle() {
       target: 'esnext',
       // Do NOT externalize convex — we want it bundled in (same as CLI)
       write: false,
-      // Match the Convex CLI minification settings
+      // Match the Convex CLI esbuild settings exactly
+      conditions: ['convex', 'module'],
       minifySyntax: true,
       minifyIdentifiers: true,
       minifyWhitespace: false,

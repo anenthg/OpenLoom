@@ -206,27 +206,43 @@ export async function convexUpload(
   _remotePath: string,
   fileData: Blob,
   contentType: string,
+  onProgress?: (fraction: number) => void,
 ): Promise<{ ok: boolean; url?: string; storageId?: string; error?: string }> {
   try {
+    onProgress?.(0)
+
     // Step 1: Get an upload URL from Convex
     const uploadUrlResult = await convexMutation('videos:generateUploadUrl')
-    const uploadUrl = uploadUrlResult as string
+    let uploadUrl = uploadUrlResult as string
     if (!uploadUrl) throw new Error('Failed to get upload URL from Convex')
 
-    // Step 2: Upload the file to the Convex storage URL
-    const uploadRes = await fetch(uploadUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': contentType },
-      body: fileData,
-    })
-
-    if (!uploadRes.ok) {
-      const text = await uploadRes.text()
-      throw new Error(`File upload failed: ${uploadRes.status} ${text}`)
+    // Step 2: Upload the file to the Convex storage URL (retry on transient 5xx)
+    // Strip codec parameters — Convex rejects e.g. "video/webm;codecs=vp8,opus"
+    const mimeType = contentType.split(';')[0].trim()
+    let uploadRes: Response | null = null
+    for (let attempt = 0; attempt < 3; attempt++) {
+      uploadRes = await fetch(uploadUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': mimeType },
+        body: fileData,
+      })
+      if (uploadRes.ok || uploadRes.status < 500) break
+      // 5xx — wait and retry with a fresh upload URL
+      if (attempt < 2) {
+        await new Promise((r) => setTimeout(r, 1_000 * (attempt + 1)))
+        const newUrl = await convexMutation('videos:generateUploadUrl')
+        if (newUrl) uploadUrl = newUrl as string
+      }
     }
 
-    const { storageId } = (await uploadRes.json()) as { storageId: string }
+    if (!uploadRes!.ok) {
+      const text = await uploadRes!.text()
+      throw new Error(`File upload failed: ${uploadRes!.status} ${text}`)
+    }
 
+    const { storageId } = (await uploadRes!.json()) as { storageId: string }
+
+    onProgress?.(1)
     return { ok: true, storageId, url: storageId }
   } catch (e) {
     return { ok: false, error: `Convex upload failed: ${e instanceof Error ? e.message : String(e)}` }
@@ -241,9 +257,16 @@ export async function convexDeleteFile(
 }
 
 export async function convexGetFileUrl(
-  _remotePath: string,
+  remotePath: string,
 ): Promise<{ ok: boolean; url?: string; error?: string }> {
-  // For Convex, public URLs go through the HTTP action proxy
-  // The actual URL is constructed during insert
-  return { ok: true, url: '' }
+  if (!convexDeploymentUrl) {
+    return { ok: false, error: 'Convex not initialized' }
+  }
+  // Derive HTTP actions URL: .convex.cloud → .convex.site
+  const httpActionsUrl = convexDeploymentUrl.replace('.convex.cloud', '.convex.site')
+  // Extract short code from remotePath (e.g. "videos/abcXYZ.webm" → "abcXYZ")
+  const fileName = remotePath.split('/').pop() || ''
+  const shortCode = fileName.replace(/\.[^.]+$/, '')
+  const url = `${httpActionsUrl}/video?code=${encodeURIComponent(shortCode)}`
+  return { ok: true, url }
 }

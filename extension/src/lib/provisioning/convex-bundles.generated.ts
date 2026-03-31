@@ -1053,122 +1053,132 @@ export {
   Lo as default
 };
 `
-export const VIDEOS_BUNDLE = `var me = Object.defineProperty;
-var n = (e, t) => me(e, "name", { value: t, configurable: !0 });
+export const VIDEOS_BUNDLE = `var ft = Object.defineProperty;
+var n = (e, t) => ft(e, "name", { value: t, configurable: !0 });
 
 // node_modules/convex/dist/esm/values/base64.js
-var h = [], p = [], ye = Uint8Array, k = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-for (g = 0, ne = k.length; g < ne; ++g)
-  h[g] = k[g], p[k.charCodeAt(g)] = g;
-var g, ne;
-p[45] = 62;
-p[95] = 63;
-function we(e) {
+var A = [], b = [], dt = Uint8Array, ce = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+for (S = 0, \$e = ce.length; S < \$e; ++S)
+  A[S] = ce[S], b[ce.charCodeAt(S)] = S;
+var S, \$e;
+b[45] = 62;
+b[95] = 63;
+function pt(e) {
   var t = e.length;
   if (t % 4 > 0)
     throw new Error("Invalid string. Length must be a multiple of 4");
   var r = e.indexOf("=");
   r === -1 && (r = t);
-  var s = r === t ? 0 : 4 - r % 4;
-  return [r, s];
+  var o = r === t ? 0 : 4 - r % 4;
+  return [r, o];
 }
-n(we, "getLens");
-function ge(e, t, r) {
+n(pt, "getLens");
+function ht(e, t, r) {
   return (t + r) * 3 / 4 - r;
 }
-n(ge, "_byteLength");
-function D(e) {
-  var t, r = we(e), s = r[0], i = r[1], c = new ye(ge(e, s, i)), a = 0, f = i > 0 ? s - 4 : s, l;
-  for (l = 0; l < f; l += 4)
-    t = p[e.charCodeAt(l)] << 18 | p[e.charCodeAt(l + 1)] << 12 | p[e.charCodeAt(l + 2)] << 6 | p[e.charCodeAt(l + 3)], c[a++] = t >> 16 & 255, c[a++] = t >> 8 & 255, c[a++] = t & 255;
-  return i === 2 && (t = p[e.charCodeAt(l)] << 2 | p[e.charCodeAt(l + 1)] >> 4, c[a++] = t & 255), i === 1 && (t = p[e.charCodeAt(l)] << 10 | p[e.charCodeAt(l + 1)] << 4 | p[e.charCodeAt(l + 2)] >> 2, c[a++] = t >> 8 & 255, c[a++] = t & 255), c;
+n(ht, "_byteLength");
+function P(e) {
+  var t, r = pt(e), o = r[0], s = r[1], c = new dt(ht(e, o, s)), a = 0, f = s > 0 ? o - 4 : o, m;
+  for (m = 0; m < f; m += 4)
+    t = b[e.charCodeAt(m)] << 18 | b[e.charCodeAt(m + 1)] << 12 | b[e.charCodeAt(m + 2)] << 6 | b[e.charCodeAt(m + 3)], c[a++] = t >> 16 & 255, c[a++] = t >> 8 & 255, c[a++] = t & 255;
+  return s === 2 && (t = b[e.charCodeAt(m)] << 2 | b[e.charCodeAt(m + 1)] >> 4, c[a++] = t & 255), s === 1 && (t = b[e.charCodeAt(m)] << 10 | b[e.charCodeAt(m + 1)] << 4 | b[e.charCodeAt(m + 2)] >> 2, c[a++] = t >> 8 & 255, c[a++] = t & 255), c;
 }
-n(D, "toByteArray");
-function xe(e) {
-  return h[e >> 18 & 63] + h[e >> 12 & 63] + h[e >> 6 & 63] + h[e & 63];
+n(P, "toByteArray");
+function mt(e) {
+  return A[e >> 18 & 63] + A[e >> 12 & 63] + A[e >> 6 & 63] + A[e & 63];
 }
-n(xe, "tripletToBase64");
-function be(e, t, r) {
-  for (var s, i = [], c = t; c < r; c += 3)
-    s = (e[c] << 16 & 16711680) + (e[c + 1] << 8 & 65280) + (e[c + 2] & 255), i.push(xe(s));
-  return i.join("");
+n(mt, "tripletToBase64");
+function yt(e, t, r) {
+  for (var o, s = [], c = t; c < r; c += 3)
+    o = (e[c] << 16 & 16711680) + (e[c + 1] << 8 & 65280) + (e[c + 2] & 255), s.push(mt(o));
+  return s.join("");
 }
-n(be, "encodeChunk");
-function _(e) {
-  for (var t, r = e.length, s = r % 3, i = [], c = 16383, a = 0, f = r - s; a < f; a += c)
-    i.push(
-      be(
+n(yt, "encodeChunk");
+function F(e) {
+  for (var t, r = e.length, o = r % 3, s = [], c = 16383, a = 0, f = r - o; a < f; a += c)
+    s.push(
+      yt(
         e,
         a,
         a + c > f ? f : a + c
       )
     );
-  return s === 1 ? (t = e[r - 1], i.push(h[t >> 2] + h[t << 4 & 63] + "==")) : s === 2 && (t = (e[r - 2] << 8) + e[r - 1], i.push(
-    h[t >> 10] + h[t >> 4 & 63] + h[t << 2 & 63] + "="
-  )), i.join("");
+  return o === 1 ? (t = e[r - 1], s.push(A[t >> 2] + A[t << 4 & 63] + "==")) : o === 2 && (t = (e[r - 2] << 8) + e[r - 1], s.push(
+    A[t >> 10] + A[t >> 4 & 63] + A[t << 2 & 63] + "="
+  )), s.join("");
 }
-n(_, "fromByteArray");
+n(F, "fromByteArray");
 
 // node_modules/convex/dist/esm/common/index.js
-function Q(e) {
-  let t = typeof e == "object", r = Object.getPrototypeOf(e), s = r === null || r === Object.prototype || // Objects generated from other contexts (e.g. across Node.js \`vm\` modules) will not satisfy the previous
+function I(e) {
+  if (e === void 0)
+    return {};
+  if (!L(e))
+    throw new Error(
+      \`The arguments to a Convex function must be an object. Received: \${e}\`
+    );
+  return e;
+}
+n(I, "parseArgs");
+function L(e) {
+  let t = typeof e == "object", r = Object.getPrototypeOf(e), o = r === null || r === Object.prototype || // Objects generated from other contexts (e.g. across Node.js \`vm\` modules) will not satisfy the previous
   // conditions but are still simple objects.
   r?.constructor?.name === "Object";
-  return t && s;
+  return t && o;
 }
-n(Q, "isSimpleObject");
+n(L, "isSimpleObject");
 
 // node_modules/convex/dist/esm/values/value.js
-var ve = !0, b = BigInt("-9223372036854775808"), G = BigInt("9223372036854775807"), z = BigInt("0"), Ae = BigInt("8"), _e = BigInt("256");
-function Ee(e) {
+var qe = !0, C = BigInt("-9223372036854775808"), de = BigInt("9223372036854775807"), le = BigInt("0"), wt = BigInt("8"), gt = BigInt("256");
+function Re(e) {
   return Number.isNaN(e) || !Number.isFinite(e) || Object.is(e, -0);
 }
-n(Ee, "isSpecial");
-function Se(e) {
-  e < z && (e -= b + b);
+n(Re, "isSpecial");
+function xt(e) {
+  e < le && (e -= C + C);
   let t = e.toString(16);
   t.length % 2 === 1 && (t = "0" + t);
-  let r = new Uint8Array(new ArrayBuffer(8)), s = 0;
-  for (let i of t.match(/.{2}/g).reverse())
-    r.set([parseInt(i, 16)], s++), e >>= Ae;
-  return _(r);
+  let r = new Uint8Array(new ArrayBuffer(8)), o = 0;
+  for (let s of t.match(/.{2}/g).reverse())
+    r.set([parseInt(s, 16)], o++), e >>= wt;
+  return F(r);
 }
-n(Se, "slowBigIntToBase64");
-function Ie(e) {
-  let t = D(e);
+n(xt, "slowBigIntToBase64");
+function bt(e) {
+  let t = P(e);
   if (t.byteLength !== 8)
     throw new Error(
       \`Received \${t.byteLength} bytes, expected 8 for \$integer\`
     );
-  let r = z, s = z;
-  for (let i of t)
-    r += BigInt(i) * _e ** s, s++;
-  return r > G && (r += b + b), r;
+  let r = le, o = le;
+  for (let s of t)
+    r += BigInt(s) * gt ** o, o++;
+  return r > de && (r += C + C), r;
 }
-n(Ie, "slowBase64ToBigInt");
-function Te(e) {
-  if (e < b || G < e)
+n(bt, "slowBase64ToBigInt");
+function vt(e) {
+  if (e < C || de < e)
     throw new Error(
       \`BigInt \${e} does not fit into a 64-bit signed integer.\`
     );
   let t = new ArrayBuffer(8);
-  return new DataView(t).setBigInt64(0, e, !0), _(new Uint8Array(t));
+  return new DataView(t).setBigInt64(0, e, !0), F(new Uint8Array(t));
 }
-n(Te, "modernBigIntToBase64");
-function Oe(e) {
-  let t = D(e);
+n(vt, "modernBigIntToBase64");
+function At(e) {
+  let t = P(e);
   if (t.byteLength !== 8)
     throw new Error(
       \`Received \${t.byteLength} bytes, expected 8 for \$integer\`
     );
   return new DataView(t.buffer).getBigInt64(0, !0);
 }
-n(Oe, "modernBase64ToBigInt");
-var Ce = DataView.prototype.setBigInt64 ? Te : Se, Ye = DataView.prototype.getBigInt64 ? Oe : Ie, se = 1024;
-function ie(e) {
-  if (e.length > se)
+n(At, "modernBase64ToBigInt");
+var _t = DataView.prototype.setBigInt64 ? vt : xt, Et = DataView.prototype.getBigInt64 ? At : bt, Pe = 1024;
+function fe(e) {
+  if (e.length > Pe)
     throw new Error(
-      \`Field name \${e} exceeds maximum field name length \${se}.\`
+      \`Field name \${e} exceeds maximum field name length \${Pe}.\`
     );
   if (e.startsWith("\$"))
     throw new Error(\`Field name \${e} starts with a '\$', which is reserved.\`);
@@ -1180,20 +1190,68 @@ function ie(e) {
       );
   }
 }
-n(ie, "validateObjectField");
-var ae = 16384;
-function x(e) {
-  let t = JSON.stringify(e, (r, s) => s === void 0 ? "undefined" : typeof s == "bigint" ? \`\${s.toString()}n\` : s);
-  if (t.length > ae) {
-    let r = "[...truncated]", s = ae - r.length, i = t.codePointAt(s - 1);
-    return i !== void 0 && i > 65535 && (s -= 1), t.substring(0, s) + r;
+n(fe, "validateObjectField");
+function w(e) {
+  if (e === null || typeof e == "boolean" || typeof e == "number" || typeof e == "string")
+    return e;
+  if (Array.isArray(e))
+    return e.map((o) => w(o));
+  if (typeof e != "object")
+    throw new Error(\`Unexpected type of \${e}\`);
+  let t = Object.entries(e);
+  if (t.length === 1) {
+    let o = t[0][0];
+    if (o === "\$bytes") {
+      if (typeof e.\$bytes != "string")
+        throw new Error(\`Malformed \$bytes field on \${e}\`);
+      return P(e.\$bytes).buffer;
+    }
+    if (o === "\$integer") {
+      if (typeof e.\$integer != "string")
+        throw new Error(\`Malformed \$integer field on \${e}\`);
+      return Et(e.\$integer);
+    }
+    if (o === "\$float") {
+      if (typeof e.\$float != "string")
+        throw new Error(\`Malformed \$float field on \${e}\`);
+      let s = P(e.\$float);
+      if (s.byteLength !== 8)
+        throw new Error(
+          \`Received \${s.byteLength} bytes, expected 8 for \$float\`
+        );
+      let a = new DataView(s.buffer).getFloat64(0, qe);
+      if (!Re(a))
+        throw new Error(\`Float \${a} should be encoded as a number\`);
+      return a;
+    }
+    if (o === "\$set")
+      throw new Error(
+        "Received a Set which is no longer supported as a Convex type."
+      );
+    if (o === "\$map")
+      throw new Error(
+        "Received a Map which is no longer supported as a Convex type."
+      );
+  }
+  let r = {};
+  for (let [o, s] of Object.entries(e))
+    fe(o), r[o] = w(s);
+  return r;
+}
+n(w, "jsonToConvex");
+var Fe = 16384;
+function T(e) {
+  let t = JSON.stringify(e, (r, o) => o === void 0 ? "undefined" : typeof o == "bigint" ? \`\${o.toString()}n\` : o);
+  if (t.length > Fe) {
+    let r = "[...truncated]", o = Fe - r.length, s = t.codePointAt(o - 1);
+    return s !== void 0 && s > 65535 && (o -= 1), t.substring(0, o) + r;
   }
   return t;
 }
-n(x, "stringifyValueForError");
-function C(e, t, r, s) {
+n(T, "stringifyValueForError");
+function q(e, t, r, o) {
   if (e === void 0) {
-    let a = r && \` (present at path \${r} in original object \${x(
+    let a = r && \` (present at path \${r} in original object \${T(
       t
     )})\`;
     throw new Error(
@@ -1203,1178 +1261,103 @@ function C(e, t, r, s) {
   if (e === null)
     return e;
   if (typeof e == "bigint") {
-    if (e < b || G < e)
+    if (e < C || de < e)
       throw new Error(
         \`BigInt \${e} does not fit into a 64-bit signed integer.\`
       );
-    return { \$integer: Ce(e) };
+    return { \$integer: _t(e) };
   }
   if (typeof e == "number")
-    if (Ee(e)) {
+    if (Re(e)) {
       let a = new ArrayBuffer(8);
-      return new DataView(a).setFloat64(0, e, ve), { \$float: _(new Uint8Array(a)) };
+      return new DataView(a).setFloat64(0, e, qe), { \$float: F(new Uint8Array(a)) };
     } else
       return e;
   if (typeof e == "boolean" || typeof e == "string")
     return e;
   if (e instanceof ArrayBuffer)
-    return { \$bytes: _(new Uint8Array(e)) };
+    return { \$bytes: F(new Uint8Array(e)) };
   if (Array.isArray(e))
     return e.map(
-      (a, f) => C(a, t, r + \`[\${f}]\`, !1)
+      (a, f) => q(a, t, r + \`[\${f}]\`, !1)
     );
   if (e instanceof Set)
     throw new Error(
-      H(r, "Set", [...e], t)
+      ue(r, "Set", [...e], t)
     );
   if (e instanceof Map)
     throw new Error(
-      H(r, "Map", [...e], t)
+      ue(r, "Map", [...e], t)
     );
-  if (!Q(e)) {
+  if (!L(e)) {
     let a = e?.constructor?.name, f = a ? \`\${a} \` : "";
     throw new Error(
-      H(r, f, e, t)
+      ue(r, f, e, t)
     );
   }
-  let i = {}, c = Object.entries(e);
-  c.sort(([a, f], [l, re]) => a === l ? 0 : a < l ? -1 : 1);
+  let s = {}, c = Object.entries(e);
+  c.sort(([a, f], [m, N]) => a === m ? 0 : a < m ? -1 : 1);
   for (let [a, f] of c)
-    f !== void 0 ? (ie(a), i[a] = C(f, t, r + \`.\${a}\`, !1)) : s && (ie(a), i[a] = \$e(
+    f !== void 0 ? (fe(a), s[a] = q(f, t, r + \`.\${a}\`, !1)) : o && (fe(a), s[a] = Be(
       f,
       t,
       r + \`.\${a}\`
     ));
-  return i;
+  return s;
 }
-n(C, "convexToJsonInternal");
-function H(e, t, r, s) {
-  return e ? \`\${t}\${x(
+n(q, "convexToJsonInternal");
+function ue(e, t, r, o) {
+  return e ? \`\${t}\${T(
     r
-  )} is not a supported Convex type (present at path \${e} in original object \${x(
-    s
-  )}). To learn about Convex's supported types, see https://docs.convex.dev/using/types.\` : \`\${t}\${x(
-    r
-  )} is not a supported Convex type.\`;
-}
-n(H, "errorMessageForUnsupportedType");
-function \$e(e, t, r) {
-  if (e === void 0)
-    return { \$undefined: null };
-  if (t === void 0)
-    throw new Error(
-      \`Programming error. Current value is \${x(
-        e
-      )} but original value is undefined\`
-    );
-  return C(e, t, r, !1);
-}
-n(\$e, "convexOrUndefinedToJsonInternal");
-function y(e) {
-  return C(e, e, "", !1);
-}
-n(y, "convexToJson");
-
-// node_modules/convex/dist/esm/values/validators.js
-var Ne = Object.defineProperty, Pe = /* @__PURE__ */ n((e, t, r) => t in e ? Ne(e, t, { enumerable: !0, configurable: !0, writable: !0, value: r }) : e[t] = r, "__defNormalProp"), u = /* @__PURE__ */ n((e, t, r) => Pe(e, typeof t != "symbol" ? t + "" : t, r), "__publicField"), Fe = "https://docs.convex.dev/error#undefined-validator";
-function E(e, t) {
-  let r = t !== void 0 ? \` for field "\${t}"\` : "";
-  throw new Error(
-    \`A validator is undefined\${r} in \${e}. This is often caused by circular imports. See \${Fe} for details.\`
-  );
-}
-n(E, "throwUndefinedValidatorError");
-var d = class {
-  static {
-    n(this, "BaseValidator");
-  }
-  constructor({ isOptional: t }) {
-    u(this, "type"), u(this, "fieldPaths"), u(this, "isOptional"), u(this, "isConvexValidator"), this.isOptional = t, this.isConvexValidator = !0;
-  }
-}, \$ = class e extends d {
-  static {
-    n(this, "VId");
-  }
-  /**
-   * Usually you'd use \`v.id(tableName)\` instead.
-   */
-  constructor({
-    isOptional: t,
-    tableName: r
-  }) {
-    if (super({ isOptional: t }), u(this, "tableName"), u(this, "kind", "id"), typeof r != "string")
-      throw new Error("v.id(tableName) requires a string");
-    this.tableName = r;
-  }
-  /** @internal */
-  get json() {
-    return { type: "id", tableName: this.tableName };
-  }
-  /** @internal */
-  asOptional() {
-    return new e({
-      isOptional: "optional",
-      tableName: this.tableName
-    });
-  }
-}, S = class e extends d {
-  static {
-    n(this, "VFloat64");
-  }
-  constructor() {
-    super(...arguments), u(this, "kind", "float64");
-  }
-  /** @internal */
-  get json() {
-    return { type: "number" };
-  }
-  /** @internal */
-  asOptional() {
-    return new e({
-      isOptional: "optional"
-    });
-  }
-}, I = class e extends d {
-  static {
-    n(this, "VInt64");
-  }
-  constructor() {
-    super(...arguments), u(this, "kind", "int64");
-  }
-  /** @internal */
-  get json() {
-    return { type: "bigint" };
-  }
-  /** @internal */
-  asOptional() {
-    return new e({ isOptional: "optional" });
-  }
-}, N = class e extends d {
-  static {
-    n(this, "VBoolean");
-  }
-  constructor() {
-    super(...arguments), u(this, "kind", "boolean");
-  }
-  /** @internal */
-  get json() {
-    return { type: this.kind };
-  }
-  /** @internal */
-  asOptional() {
-    return new e({
-      isOptional: "optional"
-    });
-  }
-}, P = class e extends d {
-  static {
-    n(this, "VBytes");
-  }
-  constructor() {
-    super(...arguments), u(this, "kind", "bytes");
-  }
-  /** @internal */
-  get json() {
-    return { type: this.kind };
-  }
-  /** @internal */
-  asOptional() {
-    return new e({ isOptional: "optional" });
-  }
-}, F = class e extends d {
-  static {
-    n(this, "VString");
-  }
-  constructor() {
-    super(...arguments), u(this, "kind", "string");
-  }
-  /** @internal */
-  get json() {
-    return { type: this.kind };
-  }
-  /** @internal */
-  asOptional() {
-    return new e({
-      isOptional: "optional"
-    });
-  }
-}, q = class e extends d {
-  static {
-    n(this, "VNull");
-  }
-  constructor() {
-    super(...arguments), u(this, "kind", "null");
-  }
-  /** @internal */
-  get json() {
-    return { type: this.kind };
-  }
-  /** @internal */
-  asOptional() {
-    return new e({ isOptional: "optional" });
-  }
-}, R = class e extends d {
-  static {
-    n(this, "VAny");
-  }
-  constructor() {
-    super(...arguments), u(this, "kind", "any");
-  }
-  /** @internal */
-  get json() {
-    return {
-      type: this.kind
-    };
-  }
-  /** @internal */
-  asOptional() {
-    return new e({
-      isOptional: "optional"
-    });
-  }
-}, B = class e extends d {
-  static {
-    n(this, "VObject");
-  }
-  /**
-   * Usually you'd use \`v.object({ ... })\` instead.
-   */
-  constructor({
-    isOptional: t,
-    fields: r
-  }) {
-    super({ isOptional: t }), u(this, "fields"), u(this, "kind", "object"), globalThis.Object.entries(r).forEach(([s, i]) => {
-      if (i === void 0 && E("v.object()", s), !i.isConvexValidator)
-        throw new Error("v.object() entries must be validators");
-    }), this.fields = r;
-  }
-  /** @internal */
-  get json() {
-    return {
-      type: this.kind,
-      value: globalThis.Object.fromEntries(
-        globalThis.Object.entries(this.fields).map(([t, r]) => [
-          t,
-          {
-            fieldType: r.json,
-            optional: r.isOptional === "optional"
-          }
-        ])
-      )
-    };
-  }
-  /** @internal */
-  asOptional() {
-    return new e({
-      isOptional: "optional",
-      fields: this.fields
-    });
-  }
-  /**
-   * Create a new VObject with the specified fields omitted.
-   * @param fields The field names to omit from this VObject.
-   */
-  omit(...t) {
-    let r = { ...this.fields };
-    for (let s of t)
-      delete r[s];
-    return new e({
-      isOptional: this.isOptional,
-      fields: r
-    });
-  }
-  /**
-   * Create a new VObject with only the specified fields.
-   * @param fields The field names to pick from this VObject.
-   */
-  pick(...t) {
-    let r = {};
-    for (let s of t)
-      r[s] = this.fields[s];
-    return new e({
-      isOptional: this.isOptional,
-      fields: r
-    });
-  }
-  /**
-   * Create a new VObject with all fields marked as optional.
-   */
-  partial() {
-    let t = {};
-    for (let [r, s] of globalThis.Object.entries(this.fields))
-      t[r] = s.asOptional();
-    return new e({
-      isOptional: this.isOptional,
-      fields: t
-    });
-  }
-  /**
-   * Create a new VObject with additional fields merged in.
-   * @param fields An object with additional validators to merge into this VObject.
-   */
-  extend(t) {
-    return new e({
-      isOptional: this.isOptional,
-      fields: { ...this.fields, ...t }
-    });
-  }
-}, j = class e extends d {
-  static {
-    n(this, "VLiteral");
-  }
-  /**
-   * Usually you'd use \`v.literal(value)\` instead.
-   */
-  constructor({ isOptional: t, value: r }) {
-    if (super({ isOptional: t }), u(this, "value"), u(this, "kind", "literal"), typeof r != "string" && typeof r != "boolean" && typeof r != "number" && typeof r != "bigint")
-      throw new Error("v.literal(value) must be a string, number, or boolean");
-    this.value = r;
-  }
-  /** @internal */
-  get json() {
-    return {
-      type: this.kind,
-      value: y(this.value)
-    };
-  }
-  /** @internal */
-  asOptional() {
-    return new e({
-      isOptional: "optional",
-      value: this.value
-    });
-  }
-}, M = class e extends d {
-  static {
-    n(this, "VArray");
-  }
-  /**
-   * Usually you'd use \`v.array(element)\` instead.
-   */
-  constructor({
-    isOptional: t,
-    element: r
-  }) {
-    super({ isOptional: t }), u(this, "element"), u(this, "kind", "array"), r === void 0 && E("v.array()"), this.element = r;
-  }
-  /** @internal */
-  get json() {
-    return {
-      type: this.kind,
-      value: this.element.json
-    };
-  }
-  /** @internal */
-  asOptional() {
-    return new e({
-      isOptional: "optional",
-      element: this.element
-    });
-  }
-}, U = class e extends d {
-  static {
-    n(this, "VRecord");
-  }
-  /**
-   * Usually you'd use \`v.record(key, value)\` instead.
-   */
-  constructor({
-    isOptional: t,
-    key: r,
-    value: s
-  }) {
-    if (super({ isOptional: t }), u(this, "key"), u(this, "value"), u(this, "kind", "record"), r === void 0 && E("v.record()", "key"), s === void 0 && E("v.record()", "value"), r.isOptional === "optional")
-      throw new Error("Record validator cannot have optional keys");
-    if (s.isOptional === "optional")
-      throw new Error("Record validator cannot have optional values");
-    if (!r.isConvexValidator || !s.isConvexValidator)
-      throw new Error("Key and value of v.record() but be validators");
-    this.key = r, this.value = s;
-  }
-  /** @internal */
-  get json() {
-    return {
-      type: this.kind,
-      // This cast is needed because TypeScript thinks the key type is too wide
-      keys: this.key.json,
-      values: {
-        fieldType: this.value.json,
-        optional: !1
-      }
-    };
-  }
-  /** @internal */
-  asOptional() {
-    return new e({
-      isOptional: "optional",
-      key: this.key,
-      value: this.value
-    });
-  }
-}, J = class e extends d {
-  static {
-    n(this, "VUnion");
-  }
-  /**
-   * Usually you'd use \`v.union(...members)\` instead.
-   */
-  constructor({ isOptional: t, members: r }) {
-    super({ isOptional: t }), u(this, "members"), u(this, "kind", "union"), r.forEach((s, i) => {
-      if (s === void 0 && E("v.union()", \`member at index \${i}\`), !s.isConvexValidator)
-        throw new Error("All members of v.union() must be validators");
-    }), this.members = r;
-  }
-  /** @internal */
-  get json() {
-    return {
-      type: this.kind,
-      value: this.members.map((t) => t.json)
-    };
-  }
-  /** @internal */
-  asOptional() {
-    return new e({
-      isOptional: "optional",
-      members: this.members
-    });
-  }
-};
-
-// node_modules/convex/dist/esm/values/validator.js
-function ce(e) {
-  return !!e.isConvexValidator;
-}
-n(ce, "isValidator");
-var o = {
-  /**
-   * Validates that the value is a document ID for the given table.
-   *
-   * IDs are strings at runtime but are typed as \`Id<"tableName">\` in
-   * TypeScript for type safety.
-   *
-   * @example
-   * \`\`\`typescript
-   * args: { userId: v.id("users") }
-   * \`\`\`
-   *
-   * @param tableName The name of the table.
-   */
-  id: /* @__PURE__ */ n((e) => new \$({
-    isOptional: "required",
-    tableName: e
-  }), "id"),
-  /**
-   * Validates that the value is \`null\`.
-   *
-   * Use \`returns: v.null()\` for functions that don't return a meaningful value.
-   * JavaScript \`undefined\` is not a valid Convex value, it is automatically
-   * converted to \`null\`.
-   */
-  null: /* @__PURE__ */ n(() => new q({ isOptional: "required" }), "null"),
-  /**
-   * Validates that the value is a JavaScript \`number\` (Convex Float64).
-   *
-   * Supports all IEEE-754 double-precision floating point numbers including
-   * NaN and Infinity.
-   *
-   * Alias for \`v.float64()\`.
-   */
-  number: /* @__PURE__ */ n(() => new S({ isOptional: "required" }), "number"),
-  /**
-   * Validates that the value is a JavaScript \`number\` (Convex Float64).
-   *
-   * Supports all IEEE-754 double-precision floating point numbers.
-   */
-  float64: /* @__PURE__ */ n(() => new S({ isOptional: "required" }), "float64"),
-  /**
-   * @deprecated Use \`v.int64()\` instead.
-   */
-  bigint: /* @__PURE__ */ n(() => new I({ isOptional: "required" }), "bigint"),
-  /**
-   * Validates that the value is a JavaScript \`bigint\` (Convex Int64).
-   *
-   * Supports BigInts between -2^63 and 2^63-1.
-   *
-   * @example
-   * \`\`\`typescript
-   * args: { timestamp: v.int64() }
-   * // Usage: createDoc({ timestamp: 1234567890n })
-   * \`\`\`
-   */
-  int64: /* @__PURE__ */ n(() => new I({ isOptional: "required" }), "int64"),
-  /**
-   * Validates that the value is a \`boolean\`.
-   */
-  boolean: /* @__PURE__ */ n(() => new N({ isOptional: "required" }), "boolean"),
-  /**
-   * Validates that the value is a \`string\`.
-   *
-   * Strings are stored as UTF-8 and their storage size is calculated as their
-   * UTF-8 encoded size.
-   */
-  string: /* @__PURE__ */ n(() => new F({ isOptional: "required" }), "string"),
-  /**
-   * Validates that the value is an \`ArrayBuffer\` (Convex Bytes).
-   *
-   * Use for binary data.
-   */
-  bytes: /* @__PURE__ */ n(() => new P({ isOptional: "required" }), "bytes"),
-  /**
-   * Validates that the value is exactly equal to the given literal.
-   *
-   * Useful for discriminated unions and enum-like patterns.
-   *
-   * @example
-   * \`\`\`typescript
-   * // Discriminated union pattern:
-   * v.union(
-   *   v.object({ kind: v.literal("error"), message: v.string() }),
-   *   v.object({ kind: v.literal("success"), value: v.number() }),
-   * )
-   * \`\`\`
-   *
-   * @param literal The literal value to compare against.
-   */
-  literal: /* @__PURE__ */ n((e) => new j({ isOptional: "required", value: e }), "literal"),
-  /**
-   * Validates that the value is an \`Array\` where every element matches the
-   * given validator.
-   *
-   * Arrays can have at most 8192 elements.
-   *
-   * @example
-   * \`\`\`typescript
-   * args: { tags: v.array(v.string()) }
-   * args: { coordinates: v.array(v.number()) }
-   * args: { items: v.array(v.object({ name: v.string(), qty: v.number() })) }
-   * \`\`\`
-   *
-   * @param element The validator for the elements of the array.
-   */
-  array: /* @__PURE__ */ n((e) => new M({ isOptional: "required", element: e }), "array"),
-  /**
-   * Validates that the value is an \`Object\` with the specified properties.
-   *
-   * Objects can have at most 1024 entries. Field names must be non-empty and
-   * must not start with \`"\$"\` or \`"_"\` (\`_\` is reserved for system fields
-   * like \`_id\` and \`_creationTime\`; \`\$\` is reserved for Convex internal use).
-   *
-   * @example
-   * \`\`\`typescript
-   * args: {
-   *   user: v.object({
-   *     name: v.string(),
-   *     email: v.string(),
-   *     age: v.optional(v.number()),
-   *   })
-   * }
-   * \`\`\`
-   *
-   * @param fields An object mapping property names to their validators.
-   */
-  object: /* @__PURE__ */ n((e) => new B({ isOptional: "required", fields: e }), "object"),
-  /**
-   * Validates that the value is a \`Record\` (object with dynamic keys).
-   *
-   * Records are objects at runtime but allow dynamic keys, unlike \`v.object()\`
-   * which requires known property names. Keys must be ASCII characters only,
-   * non-empty, and not start with \`"\$"\` or \`"_"\`.
-   *
-   * @example
-   * \`\`\`typescript
-   * // Map of user IDs to scores:
-   * args: { scores: v.record(v.id("users"), v.number()) }
-   *
-   * // Map of string keys to string values:
-   * args: { metadata: v.record(v.string(), v.string()) }
-   * \`\`\`
-   *
-   * @param keys The validator for the keys of the record.
-   * @param values The validator for the values of the record.
-   */
-  record: /* @__PURE__ */ n((e, t) => new U({
-    isOptional: "required",
-    key: e,
-    value: t
-  }), "record"),
-  /**
-   * Validates that the value matches at least one of the given validators.
-   *
-   * @example
-   * \`\`\`typescript
-   * // Allow string or number:
-   * args: { value: v.union(v.string(), v.number()) }
-   *
-   * // Discriminated union (recommended pattern):
-   * v.union(
-   *   v.object({ kind: v.literal("text"), body: v.string() }),
-   *   v.object({ kind: v.literal("image"), url: v.string() }),
-   * )
-   *
-   * // Nullable value:
-   * returns: v.union(v.object({ ... }), v.null())
-   * \`\`\`
-   *
-   * @param members The validators to match against.
-   */
-  union: /* @__PURE__ */ n((...e) => new J({
-    isOptional: "required",
-    members: e
-  }), "union"),
-  /**
-   * A validator that accepts any Convex value without validation.
-   *
-   * Prefer using specific validators when possible for better type safety
-   * and runtime validation.
-   */
-  any: /* @__PURE__ */ n(() => new R({ isOptional: "required" }), "any"),
-  /**
-   * Makes a property optional in an object validator.
-   *
-   * An optional property can be omitted entirely when creating a document or
-   * calling a function. This is different from \`v.nullable()\` which requires
-   * the property to be present but allows \`null\`.
-   *
-   * @example
-   * \`\`\`typescript
-   * v.object({
-   *   name: v.string(),              // required
-   *   nickname: v.optional(v.string()), // can be omitted
-   * })
-   *
-   * // Valid: { name: "Alice" }
-   * // Valid: { name: "Alice", nickname: "Ali" }
-   * // Invalid: { name: "Alice", nickname: null }  - use v.nullable() for this
-   * \`\`\`
-   *
-   * @param value The property value validator to make optional.
-   */
-  optional: /* @__PURE__ */ n((e) => e.asOptional(), "optional"),
-  /**
-   * Allows a value to be either the given type or \`null\`.
-   *
-   * This is shorthand for \`v.union(value, v.null())\`. Unlike \`v.optional()\`,
-   * the property must still be present, but may be \`null\`.
-   *
-   * @example
-   * \`\`\`typescript
-   * v.object({
-   *   name: v.string(),
-   *   deletedAt: v.nullable(v.number()), // must be present, can be null
-   * })
-   *
-   * // Valid: { name: "Alice", deletedAt: null }
-   * // Valid: { name: "Alice", deletedAt: 1234567890 }
-   * // Invalid: { name: "Alice" }  - deletedAt is required
-   * \`\`\`
-   */
-  nullable: /* @__PURE__ */ n((e) => o.union(e, o.null()), "nullable")
-};
-
-// node_modules/convex/dist/esm/values/errors.js
-var qe = Object.defineProperty, Re = /* @__PURE__ */ n((e, t, r) => t in e ? qe(e, t, { enumerable: !0, configurable: !0, writable: !0, value: r }) : e[t] = r, "__defNormalProp"), W = /* @__PURE__ */ n((e, t, r) => Re(e, typeof t != "symbol" ? t + "" : t, r), "__publicField"), ue, le, Be = /* @__PURE__ */ Symbol.for("ConvexError"), Y = class extends (le = Error, ue = Be, le) {
-  static {
-    n(this, "ConvexError");
-  }
-  constructor(t) {
-    super(typeof t == "string" ? t : x(t)), W(this, "name", "ConvexError"), W(this, "data"), W(this, ue, !0), this.data = t;
-  }
-};
-
-// node_modules/convex/dist/esm/values/compare_utf8.js
-var fe = /* @__PURE__ */ n(() => Array.from({ length: 4 }, () => 0), "arr"), ct = fe(), ut = fe();
-
-// node_modules/convex/dist/esm/server/functionName.js
-var X = /* @__PURE__ */ Symbol.for("functionName");
-
-// node_modules/convex/dist/esm/server/pagination.js
-var Bn = o.object({
-  numItems: o.number(),
-  cursor: o.union(o.string(), o.null()),
-  endCursor: o.optional(o.union(o.string(), o.null())),
-  id: o.optional(o.number()),
-  maximumRowsRead: o.optional(o.number()),
-  maximumBytesRead: o.optional(o.number())
-});
-
-// node_modules/convex/dist/esm/server/api.js
-function de(e = []) {
-  let t = {
-    get(r, s) {
-      if (typeof s == "string") {
-        let i = [...e, s];
-        return de(i);
-      } else if (s === X) {
-        if (e.length < 2) {
-          let a = ["api", ...e].join(".");
-          throw new Error(
-            \`API path is expected to be of the form \\\`api.moduleName.functionName\\\`. Found: \\\`\${a}\\\`\`
-          );
-        }
-        let i = e.slice(0, -1).join("/"), c = e[e.length - 1];
-        return c === "default" ? i : i + ":" + c;
-      } else return s === Symbol.toStringTag ? "FunctionReference" : void 0;
-    }
-  };
-  return new Proxy({}, t);
-}
-n(de, "createApi");
-var Ve = de();
-
-// node_modules/convex/dist/esm/server/schema.js
-var ke = Object.defineProperty, De = /* @__PURE__ */ n((e, t, r) => t in e ? ke(e, t, { enumerable: !0, configurable: !0, writable: !0, value: r }) : e[t] = r, "__defNormalProp"), m = /* @__PURE__ */ n((e, t, r) => De(e, typeof t != "symbol" ? t + "" : t, r), "__publicField"), V = class {
-  static {
-    n(this, "TableDefinition");
-  }
-  /**
-   * @internal
-   */
-  constructor(t) {
-    m(this, "indexes"), m(this, "stagedDbIndexes"), m(this, "searchIndexes"), m(this, "stagedSearchIndexes"), m(this, "vectorIndexes"), m(this, "stagedVectorIndexes"), m(this, "validator"), this.indexes = [], this.stagedDbIndexes = [], this.searchIndexes = [], this.stagedSearchIndexes = [], this.vectorIndexes = [], this.stagedVectorIndexes = [], this.validator = t;
-  }
-  /**
-   * This API is experimental: it may change or disappear.
-   *
-   * Returns indexes defined on this table.
-   * Intended for the advanced use cases of dynamically deciding which index to use for a query.
-   * If you think you need this, please chime in on ths issue in the Convex JS GitHub repo.
-   * https://github.com/get-convex/convex-js/issues/49
-   */
-  " indexes"() {
-    return this.indexes;
-  }
-  index(t, r) {
-    return Array.isArray(r) ? this.indexes.push({
-      indexDescriptor: t,
-      fields: r
-    }) : r.staged ? this.stagedDbIndexes.push({
-      indexDescriptor: t,
-      fields: r.fields
-    }) : this.indexes.push({
-      indexDescriptor: t,
-      fields: r.fields
-    }), this;
-  }
-  searchIndex(t, r) {
-    return r.staged ? this.stagedSearchIndexes.push({
-      indexDescriptor: t,
-      searchField: r.searchField,
-      filterFields: r.filterFields || []
-    }) : this.searchIndexes.push({
-      indexDescriptor: t,
-      searchField: r.searchField,
-      filterFields: r.filterFields || []
-    }), this;
-  }
-  vectorIndex(t, r) {
-    return r.staged ? this.stagedVectorIndexes.push({
-      indexDescriptor: t,
-      vectorField: r.vectorField,
-      dimensions: r.dimensions,
-      filterFields: r.filterFields || []
-    }) : this.vectorIndexes.push({
-      indexDescriptor: t,
-      vectorField: r.vectorField,
-      dimensions: r.dimensions,
-      filterFields: r.filterFields || []
-    }), this;
-  }
-  /**
-   * Work around for https://github.com/microsoft/TypeScript/issues/57035
-   */
-  self() {
-    return this;
-  }
-  /**
-   * Export the contents of this definition.
-   *
-   * This is called internally by the Convex framework.
-   * @internal
-   */
-  export() {
-    let t = this.validator.json;
-    if (typeof t != "object")
-      throw new Error(
-        "Invalid validator: please make sure that the parameter of \`defineTable\` is valid (see https://docs.convex.dev/database/schemas)"
-      );
-    return {
-      indexes: this.indexes,
-      stagedDbIndexes: this.stagedDbIndexes,
-      searchIndexes: this.searchIndexes,
-      stagedSearchIndexes: this.stagedSearchIndexes,
-      vectorIndexes: this.vectorIndexes,
-      stagedVectorIndexes: this.stagedVectorIndexes,
-      documentType: t
-    };
-  }
-};
-function ee(e) {
-  return ce(e) ? new V(e) : new V(o.object(e));
-}
-n(ee, "defineTable");
-var te = class {
-  static {
-    n(this, "SchemaDefinition");
-  }
-  /**
-   * @internal
-   */
-  constructor(t, r) {
-    m(this, "tables"), m(this, "strictTableNameTypes"), m(this, "schemaValidation"), this.tables = t, this.schemaValidation = r?.schemaValidation === void 0 ? !0 : r.schemaValidation;
-  }
-  /**
-   * Export the contents of this definition.
-   *
-   * This is called internally by the Convex framework.
-   * @internal
-   */
-  export() {
-    return JSON.stringify({
-      tables: Object.entries(this.tables).map(([t, r]) => {
-        let {
-          indexes: s,
-          stagedDbIndexes: i,
-          searchIndexes: c,
-          stagedSearchIndexes: a,
-          vectorIndexes: f,
-          stagedVectorIndexes: l,
-          documentType: re
-        } = r.export();
-        return {
-          tableName: t,
-          indexes: s,
-          stagedDbIndexes: i,
-          searchIndexes: c,
-          stagedSearchIndexes: a,
-          vectorIndexes: f,
-          stagedVectorIndexes: l,
-          documentType: re
-        };
-      }),
-      schemaValidation: this.schemaValidation
-    });
-  }
-};
-function pe(e, t) {
-  return new te(e, t);
-}
-n(pe, "defineSchema");
-var ao = pe({
-  _scheduled_functions: ee({
-    name: o.string(),
-    args: o.array(o.any()),
-    scheduledTime: o.float64(),
-    completedTime: o.optional(o.float64()),
-    state: o.union(
-      o.object({ kind: o.literal("pending") }),
-      o.object({ kind: o.literal("inProgress") }),
-      o.object({ kind: o.literal("success") }),
-      o.object({ kind: o.literal("failed"), error: o.string() }),
-      o.object({ kind: o.literal("canceled") })
-    )
-  }),
-  _storage: ee({
-    sha256: o.string(),
-    size: o.float64(),
-    contentType: o.optional(o.string())
-  })
-});
-
-// convex/videos.ts
-var Ko = he({
-  args: { shortCode: o.string() },
-  handler: /* @__PURE__ */ n(async (e, t) => await e.db.query("videos").withIndex("by_short_code", (r) => r.eq("short_code", t.shortCode)).first(), "handler")
-}), Zo = he({
-  args: {},
-  handler: /* @__PURE__ */ n(async (e) => await e.db.query("videos").withIndex("by_created_at").order("desc").collect(), "handler")
-}), es = L({
-  args: {
-    short_code: o.string(),
-    title: o.string(),
-    description: o.optional(o.union(o.string(), o.null())),
-    storage_url: o.string(),
-    storage_id: o.optional(o.id("_storage")),
-    view_count: o.number(),
-    duration_ms: o.optional(o.union(o.number(), o.null())),
-    capture_mode: o.string(),
-    created_at: o.string(),
-    is_protected: o.optional(o.boolean()),
-    password_salt: o.optional(o.string())
-  },
-  handler: /* @__PURE__ */ n(async (e, t) => await e.db.insert("videos", t), "handler")
-}), ts = L({
-  args: { shortCode: o.string() },
-  handler: /* @__PURE__ */ n(async (e, t) => {
-    let r = await e.db.query("videos").withIndex("by_short_code", (s) => s.eq("short_code", t.shortCode)).first();
-    if (!r) throw new Error("Video not found");
-    await e.db.patch(r._id, { view_count: r.view_count + 1 });
-  }, "handler")
-}), rs = L({
-  args: { shortCode: o.string() },
-  handler: /* @__PURE__ */ n(async (e, t) => {
-    let r = await e.db.query("videos").withIndex("by_short_code", (i) => i.eq("short_code", t.shortCode)).first();
-    if (!r) return;
-    r.storage_id && await e.storage.delete(r.storage_id);
-    let s = await e.db.query("reactions").withIndex(
-      "by_video_short_code",
-      (i) => i.eq("video_short_code", t.shortCode)
-    ).collect();
-    for (let i of s)
-      await e.db.delete(i._id);
-    await e.db.delete(r._id);
-  }, "handler")
-}), ns = L({
-  args: {},
-  handler: /* @__PURE__ */ n(async (e) => await e.storage.generateUploadUrl(), "handler")
-});
-export {
-  ns as generateUploadUrl,
-  Ko as getByShortCode,
-  ts as incrementViewCount,
-  es as insert,
-  Zo as list,
-  rs as remove
-};
-`
-export const REACTIONS_BUNDLE = `var de = Object.defineProperty;
-var n = (e, t) => de(e, "name", { value: t, configurable: !0 });
-
-// node_modules/convex/dist/esm/values/base64.js
-var h = [], d = [], he = Uint8Array, L = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-for (g = 0, re = L.length; g < re; ++g)
-  h[g] = L[g], d[L.charCodeAt(g)] = g;
-var g, re;
-d[45] = 62;
-d[95] = 63;
-function me(e) {
-  var t = e.length;
-  if (t % 4 > 0)
-    throw new Error("Invalid string. Length must be a multiple of 4");
-  var r = e.indexOf("=");
-  r === -1 && (r = t);
-  var o = r === t ? 0 : 4 - r % 4;
-  return [r, o];
-}
-n(me, "getLens");
-function ye(e, t, r) {
-  return (t + r) * 3 / 4 - r;
-}
-n(ye, "_byteLength");
-function k(e) {
-  var t, r = me(e), o = r[0], a = r[1], c = new he(ye(e, o, a)), i = 0, f = a > 0 ? o - 4 : o, l;
-  for (l = 0; l < f; l += 4)
-    t = d[e.charCodeAt(l)] << 18 | d[e.charCodeAt(l + 1)] << 12 | d[e.charCodeAt(l + 2)] << 6 | d[e.charCodeAt(l + 3)], c[i++] = t >> 16 & 255, c[i++] = t >> 8 & 255, c[i++] = t & 255;
-  return a === 2 && (t = d[e.charCodeAt(l)] << 2 | d[e.charCodeAt(l + 1)] >> 4, c[i++] = t & 255), a === 1 && (t = d[e.charCodeAt(l)] << 10 | d[e.charCodeAt(l + 1)] << 4 | d[e.charCodeAt(l + 2)] >> 2, c[i++] = t >> 8 & 255, c[i++] = t & 255), c;
-}
-n(k, "toByteArray");
-function we(e) {
-  return h[e >> 18 & 63] + h[e >> 12 & 63] + h[e >> 6 & 63] + h[e & 63];
-}
-n(we, "tripletToBase64");
-function ge(e, t, r) {
-  for (var o, a = [], c = t; c < r; c += 3)
-    o = (e[c] << 16 & 16711680) + (e[c + 1] << 8 & 65280) + (e[c + 2] & 255), a.push(we(o));
-  return a.join("");
-}
-n(ge, "encodeChunk");
-function E(e) {
-  for (var t, r = e.length, o = r % 3, a = [], c = 16383, i = 0, f = r - o; i < f; i += c)
-    a.push(
-      ge(
-        e,
-        i,
-        i + c > f ? f : i + c
-      )
-    );
-  return o === 1 ? (t = e[r - 1], a.push(h[t >> 2] + h[t << 4 & 63] + "==")) : o === 2 && (t = (e[r - 2] << 8) + e[r - 1], a.push(
-    h[t >> 10] + h[t >> 4 & 63] + h[t << 2 & 63] + "="
-  )), a.join("");
-}
-n(E, "fromByteArray");
-
-// node_modules/convex/dist/esm/common/index.js
-function D(e) {
-  let t = typeof e == "object", r = Object.getPrototypeOf(e), o = r === null || r === Object.prototype || // Objects generated from other contexts (e.g. across Node.js \`vm\` modules) will not satisfy the previous
-  // conditions but are still simple objects.
-  r?.constructor?.name === "Object";
-  return t && o;
-}
-n(D, "isSimpleObject");
-
-// node_modules/convex/dist/esm/values/value.js
-var xe = !0, b = BigInt("-9223372036854775808"), z = BigInt("9223372036854775807"), H = BigInt("0"), be = BigInt("8"), ve = BigInt("256");
-function Ae(e) {
-  return Number.isNaN(e) || !Number.isFinite(e) || Object.is(e, -0);
-}
-n(Ae, "isSpecial");
-function Ee(e) {
-  e < H && (e -= b + b);
-  let t = e.toString(16);
-  t.length % 2 === 1 && (t = "0" + t);
-  let r = new Uint8Array(new ArrayBuffer(8)), o = 0;
-  for (let a of t.match(/.{2}/g).reverse())
-    r.set([parseInt(a, 16)], o++), e >>= be;
-  return E(r);
-}
-n(Ee, "slowBigIntToBase64");
-function Se(e) {
-  let t = k(e);
-  if (t.byteLength !== 8)
-    throw new Error(
-      \`Received \${t.byteLength} bytes, expected 8 for \$integer\`
-    );
-  let r = H, o = H;
-  for (let a of t)
-    r += BigInt(a) * ve ** o, o++;
-  return r > z && (r += b + b), r;
-}
-n(Se, "slowBase64ToBigInt");
-function _e(e) {
-  if (e < b || z < e)
-    throw new Error(
-      \`BigInt \${e} does not fit into a 64-bit signed integer.\`
-    );
-  let t = new ArrayBuffer(8);
-  return new DataView(t).setBigInt64(0, e, !0), E(new Uint8Array(t));
-}
-n(_e, "modernBigIntToBase64");
-function Ie(e) {
-  let t = k(e);
-  if (t.byteLength !== 8)
-    throw new Error(
-      \`Received \${t.byteLength} bytes, expected 8 for \$integer\`
-    );
-  return new DataView(t.buffer).getBigInt64(0, !0);
-}
-n(Ie, "modernBase64ToBigInt");
-var Oe = DataView.prototype.setBigInt64 ? _e : Ee, Ye = DataView.prototype.getBigInt64 ? Ie : Se, oe = 1024;
-function se(e) {
-  if (e.length > oe)
-    throw new Error(
-      \`Field name \${e} exceeds maximum field name length \${oe}.\`
-    );
-  if (e.startsWith("\$"))
-    throw new Error(\`Field name \${e} starts with a '\$', which is reserved.\`);
-  for (let t = 0; t < e.length; t += 1) {
-    let r = e.charCodeAt(t);
-    if (r < 32 || r >= 127)
-      throw new Error(
-        \`Field name \${e} has invalid character '\${e[t]}': Field names can only contain non-control ASCII characters\`
-      );
-  }
-}
-n(se, "validateObjectField");
-var ie = 16384;
-function x(e) {
-  let t = JSON.stringify(e, (r, o) => o === void 0 ? "undefined" : typeof o == "bigint" ? \`\${o.toString()}n\` : o);
-  if (t.length > ie) {
-    let r = "[...truncated]", o = ie - r.length, a = t.codePointAt(o - 1);
-    return a !== void 0 && a > 65535 && (o -= 1), t.substring(0, o) + r;
-  }
-  return t;
-}
-n(x, "stringifyValueForError");
-function C(e, t, r, o) {
-  if (e === void 0) {
-    let i = r && \` (present at path \${r} in original object \${x(
-      t
-    )})\`;
-    throw new Error(
-      \`undefined is not a valid Convex value\${i}. To learn about Convex's supported types, see https://docs.convex.dev/using/types.\`
-    );
-  }
-  if (e === null)
-    return e;
-  if (typeof e == "bigint") {
-    if (e < b || z < e)
-      throw new Error(
-        \`BigInt \${e} does not fit into a 64-bit signed integer.\`
-      );
-    return { \$integer: Oe(e) };
-  }
-  if (typeof e == "number")
-    if (Ae(e)) {
-      let i = new ArrayBuffer(8);
-      return new DataView(i).setFloat64(0, e, xe), { \$float: E(new Uint8Array(i)) };
-    } else
-      return e;
-  if (typeof e == "boolean" || typeof e == "string")
-    return e;
-  if (e instanceof ArrayBuffer)
-    return { \$bytes: E(new Uint8Array(e)) };
-  if (Array.isArray(e))
-    return e.map(
-      (i, f) => C(i, t, r + \`[\${f}]\`, !1)
-    );
-  if (e instanceof Set)
-    throw new Error(
-      Q(r, "Set", [...e], t)
-    );
-  if (e instanceof Map)
-    throw new Error(
-      Q(r, "Map", [...e], t)
-    );
-  if (!D(e)) {
-    let i = e?.constructor?.name, f = i ? \`\${i} \` : "";
-    throw new Error(
-      Q(r, f, e, t)
-    );
-  }
-  let a = {}, c = Object.entries(e);
-  c.sort(([i, f], [l, te]) => i === l ? 0 : i < l ? -1 : 1);
-  for (let [i, f] of c)
-    f !== void 0 ? (se(i), a[i] = C(f, t, r + \`.\${i}\`, !1)) : o && (se(i), a[i] = Te(
-      f,
-      t,
-      r + \`.\${i}\`
-    ));
-  return a;
-}
-n(C, "convexToJsonInternal");
-function Q(e, t, r, o) {
-  return e ? \`\${t}\${x(
-    r
-  )} is not a supported Convex type (present at path \${e} in original object \${x(
+  )} is not a supported Convex type (present at path \${e} in original object \${T(
     o
-  )}). To learn about Convex's supported types, see https://docs.convex.dev/using/types.\` : \`\${t}\${x(
+  )}). To learn about Convex's supported types, see https://docs.convex.dev/using/types.\` : \`\${t}\${T(
     r
   )} is not a supported Convex type.\`;
 }
-n(Q, "errorMessageForUnsupportedType");
-function Te(e, t, r) {
+n(ue, "errorMessageForUnsupportedType");
+function Be(e, t, r) {
   if (e === void 0)
     return { \$undefined: null };
   if (t === void 0)
     throw new Error(
-      \`Programming error. Current value is \${x(
+      \`Programming error. Current value is \${T(
         e
       )} but original value is undefined\`
     );
-  return C(e, t, r, !1);
+  return q(e, t, r, !1);
 }
-n(Te, "convexOrUndefinedToJsonInternal");
-function y(e) {
-  return C(e, e, "", !1);
+n(Be, "convexOrUndefinedToJsonInternal");
+function h(e) {
+  return q(e, e, "", !1);
 }
-n(y, "convexToJson");
+n(h, "convexToJson");
+function v(e) {
+  return Be(e, e, "");
+}
+n(v, "convexOrUndefinedToJson");
+function je(e) {
+  return q(e, e, "", !0);
+}
+n(je, "patchValueToJson");
 
 // node_modules/convex/dist/esm/values/validators.js
-var Ce = Object.defineProperty, \$e = /* @__PURE__ */ n((e, t, r) => t in e ? Ce(e, t, { enumerable: !0, configurable: !0, writable: !0, value: r }) : e[t] = r, "__defNormalProp"), u = /* @__PURE__ */ n((e, t, r) => \$e(e, typeof t != "symbol" ? t + "" : t, r), "__publicField"), Ne = "https://docs.convex.dev/error#undefined-validator";
-function S(e, t) {
+var St = Object.defineProperty, It = /* @__PURE__ */ n((e, t, r) => t in e ? St(e, t, { enumerable: !0, configurable: !0, writable: !0, value: r }) : e[t] = r, "__defNormalProp"), p = /* @__PURE__ */ n((e, t, r) => It(e, typeof t != "symbol" ? t + "" : t, r), "__publicField"), Tt = "https://docs.convex.dev/error#undefined-validator";
+function R(e, t) {
   let r = t !== void 0 ? \` for field "\${t}"\` : "";
   throw new Error(
-    \`A validator is undefined\${r} in \${e}. This is often caused by circular imports. See \${Ne} for details.\`
+    \`A validator is undefined\${r} in \${e}. This is often caused by circular imports. See \${Tt} for details.\`
   );
 }
-n(S, "throwUndefinedValidatorError");
-var p = class {
+n(R, "throwUndefinedValidatorError");
+var x = class {
   static {
     n(this, "BaseValidator");
   }
   constructor({ isOptional: t }) {
-    u(this, "type"), u(this, "fieldPaths"), u(this, "isOptional"), u(this, "isConvexValidator"), this.isOptional = t, this.isConvexValidator = !0;
+    p(this, "type"), p(this, "fieldPaths"), p(this, "isOptional"), p(this, "isConvexValidator"), this.isOptional = t, this.isConvexValidator = !0;
   }
-}, \$ = class e extends p {
+}, k = class e extends x {
   static {
     n(this, "VId");
   }
@@ -2385,7 +1368,7 @@ var p = class {
     isOptional: t,
     tableName: r
   }) {
-    if (super({ isOptional: t }), u(this, "tableName"), u(this, "kind", "id"), typeof r != "string")
+    if (super({ isOptional: t }), p(this, "tableName"), p(this, "kind", "id"), typeof r != "string")
       throw new Error("v.id(tableName) requires a string");
     this.tableName = r;
   }
@@ -2400,12 +1383,12 @@ var p = class {
       tableName: this.tableName
     });
   }
-}, _ = class e extends p {
+}, B = class e extends x {
   static {
     n(this, "VFloat64");
   }
   constructor() {
-    super(...arguments), u(this, "kind", "float64");
+    super(...arguments), p(this, "kind", "float64");
   }
   /** @internal */
   get json() {
@@ -2417,12 +1400,12 @@ var p = class {
       isOptional: "optional"
     });
   }
-}, I = class e extends p {
+}, j = class e extends x {
   static {
     n(this, "VInt64");
   }
   constructor() {
-    super(...arguments), u(this, "kind", "int64");
+    super(...arguments), p(this, "kind", "int64");
   }
   /** @internal */
   get json() {
@@ -2432,12 +1415,12 @@ var p = class {
   asOptional() {
     return new e({ isOptional: "optional" });
   }
-}, N = class e extends p {
+}, D = class e extends x {
   static {
     n(this, "VBoolean");
   }
   constructor() {
-    super(...arguments), u(this, "kind", "boolean");
+    super(...arguments), p(this, "kind", "boolean");
   }
   /** @internal */
   get json() {
@@ -2449,12 +1432,12 @@ var p = class {
       isOptional: "optional"
     });
   }
-}, P = class e extends p {
+}, G = class e extends x {
   static {
     n(this, "VBytes");
   }
   constructor() {
-    super(...arguments), u(this, "kind", "bytes");
+    super(...arguments), p(this, "kind", "bytes");
   }
   /** @internal */
   get json() {
@@ -2464,12 +1447,12 @@ var p = class {
   asOptional() {
     return new e({ isOptional: "optional" });
   }
-}, F = class e extends p {
+}, Q = class e extends x {
   static {
     n(this, "VString");
   }
   constructor() {
-    super(...arguments), u(this, "kind", "string");
+    super(...arguments), p(this, "kind", "string");
   }
   /** @internal */
   get json() {
@@ -2481,12 +1464,12 @@ var p = class {
       isOptional: "optional"
     });
   }
-}, R = class e extends p {
+}, H = class e extends x {
   static {
     n(this, "VNull");
   }
   constructor() {
-    super(...arguments), u(this, "kind", "null");
+    super(...arguments), p(this, "kind", "null");
   }
   /** @internal */
   get json() {
@@ -2496,12 +1479,12 @@ var p = class {
   asOptional() {
     return new e({ isOptional: "optional" });
   }
-}, q = class e extends p {
+}, z = class e extends x {
   static {
     n(this, "VAny");
   }
   constructor() {
-    super(...arguments), u(this, "kind", "any");
+    super(...arguments), p(this, "kind", "any");
   }
   /** @internal */
   get json() {
@@ -2515,7 +1498,7 @@ var p = class {
       isOptional: "optional"
     });
   }
-}, j = class e extends p {
+}, W = class e extends x {
   static {
     n(this, "VObject");
   }
@@ -2526,8 +1509,8 @@ var p = class {
     isOptional: t,
     fields: r
   }) {
-    super({ isOptional: t }), u(this, "fields"), u(this, "kind", "object"), globalThis.Object.entries(r).forEach(([o, a]) => {
-      if (a === void 0 && S("v.object()", o), !a.isConvexValidator)
+    super({ isOptional: t }), p(this, "fields"), p(this, "kind", "object"), globalThis.Object.entries(r).forEach(([o, s]) => {
+      if (s === void 0 && R("v.object()", o), !s.isConvexValidator)
         throw new Error("v.object() entries must be validators");
     }), this.fields = r;
   }
@@ -2601,7 +1584,7 @@ var p = class {
       fields: { ...this.fields, ...t }
     });
   }
-}, B = class e extends p {
+}, Y = class e extends x {
   static {
     n(this, "VLiteral");
   }
@@ -2609,7 +1592,7 @@ var p = class {
    * Usually you'd use \`v.literal(value)\` instead.
    */
   constructor({ isOptional: t, value: r }) {
-    if (super({ isOptional: t }), u(this, "value"), u(this, "kind", "literal"), typeof r != "string" && typeof r != "boolean" && typeof r != "number" && typeof r != "bigint")
+    if (super({ isOptional: t }), p(this, "value"), p(this, "kind", "literal"), typeof r != "string" && typeof r != "boolean" && typeof r != "number" && typeof r != "bigint")
       throw new Error("v.literal(value) must be a string, number, or boolean");
     this.value = r;
   }
@@ -2617,7 +1600,7 @@ var p = class {
   get json() {
     return {
       type: this.kind,
-      value: y(this.value)
+      value: h(this.value)
     };
   }
   /** @internal */
@@ -2627,7 +1610,7 @@ var p = class {
       value: this.value
     });
   }
-}, M = class e extends p {
+}, X = class e extends x {
   static {
     n(this, "VArray");
   }
@@ -2638,7 +1621,7 @@ var p = class {
     isOptional: t,
     element: r
   }) {
-    super({ isOptional: t }), u(this, "element"), u(this, "kind", "array"), r === void 0 && S("v.array()"), this.element = r;
+    super({ isOptional: t }), p(this, "element"), p(this, "kind", "array"), r === void 0 && R("v.array()"), this.element = r;
   }
   /** @internal */
   get json() {
@@ -2654,7 +1637,7 @@ var p = class {
       element: this.element
     });
   }
-}, U = class e extends p {
+}, K = class e extends x {
   static {
     n(this, "VRecord");
   }
@@ -2666,7 +1649,7 @@ var p = class {
     key: r,
     value: o
   }) {
-    if (super({ isOptional: t }), u(this, "key"), u(this, "value"), u(this, "kind", "record"), r === void 0 && S("v.record()", "key"), o === void 0 && S("v.record()", "value"), r.isOptional === "optional")
+    if (super({ isOptional: t }), p(this, "key"), p(this, "value"), p(this, "kind", "record"), r === void 0 && R("v.record()", "key"), o === void 0 && R("v.record()", "value"), r.isOptional === "optional")
       throw new Error("Record validator cannot have optional keys");
     if (o.isOptional === "optional")
       throw new Error("Record validator cannot have optional values");
@@ -2694,7 +1677,7 @@ var p = class {
       value: this.value
     });
   }
-}, J = class e extends p {
+}, Z = class e extends x {
   static {
     n(this, "VUnion");
   }
@@ -2702,8 +1685,8 @@ var p = class {
    * Usually you'd use \`v.union(...members)\` instead.
    */
   constructor({ isOptional: t, members: r }) {
-    super({ isOptional: t }), u(this, "members"), u(this, "kind", "union"), r.forEach((o, a) => {
-      if (o === void 0 && S("v.union()", \`member at index \${a}\`), !o.isConvexValidator)
+    super({ isOptional: t }), p(this, "members"), p(this, "kind", "union"), r.forEach((o, s) => {
+      if (o === void 0 && R("v.union()", \`member at index \${s}\`), !o.isConvexValidator)
         throw new Error("All members of v.union() must be validators");
     }), this.members = r;
   }
@@ -2724,11 +1707,15 @@ var p = class {
 };
 
 // node_modules/convex/dist/esm/values/validator.js
-function ae(e) {
+function pe(e) {
   return !!e.isConvexValidator;
 }
-n(ae, "isValidator");
-var s = {
+n(pe, "isValidator");
+function ee(e) {
+  return pe(e) ? e : i.object(e);
+}
+n(ee, "asObjectValidator");
+var i = {
   /**
    * Validates that the value is a document ID for the given table.
    *
@@ -2742,7 +1729,7 @@ var s = {
    *
    * @param tableName The name of the table.
    */
-  id: /* @__PURE__ */ n((e) => new \$({
+  id: /* @__PURE__ */ n((e) => new k({
     isOptional: "required",
     tableName: e
   }), "id"),
@@ -2753,7 +1740,7 @@ var s = {
    * JavaScript \`undefined\` is not a valid Convex value, it is automatically
    * converted to \`null\`.
    */
-  null: /* @__PURE__ */ n(() => new R({ isOptional: "required" }), "null"),
+  null: /* @__PURE__ */ n(() => new H({ isOptional: "required" }), "null"),
   /**
    * Validates that the value is a JavaScript \`number\` (Convex Float64).
    *
@@ -2762,17 +1749,17 @@ var s = {
    *
    * Alias for \`v.float64()\`.
    */
-  number: /* @__PURE__ */ n(() => new _({ isOptional: "required" }), "number"),
+  number: /* @__PURE__ */ n(() => new B({ isOptional: "required" }), "number"),
   /**
    * Validates that the value is a JavaScript \`number\` (Convex Float64).
    *
    * Supports all IEEE-754 double-precision floating point numbers.
    */
-  float64: /* @__PURE__ */ n(() => new _({ isOptional: "required" }), "float64"),
+  float64: /* @__PURE__ */ n(() => new B({ isOptional: "required" }), "float64"),
   /**
    * @deprecated Use \`v.int64()\` instead.
    */
-  bigint: /* @__PURE__ */ n(() => new I({ isOptional: "required" }), "bigint"),
+  bigint: /* @__PURE__ */ n(() => new j({ isOptional: "required" }), "bigint"),
   /**
    * Validates that the value is a JavaScript \`bigint\` (Convex Int64).
    *
@@ -2784,24 +1771,24 @@ var s = {
    * // Usage: createDoc({ timestamp: 1234567890n })
    * \`\`\`
    */
-  int64: /* @__PURE__ */ n(() => new I({ isOptional: "required" }), "int64"),
+  int64: /* @__PURE__ */ n(() => new j({ isOptional: "required" }), "int64"),
   /**
    * Validates that the value is a \`boolean\`.
    */
-  boolean: /* @__PURE__ */ n(() => new N({ isOptional: "required" }), "boolean"),
+  boolean: /* @__PURE__ */ n(() => new D({ isOptional: "required" }), "boolean"),
   /**
    * Validates that the value is a \`string\`.
    *
    * Strings are stored as UTF-8 and their storage size is calculated as their
    * UTF-8 encoded size.
    */
-  string: /* @__PURE__ */ n(() => new F({ isOptional: "required" }), "string"),
+  string: /* @__PURE__ */ n(() => new Q({ isOptional: "required" }), "string"),
   /**
    * Validates that the value is an \`ArrayBuffer\` (Convex Bytes).
    *
    * Use for binary data.
    */
-  bytes: /* @__PURE__ */ n(() => new P({ isOptional: "required" }), "bytes"),
+  bytes: /* @__PURE__ */ n(() => new G({ isOptional: "required" }), "bytes"),
   /**
    * Validates that the value is exactly equal to the given literal.
    *
@@ -2818,7 +1805,7 @@ var s = {
    *
    * @param literal The literal value to compare against.
    */
-  literal: /* @__PURE__ */ n((e) => new B({ isOptional: "required", value: e }), "literal"),
+  literal: /* @__PURE__ */ n((e) => new Y({ isOptional: "required", value: e }), "literal"),
   /**
    * Validates that the value is an \`Array\` where every element matches the
    * given validator.
@@ -2834,7 +1821,7 @@ var s = {
    *
    * @param element The validator for the elements of the array.
    */
-  array: /* @__PURE__ */ n((e) => new M({ isOptional: "required", element: e }), "array"),
+  array: /* @__PURE__ */ n((e) => new X({ isOptional: "required", element: e }), "array"),
   /**
    * Validates that the value is an \`Object\` with the specified properties.
    *
@@ -2855,7 +1842,7 @@ var s = {
    *
    * @param fields An object mapping property names to their validators.
    */
-  object: /* @__PURE__ */ n((e) => new j({ isOptional: "required", fields: e }), "object"),
+  object: /* @__PURE__ */ n((e) => new W({ isOptional: "required", fields: e }), "object"),
   /**
    * Validates that the value is a \`Record\` (object with dynamic keys).
    *
@@ -2875,7 +1862,7 @@ var s = {
    * @param keys The validator for the keys of the record.
    * @param values The validator for the values of the record.
    */
-  record: /* @__PURE__ */ n((e, t) => new U({
+  record: /* @__PURE__ */ n((e, t) => new K({
     isOptional: "required",
     key: e,
     value: t
@@ -2900,7 +1887,7 @@ var s = {
    *
    * @param members The validators to match against.
    */
-  union: /* @__PURE__ */ n((...e) => new J({
+  union: /* @__PURE__ */ n((...e) => new Z({
     isOptional: "required",
     members: e
   }), "union"),
@@ -2910,7 +1897,7 @@ var s = {
    * Prefer using specific validators when possible for better type safety
    * and runtime validation.
    */
-  any: /* @__PURE__ */ n(() => new q({ isOptional: "required" }), "any"),
+  any: /* @__PURE__ */ n(() => new z({ isOptional: "required" }), "any"),
   /**
    * Makes a property optional in an object validator.
    *
@@ -2951,61 +1938,906 @@ var s = {
    * // Invalid: { name: "Alice" }  - deletedAt is required
    * \`\`\`
    */
-  nullable: /* @__PURE__ */ n((e) => s.union(e, s.null()), "nullable")
+  nullable: /* @__PURE__ */ n((e) => i.union(e, i.null()), "nullable")
 };
 
 // node_modules/convex/dist/esm/values/errors.js
-var Pe = Object.defineProperty, Fe = /* @__PURE__ */ n((e, t, r) => t in e ? Pe(e, t, { enumerable: !0, configurable: !0, writable: !0, value: r }) : e[t] = r, "__defNormalProp"), G = /* @__PURE__ */ n((e, t, r) => Fe(e, typeof t != "symbol" ? t + "" : t, r), "__publicField"), ce, ue, Re = /* @__PURE__ */ Symbol.for("ConvexError"), W = class extends (ue = Error, ce = Re, ue) {
+var Ot = Object.defineProperty, Ct = /* @__PURE__ */ n((e, t, r) => t in e ? Ot(e, t, { enumerable: !0, configurable: !0, writable: !0, value: r }) : e[t] = r, "__defNormalProp"), he = /* @__PURE__ */ n((e, t, r) => Ct(e, typeof t != "symbol" ? t + "" : t, r), "__publicField"), Me, Ue, \$t = /* @__PURE__ */ Symbol.for("ConvexError"), te = class extends (Ue = Error, Me = \$t, Ue) {
   static {
     n(this, "ConvexError");
   }
   constructor(t) {
-    super(typeof t == "string" ? t : x(t)), G(this, "name", "ConvexError"), G(this, "data"), G(this, ce, !0), this.data = t;
+    super(typeof t == "string" ? t : T(t)), he(this, "name", "ConvexError"), he(this, "data"), he(this, Me, !0), this.data = t;
   }
 };
 
 // node_modules/convex/dist/esm/values/compare_utf8.js
-var le = /* @__PURE__ */ n(() => Array.from({ length: 4 }, () => 0), "arr"), ct = le(), ut = le();
+var Je = /* @__PURE__ */ n(() => Array.from({ length: 4 }, () => 0), "arr"), Tr = Je(), Or = Je();
+
+// node_modules/convex/dist/esm/index.js
+var g = "1.32.0";
+
+// node_modules/convex/dist/esm/server/impl/syscall.js
+function M(e, t) {
+  if (typeof Convex > "u" || Convex.syscall === void 0)
+    throw new Error(
+      "The Convex database and auth objects are being used outside of a Convex backend. Did you mean to use \`useQuery\` or \`useMutation\` to call a Convex function?"
+    );
+  let r = Convex.syscall(e, JSON.stringify(t));
+  return JSON.parse(r);
+}
+n(M, "performSyscall");
+async function d(e, t) {
+  if (typeof Convex > "u" || Convex.asyncSyscall === void 0)
+    throw new Error(
+      "The Convex database and auth objects are being used outside of a Convex backend. Did you mean to use \`useQuery\` or \`useMutation\` to call a Convex function?"
+    );
+  let r;
+  try {
+    r = await Convex.asyncSyscall(e, JSON.stringify(t));
+  } catch (o) {
+    if (o.data !== void 0) {
+      let s = new te(o.message);
+      throw s.data = w(o.data), s;
+    }
+    throw new Error(o.message);
+  }
+  return JSON.parse(r);
+}
+n(d, "performAsyncSyscall");
 
 // node_modules/convex/dist/esm/server/functionName.js
-var Y = /* @__PURE__ */ Symbol.for("functionName");
+var U = /* @__PURE__ */ Symbol.for("functionName");
+
+// node_modules/convex/dist/esm/server/components/paths.js
+var Ve = /* @__PURE__ */ Symbol.for("toReferencePath");
+function Nt(e) {
+  return e[Ve] ?? null;
+}
+n(Nt, "extractReferencePath");
+function Pt(e) {
+  return e.startsWith("function://");
+}
+n(Pt, "isFunctionHandle");
+function _(e) {
+  let t;
+  if (typeof e == "string")
+    Pt(e) ? t = { functionHandle: e } : t = { name: e };
+  else if (e[U])
+    t = { name: e[U] };
+  else {
+    let r = Nt(e);
+    if (!r)
+      throw new Error(\`\${e} is not a functionReference\`);
+    t = { reference: r };
+  }
+  return t;
+}
+n(_, "getFunctionAddress");
+
+// node_modules/convex/dist/esm/server/impl/validate.js
+function u(e, t, r, o) {
+  if (e === void 0)
+    throw new TypeError(
+      \`Must provide arg \${t} \\\`\${o}\\\` to \\\`\${r}\\\`\`
+    );
+}
+n(u, "validateArg");
+function Le(e, t, r, o) {
+  if (!Number.isInteger(e) || e < 0)
+    throw new TypeError(
+      \`Arg \${t} \\\`\${o}\\\` to \\\`\${r}\\\` must be a non-negative integer\`
+    );
+}
+n(Le, "validateArgIsNonNegativeInteger");
+
+// node_modules/convex/dist/esm/server/impl/authentication_impl.js
+function me(e) {
+  return {
+    getUserIdentity: /* @__PURE__ */ n(async () => await d("1.0/getUserIdentity", {
+      requestId: e
+    }), "getUserIdentity")
+  };
+}
+n(me, "setupAuth");
+
+// node_modules/convex/dist/esm/server/filter_builder.js
+var Ft = Object.defineProperty, qt = /* @__PURE__ */ n((e, t, r) => t in e ? Ft(e, t, { enumerable: !0, configurable: !0, writable: !0, value: r }) : e[t] = r, "__defNormalProp"), ke = /* @__PURE__ */ n((e, t, r) => qt(e, typeof t != "symbol" ? t + "" : t, r), "__publicField"), re = class {
+  static {
+    n(this, "Expression");
+  }
+  /**
+   * @internal
+   */
+  constructor() {
+    ke(this, "_isExpression"), ke(this, "_value");
+  }
+};
+
+// node_modules/convex/dist/esm/server/impl/filter_builder_impl.js
+var Rt = Object.defineProperty, Bt = /* @__PURE__ */ n((e, t, r) => t in e ? Rt(e, t, { enumerable: !0, configurable: !0, writable: !0, value: r }) : e[t] = r, "__defNormalProp"), jt = /* @__PURE__ */ n((e, t, r) => Bt(e, typeof t != "symbol" ? t + "" : t, r), "__publicField"), y = class extends re {
+  static {
+    n(this, "ExpressionImpl");
+  }
+  constructor(t) {
+    super(), jt(this, "inner"), this.inner = t;
+  }
+  serialize() {
+    return this.inner;
+  }
+};
+function l(e) {
+  return e instanceof y ? e.serialize() : { \$literal: v(e) };
+}
+n(l, "serializeExpression");
+var De = {
+  //  Comparisons  /////////////////////////////////////////////////////////////
+  eq(e, t) {
+    return new y({
+      \$eq: [l(e), l(t)]
+    });
+  },
+  neq(e, t) {
+    return new y({
+      \$neq: [l(e), l(t)]
+    });
+  },
+  lt(e, t) {
+    return new y({
+      \$lt: [l(e), l(t)]
+    });
+  },
+  lte(e, t) {
+    return new y({
+      \$lte: [l(e), l(t)]
+    });
+  },
+  gt(e, t) {
+    return new y({
+      \$gt: [l(e), l(t)]
+    });
+  },
+  gte(e, t) {
+    return new y({
+      \$gte: [l(e), l(t)]
+    });
+  },
+  //  Arithmetic  //////////////////////////////////////////////////////////////
+  add(e, t) {
+    return new y({
+      \$add: [l(e), l(t)]
+    });
+  },
+  sub(e, t) {
+    return new y({
+      \$sub: [l(e), l(t)]
+    });
+  },
+  mul(e, t) {
+    return new y({
+      \$mul: [l(e), l(t)]
+    });
+  },
+  div(e, t) {
+    return new y({
+      \$div: [l(e), l(t)]
+    });
+  },
+  mod(e, t) {
+    return new y({
+      \$mod: [l(e), l(t)]
+    });
+  },
+  neg(e) {
+    return new y({ \$neg: l(e) });
+  },
+  //  Logic  ///////////////////////////////////////////////////////////////////
+  and(...e) {
+    return new y({ \$and: e.map(l) });
+  },
+  or(...e) {
+    return new y({ \$or: e.map(l) });
+  },
+  not(e) {
+    return new y({ \$not: l(e) });
+  },
+  //  Other  ///////////////////////////////////////////////////////////////////
+  field(e) {
+    return new y({ \$field: e });
+  }
+};
+
+// node_modules/convex/dist/esm/server/index_range_builder.js
+var Mt = Object.defineProperty, Ut = /* @__PURE__ */ n((e, t, r) => t in e ? Mt(e, t, { enumerable: !0, configurable: !0, writable: !0, value: r }) : e[t] = r, "__defNormalProp"), Jt = /* @__PURE__ */ n((e, t, r) => Ut(e, typeof t != "symbol" ? t + "" : t, r), "__publicField"), ne = class {
+  static {
+    n(this, "IndexRange");
+  }
+  /**
+   * @internal
+   */
+  constructor() {
+    Jt(this, "_isIndexRange");
+  }
+};
+
+// node_modules/convex/dist/esm/server/impl/index_range_builder_impl.js
+var Vt = Object.defineProperty, Lt = /* @__PURE__ */ n((e, t, r) => t in e ? Vt(e, t, { enumerable: !0, configurable: !0, writable: !0, value: r }) : e[t] = r, "__defNormalProp"), Ge = /* @__PURE__ */ n((e, t, r) => Lt(e, typeof t != "symbol" ? t + "" : t, r), "__publicField"), oe = class e extends ne {
+  static {
+    n(this, "IndexRangeBuilderImpl");
+  }
+  constructor(t) {
+    super(), Ge(this, "rangeExpressions"), Ge(this, "isConsumed"), this.rangeExpressions = t, this.isConsumed = !1;
+  }
+  static new() {
+    return new e([]);
+  }
+  consume() {
+    if (this.isConsumed)
+      throw new Error(
+        "IndexRangeBuilder has already been used! Chain your method calls like \`q => q.eq(...).eq(...)\`. See https://docs.convex.dev/using/indexes"
+      );
+    this.isConsumed = !0;
+  }
+  eq(t, r) {
+    return this.consume(), new e(
+      this.rangeExpressions.concat({
+        type: "Eq",
+        fieldPath: t,
+        value: v(r)
+      })
+    );
+  }
+  gt(t, r) {
+    return this.consume(), new e(
+      this.rangeExpressions.concat({
+        type: "Gt",
+        fieldPath: t,
+        value: v(r)
+      })
+    );
+  }
+  gte(t, r) {
+    return this.consume(), new e(
+      this.rangeExpressions.concat({
+        type: "Gte",
+        fieldPath: t,
+        value: v(r)
+      })
+    );
+  }
+  lt(t, r) {
+    return this.consume(), new e(
+      this.rangeExpressions.concat({
+        type: "Lt",
+        fieldPath: t,
+        value: v(r)
+      })
+    );
+  }
+  lte(t, r) {
+    return this.consume(), new e(
+      this.rangeExpressions.concat({
+        type: "Lte",
+        fieldPath: t,
+        value: v(r)
+      })
+    );
+  }
+  export() {
+    return this.consume(), this.rangeExpressions;
+  }
+};
+
+// node_modules/convex/dist/esm/server/search_filter_builder.js
+var kt = Object.defineProperty, Dt = /* @__PURE__ */ n((e, t, r) => t in e ? kt(e, t, { enumerable: !0, configurable: !0, writable: !0, value: r }) : e[t] = r, "__defNormalProp"), Gt = /* @__PURE__ */ n((e, t, r) => Dt(e, typeof t != "symbol" ? t + "" : t, r), "__publicField"), se = class {
+  static {
+    n(this, "SearchFilter");
+  }
+  /**
+   * @internal
+   */
+  constructor() {
+    Gt(this, "_isSearchFilter");
+  }
+};
+
+// node_modules/convex/dist/esm/server/impl/search_filter_builder_impl.js
+var Qt = Object.defineProperty, Ht = /* @__PURE__ */ n((e, t, r) => t in e ? Qt(e, t, { enumerable: !0, configurable: !0, writable: !0, value: r }) : e[t] = r, "__defNormalProp"), Qe = /* @__PURE__ */ n((e, t, r) => Ht(e, typeof t != "symbol" ? t + "" : t, r), "__publicField"), ie = class e extends se {
+  static {
+    n(this, "SearchFilterBuilderImpl");
+  }
+  constructor(t) {
+    super(), Qe(this, "filters"), Qe(this, "isConsumed"), this.filters = t, this.isConsumed = !1;
+  }
+  static new() {
+    return new e([]);
+  }
+  consume() {
+    if (this.isConsumed)
+      throw new Error(
+        "SearchFilterBuilder has already been used! Chain your method calls like \`q => q.search(...).eq(...)\`."
+      );
+    this.isConsumed = !0;
+  }
+  search(t, r) {
+    return u(t, 1, "search", "fieldName"), u(r, 2, "search", "query"), this.consume(), new e(
+      this.filters.concat({
+        type: "Search",
+        fieldPath: t,
+        value: r
+      })
+    );
+  }
+  eq(t, r) {
+    return u(t, 1, "eq", "fieldName"), arguments.length !== 2 && u(r, 2, "search", "value"), this.consume(), new e(
+      this.filters.concat({
+        type: "Eq",
+        fieldPath: t,
+        value: v(r)
+      })
+    );
+  }
+  export() {
+    return this.consume(), this.filters;
+  }
+};
+
+// node_modules/convex/dist/esm/server/impl/query_impl.js
+var zt = Object.defineProperty, Wt = /* @__PURE__ */ n((e, t, r) => t in e ? zt(e, t, { enumerable: !0, configurable: !0, writable: !0, value: r }) : e[t] = r, "__defNormalProp"), ye = /* @__PURE__ */ n((e, t, r) => Wt(e, typeof t != "symbol" ? t + "" : t, r), "__publicField"), He = 256, \$ = class {
+  static {
+    n(this, "QueryInitializerImpl");
+  }
+  constructor(t) {
+    ye(this, "tableName"), this.tableName = t;
+  }
+  withIndex(t, r) {
+    u(t, 1, "withIndex", "indexName");
+    let o = oe.new();
+    return r !== void 0 && (o = r(o)), new O({
+      source: {
+        type: "IndexRange",
+        indexName: this.tableName + "." + t,
+        range: o.export(),
+        order: null
+      },
+      operators: []
+    });
+  }
+  withSearchIndex(t, r) {
+    u(t, 1, "withSearchIndex", "indexName"), u(r, 2, "withSearchIndex", "searchFilter");
+    let o = ie.new();
+    return new O({
+      source: {
+        type: "Search",
+        indexName: this.tableName + "." + t,
+        filters: r(o).export()
+      },
+      operators: []
+    });
+  }
+  fullTableScan() {
+    return new O({
+      source: {
+        type: "FullTableScan",
+        tableName: this.tableName,
+        order: null
+      },
+      operators: []
+    });
+  }
+  order(t) {
+    return this.fullTableScan().order(t);
+  }
+  // This is internal API and should not be exposed to developers yet.
+  async count() {
+    let t = await d("1.0/count", {
+      table: this.tableName
+    });
+    return w(t);
+  }
+  filter(t) {
+    return this.fullTableScan().filter(t);
+  }
+  limit(t) {
+    return this.fullTableScan().limit(t);
+  }
+  collect() {
+    return this.fullTableScan().collect();
+  }
+  take(t) {
+    return this.fullTableScan().take(t);
+  }
+  paginate(t) {
+    return this.fullTableScan().paginate(t);
+  }
+  first() {
+    return this.fullTableScan().first();
+  }
+  unique() {
+    return this.fullTableScan().unique();
+  }
+  [Symbol.asyncIterator]() {
+    return this.fullTableScan()[Symbol.asyncIterator]();
+  }
+};
+function ze(e) {
+  throw new Error(
+    e === "consumed" ? "This query is closed and can't emit any more values." : "This query has been chained with another operator and can't be reused."
+  );
+}
+n(ze, "throwClosedError");
+var O = class e {
+  static {
+    n(this, "QueryImpl");
+  }
+  constructor(t) {
+    ye(this, "state"), ye(this, "tableNameForErrorMessages"), this.state = { type: "preparing", query: t }, t.source.type === "FullTableScan" ? this.tableNameForErrorMessages = t.source.tableName : this.tableNameForErrorMessages = t.source.indexName.split(".")[0];
+  }
+  takeQuery() {
+    if (this.state.type !== "preparing")
+      throw new Error(
+        "A query can only be chained once and can't be chained after iteration begins."
+      );
+    let t = this.state.query;
+    return this.state = { type: "closed" }, t;
+  }
+  startQuery() {
+    if (this.state.type === "executing")
+      throw new Error("Iteration can only begin on a query once.");
+    (this.state.type === "closed" || this.state.type === "consumed") && ze(this.state.type);
+    let t = this.state.query, { queryId: r } = M("1.0/queryStream", { query: t, version: g });
+    return this.state = { type: "executing", queryId: r }, r;
+  }
+  closeQuery() {
+    if (this.state.type === "executing") {
+      let t = this.state.queryId;
+      M("1.0/queryCleanup", { queryId: t });
+    }
+    this.state = { type: "consumed" };
+  }
+  order(t) {
+    u(t, 1, "order", "order");
+    let r = this.takeQuery();
+    if (r.source.type === "Search")
+      throw new Error(
+        "Search queries must always be in relevance order. Can not set order manually."
+      );
+    if (r.source.order !== null)
+      throw new Error("Queries may only specify order at most once");
+    return r.source.order = t, new e(r);
+  }
+  filter(t) {
+    u(t, 1, "filter", "predicate");
+    let r = this.takeQuery();
+    if (r.operators.length >= He)
+      throw new Error(
+        \`Can't construct query with more than \${He} operators\`
+      );
+    return r.operators.push({
+      filter: l(t(De))
+    }), new e(r);
+  }
+  limit(t) {
+    u(t, 1, "limit", "n");
+    let r = this.takeQuery();
+    return r.operators.push({ limit: t }), new e(r);
+  }
+  [Symbol.asyncIterator]() {
+    return this.startQuery(), this;
+  }
+  async next() {
+    (this.state.type === "closed" || this.state.type === "consumed") && ze(this.state.type);
+    let t = this.state.type === "preparing" ? this.startQuery() : this.state.queryId, { value: r, done: o } = await d("1.0/queryStreamNext", {
+      queryId: t
+    });
+    return o && this.closeQuery(), { value: w(r), done: o };
+  }
+  return() {
+    return this.closeQuery(), Promise.resolve({ done: !0, value: void 0 });
+  }
+  async paginate(t) {
+    if (u(t, 1, "paginate", "options"), typeof t?.numItems != "number" || t.numItems < 0)
+      throw new Error(
+        \`\\\`options.numItems\\\` must be a positive number. Received \\\`\${t?.numItems}\\\`.\`
+      );
+    let r = this.takeQuery(), o = t.numItems, s = t.cursor, c = t?.endCursor ?? null, a = t.maximumRowsRead ?? null, { page: f, isDone: m, continueCursor: N, splitCursor: ct, pageStatus: ut } = await d("1.0/queryPage", {
+      query: r,
+      cursor: s,
+      endCursor: c,
+      pageSize: o,
+      maximumRowsRead: a,
+      maximumBytesRead: t.maximumBytesRead,
+      version: g
+    });
+    return {
+      page: f.map((lt) => w(lt)),
+      isDone: m,
+      continueCursor: N,
+      splitCursor: ct,
+      pageStatus: ut
+    };
+  }
+  async collect() {
+    let t = [];
+    for await (let r of this)
+      t.push(r);
+    return t;
+  }
+  async take(t) {
+    return u(t, 1, "take", "n"), Le(t, 1, "take", "n"), this.limit(t).collect();
+  }
+  async first() {
+    let t = await this.take(1);
+    return t.length === 0 ? null : t[0];
+  }
+  async unique() {
+    let t = await this.take(2);
+    if (t.length === 0)
+      return null;
+    if (t.length === 2)
+      throw new Error(\`unique() query returned more than one result from table \${this.tableNameForErrorMessages}:
+ [\${t[0]._id}, \${t[1]._id}, ...]\`);
+    return t[0];
+  }
+};
+
+// node_modules/convex/dist/esm/server/impl/database_impl.js
+async function we(e, t, r) {
+  if (u(t, 1, "get", "id"), typeof t != "string")
+    throw new Error(
+      \`Invalid argument \\\`id\\\` for \\\`db.get\\\`, expected string but got '\${typeof t}': \${t}\`
+    );
+  let o = {
+    id: h(t),
+    isSystem: r,
+    version: g,
+    table: e
+  }, s = await d("1.0/get", o);
+  return w(s);
+}
+n(we, "get");
+function Ae() {
+  let e = /* @__PURE__ */ n((s = !1) => ({
+    get: /* @__PURE__ */ n(async (c, a) => a !== void 0 ? await we(c, a, s) : await we(void 0, c, s), "get"),
+    query: /* @__PURE__ */ n((c) => new J(c, s).query(), "query"),
+    normalizeId: /* @__PURE__ */ n((c, a) => {
+      u(c, 1, "normalizeId", "tableName"), u(a, 2, "normalizeId", "id");
+      let f = c.startsWith("_");
+      if (f !== s)
+        throw new Error(
+          \`\${f ? "System" : "User"} tables can only be accessed from db.\${s ? "" : "system."}normalizeId().\`
+        );
+      let m = M("1.0/db/normalizeId", {
+        table: c,
+        idString: a
+      });
+      return w(m).id;
+    }, "normalizeId"),
+    // We set the system reader on the next line
+    system: null,
+    table: /* @__PURE__ */ n((c) => new J(c, s), "table")
+  }), "reader"), { system: t, ...r } = e(!0), o = e();
+  return o.system = r, o;
+}
+n(Ae, "setupReader");
+async function We(e, t) {
+  if (e.startsWith("_"))
+    throw new Error("System tables (prefixed with \`_\`) are read-only.");
+  u(e, 1, "insert", "table"), u(t, 2, "insert", "value");
+  let r = await d("1.0/insert", {
+    table: e,
+    value: h(t)
+  });
+  return w(r)._id;
+}
+n(We, "insert");
+async function ge(e, t, r) {
+  u(t, 1, "patch", "id"), u(r, 2, "patch", "value"), await d("1.0/shallowMerge", {
+    id: h(t),
+    value: je(r),
+    table: e
+  });
+}
+n(ge, "patch");
+async function xe(e, t, r) {
+  u(t, 1, "replace", "id"), u(r, 2, "replace", "value"), await d("1.0/replace", {
+    id: h(t),
+    value: h(r),
+    table: e
+  });
+}
+n(xe, "replace");
+async function be(e, t) {
+  u(t, 1, "delete", "id"), await d("1.0/remove", {
+    id: h(t),
+    table: e
+  });
+}
+n(be, "delete_");
+function Ye() {
+  let e = Ae();
+  return {
+    get: e.get,
+    query: e.query,
+    normalizeId: e.normalizeId,
+    system: e.system,
+    insert: /* @__PURE__ */ n(async (t, r) => await We(t, r), "insert"),
+    patch: /* @__PURE__ */ n(async (t, r, o) => o !== void 0 ? await ge(t, r, o) : await ge(void 0, t, r), "patch"),
+    replace: /* @__PURE__ */ n(async (t, r, o) => o !== void 0 ? await xe(t, r, o) : await xe(void 0, t, r), "replace"),
+    delete: /* @__PURE__ */ n(async (t, r) => r !== void 0 ? await be(t, r) : await be(void 0, t), "delete"),
+    table: /* @__PURE__ */ n((t) => new ve(t, !1), "table")
+  };
+}
+n(Ye, "setupWriter");
+var J = class {
+  static {
+    n(this, "TableReader");
+  }
+  constructor(t, r) {
+    this.tableName = t, this.isSystem = r;
+  }
+  async get(t) {
+    return we(this.tableName, t, this.isSystem);
+  }
+  query() {
+    let t = this.tableName.startsWith("_");
+    if (t !== this.isSystem)
+      throw new Error(
+        \`\${t ? "System" : "User"} tables can only be accessed from db.\${this.isSystem ? "" : "system."}query().\`
+      );
+    return new \$(this.tableName);
+  }
+}, ve = class extends J {
+  static {
+    n(this, "TableWriter");
+  }
+  async insert(t) {
+    return We(this.tableName, t);
+  }
+  async patch(t, r) {
+    return ge(this.tableName, t, r);
+  }
+  async replace(t, r) {
+    return xe(this.tableName, t, r);
+  }
+  async delete(t) {
+    return be(this.tableName, t);
+  }
+};
+
+// node_modules/convex/dist/esm/server/impl/scheduler_impl.js
+function Xe() {
+  return {
+    runAfter: /* @__PURE__ */ n(async (e, t, r) => {
+      let o = Yt(e, t, r);
+      return await d("1.0/schedule", o);
+    }, "runAfter"),
+    runAt: /* @__PURE__ */ n(async (e, t, r) => {
+      let o = Xt(
+        e,
+        t,
+        r
+      );
+      return await d("1.0/schedule", o);
+    }, "runAt"),
+    cancel: /* @__PURE__ */ n(async (e) => {
+      u(e, 1, "cancel", "id");
+      let t = { id: h(e) };
+      await d("1.0/cancel_job", t);
+    }, "cancel")
+  };
+}
+n(Xe, "setupMutationScheduler");
+function Yt(e, t, r) {
+  if (typeof e != "number")
+    throw new Error("\`delayMs\` must be a number");
+  if (!isFinite(e))
+    throw new Error("\`delayMs\` must be a finite number");
+  if (e < 0)
+    throw new Error("\`delayMs\` must be non-negative");
+  let o = I(r), s = _(t), c = (Date.now() + e) / 1e3;
+  return {
+    ...s,
+    ts: c,
+    args: h(o),
+    version: g
+  };
+}
+n(Yt, "runAfterSyscallArgs");
+function Xt(e, t, r) {
+  let o;
+  if (e instanceof Date)
+    o = e.valueOf() / 1e3;
+  else if (typeof e == "number")
+    o = e / 1e3;
+  else
+    throw new Error("The invoke time must a Date or a timestamp");
+  let s = _(t), c = I(r);
+  return {
+    ...s,
+    ts: o,
+    args: h(c),
+    version: g
+  };
+}
+n(Xt, "runAtSyscallArgs");
+
+// node_modules/convex/dist/esm/server/impl/storage_impl.js
+function _e(e) {
+  return {
+    getUrl: /* @__PURE__ */ n(async (t) => (u(t, 1, "getUrl", "storageId"), await d("1.0/storageGetUrl", {
+      requestId: e,
+      version: g,
+      storageId: t
+    })), "getUrl"),
+    getMetadata: /* @__PURE__ */ n(async (t) => await d("1.0/storageGetMetadata", {
+      requestId: e,
+      version: g,
+      storageId: t
+    }), "getMetadata")
+  };
+}
+n(_e, "setupStorageReader");
+function Ke(e) {
+  let t = _e(e);
+  return {
+    generateUploadUrl: /* @__PURE__ */ n(async () => await d("1.0/storageGenerateUploadUrl", {
+      requestId: e,
+      version: g
+    }), "generateUploadUrl"),
+    delete: /* @__PURE__ */ n(async (r) => {
+      await d("1.0/storageDelete", {
+        requestId: e,
+        version: g,
+        storageId: r
+      });
+    }, "delete"),
+    getUrl: t.getUrl,
+    getMetadata: t.getMetadata
+  };
+}
+n(Ke, "setupStorageWriter");
+
+// node_modules/convex/dist/esm/server/impl/registration_impl.js
+async function Zt(e, t) {
+  let o = w(JSON.parse(t)), s = {
+    db: Ye(),
+    auth: me(""),
+    storage: Ke(""),
+    scheduler: Xe(),
+    runQuery: /* @__PURE__ */ n((a, f) => Ee("query", a, f), "runQuery"),
+    runMutation: /* @__PURE__ */ n((a, f) => Ee("mutation", a, f), "runMutation")
+  }, c = await et(e, s, o);
+  return Ze(c), JSON.stringify(h(c === void 0 ? null : c));
+}
+n(Zt, "invokeMutation");
+function Ze(e) {
+  if (e instanceof \$ || e instanceof O)
+    throw new Error(
+      "Return value is a Query. Results must be retrieved with \`.collect()\`, \`.take(n), \`.unique()\`, or \`.first()\`."
+    );
+}
+n(Ze, "validateReturnValue");
+async function et(e, t, r) {
+  let o;
+  try {
+    o = await Promise.resolve(e(t, ...r));
+  } catch (s) {
+    throw er(s);
+  }
+  return o;
+}
+n(et, "invokeFunction");
+function tt(e, t) {
+  return (r, o) => (globalThis.console.warn(
+    \`Convex functions should not directly call other Convex functions. Consider calling a helper function instead. e.g. \\\`export const foo = \${e}(...); await foo(ctx);\\\` is not supported. See https://docs.convex.dev/production/best-practices/#use-helper-functions-to-write-shared-code\`
+  ), t(r, o));
+}
+n(tt, "dontCallDirectly");
+function er(e) {
+  if (typeof e == "object" && e !== null && /* @__PURE__ */ Symbol.for("ConvexError") in e) {
+    let t = e;
+    return t.data = JSON.stringify(
+      h(t.data === void 0 ? null : t.data)
+    ), t.ConvexErrorSymbol = /* @__PURE__ */ Symbol.for("ConvexError"), t;
+  } else
+    return e;
+}
+n(er, "serializeConvexErrorData");
+function rt() {
+  if (typeof window > "u" || window.__convexAllowFunctionsInBrowser)
+    return;
+  (Object.getOwnPropertyDescriptor(globalThis, "window")?.get?.toString().includes("[native code]") ?? !1) && console.error(
+    "Convex functions should not be imported in the browser. This will throw an error in future versions of \`convex\`. If this is a false negative, please report it to Convex support."
+  );
+}
+n(rt, "assertNotBrowser");
+function nt(e, t) {
+  if (t === void 0)
+    throw new Error(
+      \`A validator is undefined for field "\${e}". This is often caused by circular imports. See https://docs.convex.dev/error#undefined-validator for details.\`
+    );
+  return t;
+}
+n(nt, "strictReplacer");
+function ot(e) {
+  return () => {
+    let t = i.any();
+    return typeof e == "object" && e.args !== void 0 && (t = ee(e.args)), JSON.stringify(t.json, nt);
+  };
+}
+n(ot, "exportArgs");
+function st(e) {
+  return () => {
+    let t;
+    return typeof e == "object" && e.returns !== void 0 && (t = ee(e.returns)), JSON.stringify(t ? t.json : null, nt);
+  };
+}
+n(st, "exportReturns");
+var Se = /* @__PURE__ */ n(((e) => {
+  let t = typeof e == "function" ? e : e.handler, r = tt("mutation", t);
+  return rt(), r.isMutation = !0, r.isPublic = !0, r.invokeMutation = (o) => Zt(t, o), r.exportArgs = ot(e), r.exportReturns = st(e), r._handler = t, r;
+}), "mutationGeneric");
+async function tr(e, t) {
+  let o = w(JSON.parse(t)), s = {
+    db: Ae(),
+    auth: me(""),
+    storage: _e(""),
+    runQuery: /* @__PURE__ */ n((a, f) => Ee("query", a, f), "runQuery")
+  }, c = await et(e, s, o);
+  return Ze(c), JSON.stringify(h(c === void 0 ? null : c));
+}
+n(tr, "invokeQuery");
+var Ie = /* @__PURE__ */ n(((e) => {
+  let t = typeof e == "function" ? e : e.handler, r = tt("query", t);
+  return rt(), r.isQuery = !0, r.isPublic = !0, r.invokeQuery = (o) => tr(t, o), r.exportArgs = ot(e), r.exportReturns = st(e), r._handler = t, r;
+}), "queryGeneric");
+async function Ee(e, t, r) {
+  let o = I(r), s = {
+    udfType: e,
+    args: h(o),
+    ..._(t)
+  }, c = await d("1.0/runUdf", s);
+  return w(c);
+}
+n(Ee, "runUdf");
 
 // node_modules/convex/dist/esm/server/pagination.js
-var jn = s.object({
-  numItems: s.number(),
-  cursor: s.union(s.string(), s.null()),
-  endCursor: s.optional(s.union(s.string(), s.null())),
-  id: s.optional(s.number()),
-  maximumRowsRead: s.optional(s.number()),
-  maximumBytesRead: s.optional(s.number())
+var Jo = i.object({
+  numItems: i.number(),
+  cursor: i.union(i.string(), i.null()),
+  endCursor: i.optional(i.union(i.string(), i.null())),
+  id: i.optional(i.number()),
+  maximumRowsRead: i.optional(i.number()),
+  maximumBytesRead: i.optional(i.number())
 });
 
 // node_modules/convex/dist/esm/server/api.js
-function fe(e = []) {
+function it(e = []) {
   let t = {
     get(r, o) {
       if (typeof o == "string") {
-        let a = [...e, o];
-        return fe(a);
-      } else if (o === Y) {
+        let s = [...e, o];
+        return it(s);
+      } else if (o === U) {
         if (e.length < 2) {
-          let i = ["api", ...e].join(".");
+          let a = ["api", ...e].join(".");
           throw new Error(
-            \`API path is expected to be of the form \\\`api.moduleName.functionName\\\`. Found: \\\`\${i}\\\`\`
+            \`API path is expected to be of the form \\\`api.moduleName.functionName\\\`. Found: \\\`\${a}\\\`\`
           );
         }
-        let a = e.slice(0, -1).join("/"), c = e[e.length - 1];
-        return c === "default" ? a : a + ":" + c;
+        let s = e.slice(0, -1).join("/"), c = e[e.length - 1];
+        return c === "default" ? s : s + ":" + c;
       } else return o === Symbol.toStringTag ? "FunctionReference" : void 0;
     }
   };
   return new Proxy({}, t);
 }
-n(fe, "createApi");
-var Ue = fe();
+n(it, "createApi");
+var rr = it();
 
 // node_modules/convex/dist/esm/server/schema.js
-var Ve = Object.defineProperty, Le = /* @__PURE__ */ n((e, t, r) => t in e ? Ve(e, t, { enumerable: !0, configurable: !0, writable: !0, value: r }) : e[t] = r, "__defNormalProp"), m = /* @__PURE__ */ n((e, t, r) => Le(e, typeof t != "symbol" ? t + "" : t, r), "__publicField"), V = class {
+var or = Object.defineProperty, sr = /* @__PURE__ */ n((e, t, r) => t in e ? or(e, t, { enumerable: !0, configurable: !0, writable: !0, value: r }) : e[t] = r, "__defNormalProp"), E = /* @__PURE__ */ n((e, t, r) => sr(e, typeof t != "symbol" ? t + "" : t, r), "__publicField"), ae = class {
   static {
     n(this, "TableDefinition");
   }
@@ -3013,7 +2845,7 @@ var Ve = Object.defineProperty, Le = /* @__PURE__ */ n((e, t, r) => t in e ? Ve(
    * @internal
    */
   constructor(t) {
-    m(this, "indexes"), m(this, "stagedDbIndexes"), m(this, "searchIndexes"), m(this, "stagedSearchIndexes"), m(this, "vectorIndexes"), m(this, "stagedVectorIndexes"), m(this, "validator"), this.indexes = [], this.stagedDbIndexes = [], this.searchIndexes = [], this.stagedSearchIndexes = [], this.vectorIndexes = [], this.stagedVectorIndexes = [], this.validator = t;
+    E(this, "indexes"), E(this, "stagedDbIndexes"), E(this, "searchIndexes"), E(this, "stagedSearchIndexes"), E(this, "vectorIndexes"), E(this, "stagedVectorIndexes"), E(this, "validator"), this.indexes = [], this.stagedDbIndexes = [], this.searchIndexes = [], this.stagedSearchIndexes = [], this.vectorIndexes = [], this.stagedVectorIndexes = [], this.validator = t;
   }
   /**
    * This API is experimental: it may change or disappear.
@@ -3091,11 +2923,11 @@ var Ve = Object.defineProperty, Le = /* @__PURE__ */ n((e, t, r) => t in e ? Ve(
     };
   }
 };
-function Z(e) {
-  return ae(e) ? new V(e) : new V(s.object(e));
+function Te(e) {
+  return pe(e) ? new ae(e) : new ae(i.object(e));
 }
-n(Z, "defineTable");
-var ee = class {
+n(Te, "defineTable");
+var Oe = class {
   static {
     n(this, "SchemaDefinition");
   }
@@ -3103,7 +2935,7 @@ var ee = class {
    * @internal
    */
   constructor(t, r) {
-    m(this, "tables"), m(this, "strictTableNameTypes"), m(this, "schemaValidation"), this.tables = t, this.schemaValidation = r?.schemaValidation === void 0 ? !0 : r.schemaValidation;
+    E(this, "tables"), E(this, "strictTableNameTypes"), E(this, "schemaValidation"), this.tables = t, this.schemaValidation = r?.schemaValidation === void 0 ? !0 : r.schemaValidation;
   }
   /**
    * Export the contents of this definition.
@@ -3116,89 +2948,129 @@ var ee = class {
       tables: Object.entries(this.tables).map(([t, r]) => {
         let {
           indexes: o,
-          stagedDbIndexes: a,
+          stagedDbIndexes: s,
           searchIndexes: c,
-          stagedSearchIndexes: i,
+          stagedSearchIndexes: a,
           vectorIndexes: f,
-          stagedVectorIndexes: l,
-          documentType: te
+          stagedVectorIndexes: m,
+          documentType: N
         } = r.export();
         return {
           tableName: t,
           indexes: o,
-          stagedDbIndexes: a,
+          stagedDbIndexes: s,
           searchIndexes: c,
-          stagedSearchIndexes: i,
+          stagedSearchIndexes: a,
           vectorIndexes: f,
-          stagedVectorIndexes: l,
-          documentType: te
+          stagedVectorIndexes: m,
+          documentType: N
         };
       }),
       schemaValidation: this.schemaValidation
     });
   }
 };
-function pe(e, t) {
-  return new ee(e, t);
+function at(e, t) {
+  return new Oe(e, t);
 }
-n(pe, "defineSchema");
-var ao = pe({
-  _scheduled_functions: Z({
-    name: s.string(),
-    args: s.array(s.any()),
-    scheduledTime: s.float64(),
-    completedTime: s.optional(s.float64()),
-    state: s.union(
-      s.object({ kind: s.literal("pending") }),
-      s.object({ kind: s.literal("inProgress") }),
-      s.object({ kind: s.literal("success") }),
-      s.object({ kind: s.literal("failed"), error: s.string() }),
-      s.object({ kind: s.literal("canceled") })
+n(at, "defineSchema");
+var ls = at({
+  _scheduled_functions: Te({
+    name: i.string(),
+    args: i.array(i.any()),
+    scheduledTime: i.float64(),
+    completedTime: i.optional(i.float64()),
+    state: i.union(
+      i.object({ kind: i.literal("pending") }),
+      i.object({ kind: i.literal("inProgress") }),
+      i.object({ kind: i.literal("success") }),
+      i.object({ kind: i.literal("failed"), error: i.string() }),
+      i.object({ kind: i.literal("canceled") })
     )
   }),
-  _storage: Z({
-    sha256: s.string(),
-    size: s.float64(),
-    contentType: s.optional(s.string())
+  _storage: Te({
+    sha256: i.string(),
+    size: i.float64(),
+    contentType: i.optional(i.string())
   })
 });
 
-// convex/reactions.ts
-var Ko = ke({
-  args: { videoShortCode: s.string() },
-  handler: /* @__PURE__ */ n(async (e, t) => await e.db.query("reactions").withIndex(
-    "by_video_short_code",
-    (r) => r.eq("video_short_code", t.videoShortCode)
-  ).collect(), "handler")
-}), Zo = De({
+// convex/_generated/server.js
+var Ce = Ie;
+var V = Se;
+
+// convex/videos.ts
+var Vs = Ce({
+  args: { shortCode: i.string() },
+  handler: /* @__PURE__ */ n(async (e, t) => await e.db.query("videos").withIndex("by_short_code", (r) => r.eq("short_code", t.shortCode)).first(), "handler")
+}), Ls = Ce({
+  args: {},
+  handler: /* @__PURE__ */ n(async (e) => await e.db.query("videos").withIndex("by_created_at").order("desc").collect(), "handler")
+}), ks = V({
   args: {
-    video_short_code: s.string(),
-    emoji: s.string(),
-    timestamp: s.number()
+    short_code: i.string(),
+    title: i.string(),
+    description: i.optional(i.union(i.string(), i.null())),
+    storage_url: i.string(),
+    storage_id: i.optional(i.id("_storage")),
+    view_count: i.number(),
+    duration_ms: i.optional(i.union(i.number(), i.null())),
+    capture_mode: i.string(),
+    created_at: i.string(),
+    is_protected: i.optional(i.boolean()),
+    password_salt: i.optional(i.string())
   },
-  handler: /* @__PURE__ */ n(async (e, t) => await e.db.insert("reactions", {
-    video_short_code: t.video_short_code,
-    emoji: t.emoji,
-    timestamp: t.timestamp,
-    created_at: (/* @__PURE__ */ new Date()).toISOString()
-  }), "handler")
+  handler: /* @__PURE__ */ n(async (e, t) => await e.db.insert("videos", t), "handler")
+}), Ds = V({
+  args: { shortCode: i.string() },
+  handler: /* @__PURE__ */ n(async (e, t) => {
+    let r = await e.db.query("videos").withIndex("by_short_code", (o) => o.eq("short_code", t.shortCode)).first();
+    if (!r) throw new Error("Video not found");
+    await e.db.patch(r._id, { view_count: r.view_count + 1 });
+  }, "handler")
+}), Gs = V({
+  args: { shortCode: i.string() },
+  handler: /* @__PURE__ */ n(async (e, t) => {
+    let r = await e.db.query("videos").withIndex("by_short_code", (s) => s.eq("short_code", t.shortCode)).first();
+    if (!r) return;
+    if (r.storage_id)
+      try {
+        await e.storage.delete(r.storage_id);
+      } catch (s) {
+        console.warn("Failed to delete storage object (may already be gone):", s);
+      }
+    let o = await e.db.query("reactions").withIndex(
+      "by_video_short_code",
+      (s) => s.eq("video_short_code", t.shortCode)
+    ).collect();
+    for (let s of o)
+      await e.db.delete(s._id);
+    await e.db.delete(r._id);
+  }, "handler")
+}), Qs = V({
+  args: {},
+  handler: /* @__PURE__ */ n(async (e) => await e.storage.generateUploadUrl(), "handler")
 });
 export {
-  Zo as add,
-  Ko as listByVideo
+  Qs as generateUploadUrl,
+  Vs as getByShortCode,
+  Ds as incrementViewCount,
+  ks as insert,
+  Ls as list,
+  Gs as remove
 };
 `
-export const HTTP_BUNDLE = `var Se = Object.defineProperty;
-var n = (e, t) => Se(e, "name", { value: t, configurable: !0 });
+export const REACTIONS_BUNDLE = `var ft = Object.defineProperty;
+var n = (e, t) => ft(e, "name", { value: t, configurable: !0 });
 
 // node_modules/convex/dist/esm/values/base64.js
-var y = [], h = [], Ee = Uint8Array, W = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-for (v = 0, ce = W.length; v < ce; ++v)
-  y[v] = W[v], h[W.charCodeAt(v)] = v;
-var v, ce;
-h[45] = 62;
-h[95] = 63;
-function Oe(e) {
+var A = [], b = [], pt = Uint8Array, ae = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+for (_ = 0, Te = ae.length; _ < Te; ++_)
+  A[_] = ae[_], b[ae.charCodeAt(_)] = _;
+var _, Te;
+b[45] = 62;
+b[95] = 63;
+function dt(e) {
   var t = e.length;
   if (t % 4 > 0)
     throw new Error("Invalid string. Length must be a multiple of 4");
@@ -3207,103 +3079,113 @@ function Oe(e) {
   var o = r === t ? 0 : 4 - r % 4;
   return [r, o];
 }
-n(Oe, "getLens");
-function Te(e, t, r) {
+n(dt, "getLens");
+function ht(e, t, r) {
   return (t + r) * 3 / 4 - r;
 }
-n(Te, "_byteLength");
-function Y(e) {
-  var t, r = Oe(e), o = r[0], s = r[1], u = new Ee(Te(e, o, s)), i = 0, l = s > 0 ? o - 4 : o, f;
-  for (f = 0; f < l; f += 4)
-    t = h[e.charCodeAt(f)] << 18 | h[e.charCodeAt(f + 1)] << 12 | h[e.charCodeAt(f + 2)] << 6 | h[e.charCodeAt(f + 3)], u[i++] = t >> 16 & 255, u[i++] = t >> 8 & 255, u[i++] = t & 255;
-  return s === 2 && (t = h[e.charCodeAt(f)] << 2 | h[e.charCodeAt(f + 1)] >> 4, u[i++] = t & 255), s === 1 && (t = h[e.charCodeAt(f)] << 10 | h[e.charCodeAt(f + 1)] << 4 | h[e.charCodeAt(f + 2)] >> 2, u[i++] = t >> 8 & 255, u[i++] = t & 255), u;
+n(ht, "_byteLength");
+function P(e) {
+  var t, r = dt(e), o = r[0], s = r[1], a = new pt(ht(e, o, s)), i = 0, f = s > 0 ? o - 4 : o, m;
+  for (m = 0; m < f; m += 4)
+    t = b[e.charCodeAt(m)] << 18 | b[e.charCodeAt(m + 1)] << 12 | b[e.charCodeAt(m + 2)] << 6 | b[e.charCodeAt(m + 3)], a[i++] = t >> 16 & 255, a[i++] = t >> 8 & 255, a[i++] = t & 255;
+  return s === 2 && (t = b[e.charCodeAt(m)] << 2 | b[e.charCodeAt(m + 1)] >> 4, a[i++] = t & 255), s === 1 && (t = b[e.charCodeAt(m)] << 10 | b[e.charCodeAt(m + 1)] << 4 | b[e.charCodeAt(m + 2)] >> 2, a[i++] = t >> 8 & 255, a[i++] = t & 255), a;
 }
-n(Y, "toByteArray");
-function Ie(e) {
-  return y[e >> 18 & 63] + y[e >> 12 & 63] + y[e >> 6 & 63] + y[e & 63];
+n(P, "toByteArray");
+function mt(e) {
+  return A[e >> 18 & 63] + A[e >> 12 & 63] + A[e >> 6 & 63] + A[e & 63];
 }
-n(Ie, "tripletToBase64");
-function _e(e, t, r) {
-  for (var o, s = [], u = t; u < r; u += 3)
-    o = (e[u] << 16 & 16711680) + (e[u + 1] << 8 & 65280) + (e[u + 2] & 255), s.push(Ie(o));
+n(mt, "tripletToBase64");
+function yt(e, t, r) {
+  for (var o, s = [], a = t; a < r; a += 3)
+    o = (e[a] << 16 & 16711680) + (e[a + 1] << 8 & 65280) + (e[a + 2] & 255), s.push(mt(o));
   return s.join("");
 }
-n(_e, "encodeChunk");
-function I(e) {
-  for (var t, r = e.length, o = r % 3, s = [], u = 16383, i = 0, l = r - o; i < l; i += u)
+n(yt, "encodeChunk");
+function F(e) {
+  for (var t, r = e.length, o = r % 3, s = [], a = 16383, i = 0, f = r - o; i < f; i += a)
     s.push(
-      _e(
+      yt(
         e,
         i,
-        i + u > l ? l : i + u
+        i + a > f ? f : i + a
       )
     );
-  return o === 1 ? (t = e[r - 1], s.push(y[t >> 2] + y[t << 4 & 63] + "==")) : o === 2 && (t = (e[r - 2] << 8) + e[r - 1], s.push(
-    y[t >> 10] + y[t >> 4 & 63] + y[t << 2 & 63] + "="
+  return o === 1 ? (t = e[r - 1], s.push(A[t >> 2] + A[t << 4 & 63] + "==")) : o === 2 && (t = (e[r - 2] << 8) + e[r - 1], s.push(
+    A[t >> 10] + A[t >> 4 & 63] + A[t << 2 & 63] + "="
   )), s.join("");
 }
-n(I, "fromByteArray");
+n(F, "fromByteArray");
 
 // node_modules/convex/dist/esm/common/index.js
-function X(e) {
+function I(e) {
+  if (e === void 0)
+    return {};
+  if (!V(e))
+    throw new Error(
+      \`The arguments to a Convex function must be an object. Received: \${e}\`
+    );
+  return e;
+}
+n(I, "parseArgs");
+function V(e) {
   let t = typeof e == "object", r = Object.getPrototypeOf(e), o = r === null || r === Object.prototype || // Objects generated from other contexts (e.g. across Node.js \`vm\` modules) will not satisfy the previous
   // conditions but are still simple objects.
   r?.constructor?.name === "Object";
   return t && o;
 }
-n(X, "isSimpleObject");
+n(V, "isSimpleObject");
 
 // node_modules/convex/dist/esm/values/value.js
-var Ce = !0, E = BigInt("-9223372036854775808"), ee = BigInt("9223372036854775807"), Z = BigInt("0"), Ne = BigInt("8"), \$e = BigInt("256");
-function Pe(e) {
+var Pe = !0, C = BigInt("-9223372036854775808"), fe = BigInt("9223372036854775807"), ue = BigInt("0"), wt = BigInt("8"), xt = BigInt("256");
+function Fe(e) {
   return Number.isNaN(e) || !Number.isFinite(e) || Object.is(e, -0);
 }
-n(Pe, "isSpecial");
-function Re(e) {
-  e < Z && (e -= E + E);
+n(Fe, "isSpecial");
+function gt(e) {
+  e < ue && (e -= C + C);
   let t = e.toString(16);
   t.length % 2 === 1 && (t = "0" + t);
   let r = new Uint8Array(new ArrayBuffer(8)), o = 0;
   for (let s of t.match(/.{2}/g).reverse())
-    r.set([parseInt(s, 16)], o++), e >>= Ne;
-  return I(r);
+    r.set([parseInt(s, 16)], o++), e >>= wt;
+  return F(r);
 }
-n(Re, "slowBigIntToBase64");
-function Fe(e) {
-  let t = Y(e);
+n(gt, "slowBigIntToBase64");
+function bt(e) {
+  let t = P(e);
   if (t.byteLength !== 8)
     throw new Error(
       \`Received \${t.byteLength} bytes, expected 8 for \$integer\`
     );
-  let r = Z, o = Z;
+  let r = ue, o = ue;
   for (let s of t)
-    r += BigInt(s) * \$e ** o, o++;
-  return r > ee && (r += E + E), r;
+    r += BigInt(s) * xt ** o, o++;
+  return r > fe && (r += C + C), r;
 }
-n(Fe, "slowBase64ToBigInt");
-function qe(e) {
-  if (e < E || ee < e)
+n(bt, "slowBase64ToBigInt");
+function vt(e) {
+  if (e < C || fe < e)
     throw new Error(
       \`BigInt \${e} does not fit into a 64-bit signed integer.\`
     );
   let t = new ArrayBuffer(8);
-  return new DataView(t).setBigInt64(0, e, !0), I(new Uint8Array(t));
+  return new DataView(t).setBigInt64(0, e, !0), F(new Uint8Array(t));
 }
-n(qe, "modernBigIntToBase64");
-function je(e) {
-  let t = Y(e);
+n(vt, "modernBigIntToBase64");
+function At(e) {
+  let t = P(e);
   if (t.byteLength !== 8)
     throw new Error(
       \`Received \${t.byteLength} bytes, expected 8 for \$integer\`
     );
   return new DataView(t.buffer).getBigInt64(0, !0);
 }
-n(je, "modernBase64ToBigInt");
-var Be = DataView.prototype.setBigInt64 ? qe : Re, it = DataView.prototype.getBigInt64 ? je : Fe, fe = 1024;
-function de(e) {
-  if (e.length > fe)
+n(At, "modernBase64ToBigInt");
+var Et = DataView.prototype.setBigInt64 ? vt : gt, St = DataView.prototype.getBigInt64 ? At : bt, \$e = 1024;
+function le(e) {
+  if (e.length > \$e)
     throw new Error(
-      \`Field name \${e} exceeds maximum field name length \${fe}.\`
+      \`Field name \${e} exceeds maximum field name length \${\$e}.\`
     );
   if (e.startsWith("\$"))
     throw new Error(\`Field name \${e} starts with a '\$', which is reserved.\`);
@@ -3315,20 +3197,68 @@ function de(e) {
       );
   }
 }
-n(de, "validateObjectField");
-var pe = 16384;
-function A(e) {
+n(le, "validateObjectField");
+function w(e) {
+  if (e === null || typeof e == "boolean" || typeof e == "number" || typeof e == "string")
+    return e;
+  if (Array.isArray(e))
+    return e.map((o) => w(o));
+  if (typeof e != "object")
+    throw new Error(\`Unexpected type of \${e}\`);
+  let t = Object.entries(e);
+  if (t.length === 1) {
+    let o = t[0][0];
+    if (o === "\$bytes") {
+      if (typeof e.\$bytes != "string")
+        throw new Error(\`Malformed \$bytes field on \${e}\`);
+      return P(e.\$bytes).buffer;
+    }
+    if (o === "\$integer") {
+      if (typeof e.\$integer != "string")
+        throw new Error(\`Malformed \$integer field on \${e}\`);
+      return St(e.\$integer);
+    }
+    if (o === "\$float") {
+      if (typeof e.\$float != "string")
+        throw new Error(\`Malformed \$float field on \${e}\`);
+      let s = P(e.\$float);
+      if (s.byteLength !== 8)
+        throw new Error(
+          \`Received \${s.byteLength} bytes, expected 8 for \$float\`
+        );
+      let i = new DataView(s.buffer).getFloat64(0, Pe);
+      if (!Fe(i))
+        throw new Error(\`Float \${i} should be encoded as a number\`);
+      return i;
+    }
+    if (o === "\$set")
+      throw new Error(
+        "Received a Set which is no longer supported as a Convex type."
+      );
+    if (o === "\$map")
+      throw new Error(
+        "Received a Map which is no longer supported as a Convex type."
+      );
+  }
+  let r = {};
+  for (let [o, s] of Object.entries(e))
+    le(o), r[o] = w(s);
+  return r;
+}
+n(w, "jsonToConvex");
+var Ne = 16384;
+function O(e) {
   let t = JSON.stringify(e, (r, o) => o === void 0 ? "undefined" : typeof o == "bigint" ? \`\${o.toString()}n\` : o);
-  if (t.length > pe) {
-    let r = "[...truncated]", o = pe - r.length, s = t.codePointAt(o - 1);
+  if (t.length > Ne) {
+    let r = "[...truncated]", o = Ne - r.length, s = t.codePointAt(o - 1);
     return s !== void 0 && s > 65535 && (o -= 1), t.substring(0, o) + r;
   }
   return t;
 }
-n(A, "stringifyValueForError");
-function q(e, t, r, o) {
+n(O, "stringifyValueForError");
+function R(e, t, r, o) {
   if (e === void 0) {
-    let i = r && \` (present at path \${r} in original object \${A(
+    let i = r && \` (present at path \${r} in original object \${O(
       t
     )})\`;
     throw new Error(
@@ -3338,95 +3268,2070 @@ function q(e, t, r, o) {
   if (e === null)
     return e;
   if (typeof e == "bigint") {
-    if (e < E || ee < e)
+    if (e < C || fe < e)
       throw new Error(
         \`BigInt \${e} does not fit into a 64-bit signed integer.\`
       );
-    return { \$integer: Be(e) };
+    return { \$integer: Et(e) };
   }
   if (typeof e == "number")
-    if (Pe(e)) {
+    if (Fe(e)) {
       let i = new ArrayBuffer(8);
-      return new DataView(i).setFloat64(0, e, Ce), { \$float: I(new Uint8Array(i)) };
+      return new DataView(i).setFloat64(0, e, Pe), { \$float: F(new Uint8Array(i)) };
     } else
       return e;
   if (typeof e == "boolean" || typeof e == "string")
     return e;
   if (e instanceof ArrayBuffer)
-    return { \$bytes: I(new Uint8Array(e)) };
+    return { \$bytes: F(new Uint8Array(e)) };
   if (Array.isArray(e))
     return e.map(
-      (i, l) => q(i, t, r + \`[\${l}]\`, !1)
+      (i, f) => R(i, t, r + \`[\${f}]\`, !1)
     );
   if (e instanceof Set)
     throw new Error(
-      K(r, "Set", [...e], t)
+      ce(r, "Set", [...e], t)
     );
   if (e instanceof Map)
     throw new Error(
-      K(r, "Map", [...e], t)
+      ce(r, "Map", [...e], t)
     );
-  if (!X(e)) {
-    let i = e?.constructor?.name, l = i ? \`\${i} \` : "";
+  if (!V(e)) {
+    let i = e?.constructor?.name, f = i ? \`\${i} \` : "";
     throw new Error(
-      K(r, l, e, t)
+      ce(r, f, e, t)
     );
   }
-  let s = {}, u = Object.entries(e);
-  u.sort(([i, l], [f, F]) => i === f ? 0 : i < f ? -1 : 1);
-  for (let [i, l] of u)
-    l !== void 0 ? (de(i), s[i] = q(l, t, r + \`.\${i}\`, !1)) : o && (de(i), s[i] = Me(
+  let s = {}, a = Object.entries(e);
+  a.sort(([i, f], [m, N]) => i === m ? 0 : i < m ? -1 : 1);
+  for (let [i, f] of a)
+    f !== void 0 ? (le(i), s[i] = R(f, t, r + \`.\${i}\`, !1)) : o && (le(i), s[i] = Re(
+      f,
+      t,
+      r + \`.\${i}\`
+    ));
+  return s;
+}
+n(R, "convexToJsonInternal");
+function ce(e, t, r, o) {
+  return e ? \`\${t}\${O(
+    r
+  )} is not a supported Convex type (present at path \${e} in original object \${O(
+    o
+  )}). To learn about Convex's supported types, see https://docs.convex.dev/using/types.\` : \`\${t}\${O(
+    r
+  )} is not a supported Convex type.\`;
+}
+n(ce, "errorMessageForUnsupportedType");
+function Re(e, t, r) {
+  if (e === void 0)
+    return { \$undefined: null };
+  if (t === void 0)
+    throw new Error(
+      \`Programming error. Current value is \${O(
+        e
+      )} but original value is undefined\`
+    );
+  return R(e, t, r, !1);
+}
+n(Re, "convexOrUndefinedToJsonInternal");
+function h(e) {
+  return R(e, e, "", !1);
+}
+n(h, "convexToJson");
+function v(e) {
+  return Re(e, e, "");
+}
+n(v, "convexOrUndefinedToJson");
+function qe(e) {
+  return R(e, e, "", !0);
+}
+n(qe, "patchValueToJson");
+
+// node_modules/convex/dist/esm/values/validators.js
+var _t = Object.defineProperty, It = /* @__PURE__ */ n((e, t, r) => t in e ? _t(e, t, { enumerable: !0, configurable: !0, writable: !0, value: r }) : e[t] = r, "__defNormalProp"), d = /* @__PURE__ */ n((e, t, r) => It(e, typeof t != "symbol" ? t + "" : t, r), "__publicField"), Ot = "https://docs.convex.dev/error#undefined-validator";
+function q(e, t) {
+  let r = t !== void 0 ? \` for field "\${t}"\` : "";
+  throw new Error(
+    \`A validator is undefined\${r} in \${e}. This is often caused by circular imports. See \${Ot} for details.\`
+  );
+}
+n(q, "throwUndefinedValidatorError");
+var g = class {
+  static {
+    n(this, "BaseValidator");
+  }
+  constructor({ isOptional: t }) {
+    d(this, "type"), d(this, "fieldPaths"), d(this, "isOptional"), d(this, "isConvexValidator"), this.isOptional = t, this.isConvexValidator = !0;
+  }
+}, L = class e extends g {
+  static {
+    n(this, "VId");
+  }
+  /**
+   * Usually you'd use \`v.id(tableName)\` instead.
+   */
+  constructor({
+    isOptional: t,
+    tableName: r
+  }) {
+    if (super({ isOptional: t }), d(this, "tableName"), d(this, "kind", "id"), typeof r != "string")
+      throw new Error("v.id(tableName) requires a string");
+    this.tableName = r;
+  }
+  /** @internal */
+  get json() {
+    return { type: "id", tableName: this.tableName };
+  }
+  /** @internal */
+  asOptional() {
+    return new e({
+      isOptional: "optional",
+      tableName: this.tableName
+    });
+  }
+}, j = class e extends g {
+  static {
+    n(this, "VFloat64");
+  }
+  constructor() {
+    super(...arguments), d(this, "kind", "float64");
+  }
+  /** @internal */
+  get json() {
+    return { type: "number" };
+  }
+  /** @internal */
+  asOptional() {
+    return new e({
+      isOptional: "optional"
+    });
+  }
+}, B = class e extends g {
+  static {
+    n(this, "VInt64");
+  }
+  constructor() {
+    super(...arguments), d(this, "kind", "int64");
+  }
+  /** @internal */
+  get json() {
+    return { type: "bigint" };
+  }
+  /** @internal */
+  asOptional() {
+    return new e({ isOptional: "optional" });
+  }
+}, k = class e extends g {
+  static {
+    n(this, "VBoolean");
+  }
+  constructor() {
+    super(...arguments), d(this, "kind", "boolean");
+  }
+  /** @internal */
+  get json() {
+    return { type: this.kind };
+  }
+  /** @internal */
+  asOptional() {
+    return new e({
+      isOptional: "optional"
+    });
+  }
+}, D = class e extends g {
+  static {
+    n(this, "VBytes");
+  }
+  constructor() {
+    super(...arguments), d(this, "kind", "bytes");
+  }
+  /** @internal */
+  get json() {
+    return { type: this.kind };
+  }
+  /** @internal */
+  asOptional() {
+    return new e({ isOptional: "optional" });
+  }
+}, G = class e extends g {
+  static {
+    n(this, "VString");
+  }
+  constructor() {
+    super(...arguments), d(this, "kind", "string");
+  }
+  /** @internal */
+  get json() {
+    return { type: this.kind };
+  }
+  /** @internal */
+  asOptional() {
+    return new e({
+      isOptional: "optional"
+    });
+  }
+}, Q = class e extends g {
+  static {
+    n(this, "VNull");
+  }
+  constructor() {
+    super(...arguments), d(this, "kind", "null");
+  }
+  /** @internal */
+  get json() {
+    return { type: this.kind };
+  }
+  /** @internal */
+  asOptional() {
+    return new e({ isOptional: "optional" });
+  }
+}, H = class e extends g {
+  static {
+    n(this, "VAny");
+  }
+  constructor() {
+    super(...arguments), d(this, "kind", "any");
+  }
+  /** @internal */
+  get json() {
+    return {
+      type: this.kind
+    };
+  }
+  /** @internal */
+  asOptional() {
+    return new e({
+      isOptional: "optional"
+    });
+  }
+}, z = class e extends g {
+  static {
+    n(this, "VObject");
+  }
+  /**
+   * Usually you'd use \`v.object({ ... })\` instead.
+   */
+  constructor({
+    isOptional: t,
+    fields: r
+  }) {
+    super({ isOptional: t }), d(this, "fields"), d(this, "kind", "object"), globalThis.Object.entries(r).forEach(([o, s]) => {
+      if (s === void 0 && q("v.object()", o), !s.isConvexValidator)
+        throw new Error("v.object() entries must be validators");
+    }), this.fields = r;
+  }
+  /** @internal */
+  get json() {
+    return {
+      type: this.kind,
+      value: globalThis.Object.fromEntries(
+        globalThis.Object.entries(this.fields).map(([t, r]) => [
+          t,
+          {
+            fieldType: r.json,
+            optional: r.isOptional === "optional"
+          }
+        ])
+      )
+    };
+  }
+  /** @internal */
+  asOptional() {
+    return new e({
+      isOptional: "optional",
+      fields: this.fields
+    });
+  }
+  /**
+   * Create a new VObject with the specified fields omitted.
+   * @param fields The field names to omit from this VObject.
+   */
+  omit(...t) {
+    let r = { ...this.fields };
+    for (let o of t)
+      delete r[o];
+    return new e({
+      isOptional: this.isOptional,
+      fields: r
+    });
+  }
+  /**
+   * Create a new VObject with only the specified fields.
+   * @param fields The field names to pick from this VObject.
+   */
+  pick(...t) {
+    let r = {};
+    for (let o of t)
+      r[o] = this.fields[o];
+    return new e({
+      isOptional: this.isOptional,
+      fields: r
+    });
+  }
+  /**
+   * Create a new VObject with all fields marked as optional.
+   */
+  partial() {
+    let t = {};
+    for (let [r, o] of globalThis.Object.entries(this.fields))
+      t[r] = o.asOptional();
+    return new e({
+      isOptional: this.isOptional,
+      fields: t
+    });
+  }
+  /**
+   * Create a new VObject with additional fields merged in.
+   * @param fields An object with additional validators to merge into this VObject.
+   */
+  extend(t) {
+    return new e({
+      isOptional: this.isOptional,
+      fields: { ...this.fields, ...t }
+    });
+  }
+}, W = class e extends g {
+  static {
+    n(this, "VLiteral");
+  }
+  /**
+   * Usually you'd use \`v.literal(value)\` instead.
+   */
+  constructor({ isOptional: t, value: r }) {
+    if (super({ isOptional: t }), d(this, "value"), d(this, "kind", "literal"), typeof r != "string" && typeof r != "boolean" && typeof r != "number" && typeof r != "bigint")
+      throw new Error("v.literal(value) must be a string, number, or boolean");
+    this.value = r;
+  }
+  /** @internal */
+  get json() {
+    return {
+      type: this.kind,
+      value: h(this.value)
+    };
+  }
+  /** @internal */
+  asOptional() {
+    return new e({
+      isOptional: "optional",
+      value: this.value
+    });
+  }
+}, Y = class e extends g {
+  static {
+    n(this, "VArray");
+  }
+  /**
+   * Usually you'd use \`v.array(element)\` instead.
+   */
+  constructor({
+    isOptional: t,
+    element: r
+  }) {
+    super({ isOptional: t }), d(this, "element"), d(this, "kind", "array"), r === void 0 && q("v.array()"), this.element = r;
+  }
+  /** @internal */
+  get json() {
+    return {
+      type: this.kind,
+      value: this.element.json
+    };
+  }
+  /** @internal */
+  asOptional() {
+    return new e({
+      isOptional: "optional",
+      element: this.element
+    });
+  }
+}, X = class e extends g {
+  static {
+    n(this, "VRecord");
+  }
+  /**
+   * Usually you'd use \`v.record(key, value)\` instead.
+   */
+  constructor({
+    isOptional: t,
+    key: r,
+    value: o
+  }) {
+    if (super({ isOptional: t }), d(this, "key"), d(this, "value"), d(this, "kind", "record"), r === void 0 && q("v.record()", "key"), o === void 0 && q("v.record()", "value"), r.isOptional === "optional")
+      throw new Error("Record validator cannot have optional keys");
+    if (o.isOptional === "optional")
+      throw new Error("Record validator cannot have optional values");
+    if (!r.isConvexValidator || !o.isConvexValidator)
+      throw new Error("Key and value of v.record() but be validators");
+    this.key = r, this.value = o;
+  }
+  /** @internal */
+  get json() {
+    return {
+      type: this.kind,
+      // This cast is needed because TypeScript thinks the key type is too wide
+      keys: this.key.json,
+      values: {
+        fieldType: this.value.json,
+        optional: !1
+      }
+    };
+  }
+  /** @internal */
+  asOptional() {
+    return new e({
+      isOptional: "optional",
+      key: this.key,
+      value: this.value
+    });
+  }
+}, K = class e extends g {
+  static {
+    n(this, "VUnion");
+  }
+  /**
+   * Usually you'd use \`v.union(...members)\` instead.
+   */
+  constructor({ isOptional: t, members: r }) {
+    super({ isOptional: t }), d(this, "members"), d(this, "kind", "union"), r.forEach((o, s) => {
+      if (o === void 0 && q("v.union()", \`member at index \${s}\`), !o.isConvexValidator)
+        throw new Error("All members of v.union() must be validators");
+    }), this.members = r;
+  }
+  /** @internal */
+  get json() {
+    return {
+      type: this.kind,
+      value: this.members.map((t) => t.json)
+    };
+  }
+  /** @internal */
+  asOptional() {
+    return new e({
+      isOptional: "optional",
+      members: this.members
+    });
+  }
+};
+
+// node_modules/convex/dist/esm/values/validator.js
+function pe(e) {
+  return !!e.isConvexValidator;
+}
+n(pe, "isValidator");
+function Z(e) {
+  return pe(e) ? e : c.object(e);
+}
+n(Z, "asObjectValidator");
+var c = {
+  /**
+   * Validates that the value is a document ID for the given table.
+   *
+   * IDs are strings at runtime but are typed as \`Id<"tableName">\` in
+   * TypeScript for type safety.
+   *
+   * @example
+   * \`\`\`typescript
+   * args: { userId: v.id("users") }
+   * \`\`\`
+   *
+   * @param tableName The name of the table.
+   */
+  id: /* @__PURE__ */ n((e) => new L({
+    isOptional: "required",
+    tableName: e
+  }), "id"),
+  /**
+   * Validates that the value is \`null\`.
+   *
+   * Use \`returns: v.null()\` for functions that don't return a meaningful value.
+   * JavaScript \`undefined\` is not a valid Convex value, it is automatically
+   * converted to \`null\`.
+   */
+  null: /* @__PURE__ */ n(() => new Q({ isOptional: "required" }), "null"),
+  /**
+   * Validates that the value is a JavaScript \`number\` (Convex Float64).
+   *
+   * Supports all IEEE-754 double-precision floating point numbers including
+   * NaN and Infinity.
+   *
+   * Alias for \`v.float64()\`.
+   */
+  number: /* @__PURE__ */ n(() => new j({ isOptional: "required" }), "number"),
+  /**
+   * Validates that the value is a JavaScript \`number\` (Convex Float64).
+   *
+   * Supports all IEEE-754 double-precision floating point numbers.
+   */
+  float64: /* @__PURE__ */ n(() => new j({ isOptional: "required" }), "float64"),
+  /**
+   * @deprecated Use \`v.int64()\` instead.
+   */
+  bigint: /* @__PURE__ */ n(() => new B({ isOptional: "required" }), "bigint"),
+  /**
+   * Validates that the value is a JavaScript \`bigint\` (Convex Int64).
+   *
+   * Supports BigInts between -2^63 and 2^63-1.
+   *
+   * @example
+   * \`\`\`typescript
+   * args: { timestamp: v.int64() }
+   * // Usage: createDoc({ timestamp: 1234567890n })
+   * \`\`\`
+   */
+  int64: /* @__PURE__ */ n(() => new B({ isOptional: "required" }), "int64"),
+  /**
+   * Validates that the value is a \`boolean\`.
+   */
+  boolean: /* @__PURE__ */ n(() => new k({ isOptional: "required" }), "boolean"),
+  /**
+   * Validates that the value is a \`string\`.
+   *
+   * Strings are stored as UTF-8 and their storage size is calculated as their
+   * UTF-8 encoded size.
+   */
+  string: /* @__PURE__ */ n(() => new G({ isOptional: "required" }), "string"),
+  /**
+   * Validates that the value is an \`ArrayBuffer\` (Convex Bytes).
+   *
+   * Use for binary data.
+   */
+  bytes: /* @__PURE__ */ n(() => new D({ isOptional: "required" }), "bytes"),
+  /**
+   * Validates that the value is exactly equal to the given literal.
+   *
+   * Useful for discriminated unions and enum-like patterns.
+   *
+   * @example
+   * \`\`\`typescript
+   * // Discriminated union pattern:
+   * v.union(
+   *   v.object({ kind: v.literal("error"), message: v.string() }),
+   *   v.object({ kind: v.literal("success"), value: v.number() }),
+   * )
+   * \`\`\`
+   *
+   * @param literal The literal value to compare against.
+   */
+  literal: /* @__PURE__ */ n((e) => new W({ isOptional: "required", value: e }), "literal"),
+  /**
+   * Validates that the value is an \`Array\` where every element matches the
+   * given validator.
+   *
+   * Arrays can have at most 8192 elements.
+   *
+   * @example
+   * \`\`\`typescript
+   * args: { tags: v.array(v.string()) }
+   * args: { coordinates: v.array(v.number()) }
+   * args: { items: v.array(v.object({ name: v.string(), qty: v.number() })) }
+   * \`\`\`
+   *
+   * @param element The validator for the elements of the array.
+   */
+  array: /* @__PURE__ */ n((e) => new Y({ isOptional: "required", element: e }), "array"),
+  /**
+   * Validates that the value is an \`Object\` with the specified properties.
+   *
+   * Objects can have at most 1024 entries. Field names must be non-empty and
+   * must not start with \`"\$"\` or \`"_"\` (\`_\` is reserved for system fields
+   * like \`_id\` and \`_creationTime\`; \`\$\` is reserved for Convex internal use).
+   *
+   * @example
+   * \`\`\`typescript
+   * args: {
+   *   user: v.object({
+   *     name: v.string(),
+   *     email: v.string(),
+   *     age: v.optional(v.number()),
+   *   })
+   * }
+   * \`\`\`
+   *
+   * @param fields An object mapping property names to their validators.
+   */
+  object: /* @__PURE__ */ n((e) => new z({ isOptional: "required", fields: e }), "object"),
+  /**
+   * Validates that the value is a \`Record\` (object with dynamic keys).
+   *
+   * Records are objects at runtime but allow dynamic keys, unlike \`v.object()\`
+   * which requires known property names. Keys must be ASCII characters only,
+   * non-empty, and not start with \`"\$"\` or \`"_"\`.
+   *
+   * @example
+   * \`\`\`typescript
+   * // Map of user IDs to scores:
+   * args: { scores: v.record(v.id("users"), v.number()) }
+   *
+   * // Map of string keys to string values:
+   * args: { metadata: v.record(v.string(), v.string()) }
+   * \`\`\`
+   *
+   * @param keys The validator for the keys of the record.
+   * @param values The validator for the values of the record.
+   */
+  record: /* @__PURE__ */ n((e, t) => new X({
+    isOptional: "required",
+    key: e,
+    value: t
+  }), "record"),
+  /**
+   * Validates that the value matches at least one of the given validators.
+   *
+   * @example
+   * \`\`\`typescript
+   * // Allow string or number:
+   * args: { value: v.union(v.string(), v.number()) }
+   *
+   * // Discriminated union (recommended pattern):
+   * v.union(
+   *   v.object({ kind: v.literal("text"), body: v.string() }),
+   *   v.object({ kind: v.literal("image"), url: v.string() }),
+   * )
+   *
+   * // Nullable value:
+   * returns: v.union(v.object({ ... }), v.null())
+   * \`\`\`
+   *
+   * @param members The validators to match against.
+   */
+  union: /* @__PURE__ */ n((...e) => new K({
+    isOptional: "required",
+    members: e
+  }), "union"),
+  /**
+   * A validator that accepts any Convex value without validation.
+   *
+   * Prefer using specific validators when possible for better type safety
+   * and runtime validation.
+   */
+  any: /* @__PURE__ */ n(() => new H({ isOptional: "required" }), "any"),
+  /**
+   * Makes a property optional in an object validator.
+   *
+   * An optional property can be omitted entirely when creating a document or
+   * calling a function. This is different from \`v.nullable()\` which requires
+   * the property to be present but allows \`null\`.
+   *
+   * @example
+   * \`\`\`typescript
+   * v.object({
+   *   name: v.string(),              // required
+   *   nickname: v.optional(v.string()), // can be omitted
+   * })
+   *
+   * // Valid: { name: "Alice" }
+   * // Valid: { name: "Alice", nickname: "Ali" }
+   * // Invalid: { name: "Alice", nickname: null }  - use v.nullable() for this
+   * \`\`\`
+   *
+   * @param value The property value validator to make optional.
+   */
+  optional: /* @__PURE__ */ n((e) => e.asOptional(), "optional"),
+  /**
+   * Allows a value to be either the given type or \`null\`.
+   *
+   * This is shorthand for \`v.union(value, v.null())\`. Unlike \`v.optional()\`,
+   * the property must still be present, but may be \`null\`.
+   *
+   * @example
+   * \`\`\`typescript
+   * v.object({
+   *   name: v.string(),
+   *   deletedAt: v.nullable(v.number()), // must be present, can be null
+   * })
+   *
+   * // Valid: { name: "Alice", deletedAt: null }
+   * // Valid: { name: "Alice", deletedAt: 1234567890 }
+   * // Invalid: { name: "Alice" }  - deletedAt is required
+   * \`\`\`
+   */
+  nullable: /* @__PURE__ */ n((e) => c.union(e, c.null()), "nullable")
+};
+
+// node_modules/convex/dist/esm/values/errors.js
+var Tt = Object.defineProperty, Ct = /* @__PURE__ */ n((e, t, r) => t in e ? Tt(e, t, { enumerable: !0, configurable: !0, writable: !0, value: r }) : e[t] = r, "__defNormalProp"), de = /* @__PURE__ */ n((e, t, r) => Ct(e, typeof t != "symbol" ? t + "" : t, r), "__publicField"), je, Be, \$t = /* @__PURE__ */ Symbol.for("ConvexError"), ee = class extends (Be = Error, je = \$t, Be) {
+  static {
+    n(this, "ConvexError");
+  }
+  constructor(t) {
+    super(typeof t == "string" ? t : O(t)), de(this, "name", "ConvexError"), de(this, "data"), de(this, je, !0), this.data = t;
+  }
+};
+
+// node_modules/convex/dist/esm/values/compare_utf8.js
+var Me = /* @__PURE__ */ n(() => Array.from({ length: 4 }, () => 0), "arr"), Or = Me(), Tr = Me();
+
+// node_modules/convex/dist/esm/index.js
+var x = "1.32.0";
+
+// node_modules/convex/dist/esm/server/impl/syscall.js
+function M(e, t) {
+  if (typeof Convex > "u" || Convex.syscall === void 0)
+    throw new Error(
+      "The Convex database and auth objects are being used outside of a Convex backend. Did you mean to use \`useQuery\` or \`useMutation\` to call a Convex function?"
+    );
+  let r = Convex.syscall(e, JSON.stringify(t));
+  return JSON.parse(r);
+}
+n(M, "performSyscall");
+async function p(e, t) {
+  if (typeof Convex > "u" || Convex.asyncSyscall === void 0)
+    throw new Error(
+      "The Convex database and auth objects are being used outside of a Convex backend. Did you mean to use \`useQuery\` or \`useMutation\` to call a Convex function?"
+    );
+  let r;
+  try {
+    r = await Convex.asyncSyscall(e, JSON.stringify(t));
+  } catch (o) {
+    if (o.data !== void 0) {
+      let s = new ee(o.message);
+      throw s.data = w(o.data), s;
+    }
+    throw new Error(o.message);
+  }
+  return JSON.parse(r);
+}
+n(p, "performAsyncSyscall");
+
+// node_modules/convex/dist/esm/server/functionName.js
+var U = /* @__PURE__ */ Symbol.for("functionName");
+
+// node_modules/convex/dist/esm/server/components/paths.js
+var Ue = /* @__PURE__ */ Symbol.for("toReferencePath");
+function Nt(e) {
+  return e[Ue] ?? null;
+}
+n(Nt, "extractReferencePath");
+function Pt(e) {
+  return e.startsWith("function://");
+}
+n(Pt, "isFunctionHandle");
+function E(e) {
+  let t;
+  if (typeof e == "string")
+    Pt(e) ? t = { functionHandle: e } : t = { name: e };
+  else if (e[U])
+    t = { name: e[U] };
+  else {
+    let r = Nt(e);
+    if (!r)
+      throw new Error(\`\${e} is not a functionReference\`);
+    t = { reference: r };
+  }
+  return t;
+}
+n(E, "getFunctionAddress");
+
+// node_modules/convex/dist/esm/server/impl/validate.js
+function u(e, t, r, o) {
+  if (e === void 0)
+    throw new TypeError(
+      \`Must provide arg \${t} \\\`\${o}\\\` to \\\`\${r}\\\`\`
+    );
+}
+n(u, "validateArg");
+function Je(e, t, r, o) {
+  if (!Number.isInteger(e) || e < 0)
+    throw new TypeError(
+      \`Arg \${t} \\\`\${o}\\\` to \\\`\${r}\\\` must be a non-negative integer\`
+    );
+}
+n(Je, "validateArgIsNonNegativeInteger");
+
+// node_modules/convex/dist/esm/server/impl/authentication_impl.js
+function he(e) {
+  return {
+    getUserIdentity: /* @__PURE__ */ n(async () => await p("1.0/getUserIdentity", {
+      requestId: e
+    }), "getUserIdentity")
+  };
+}
+n(he, "setupAuth");
+
+// node_modules/convex/dist/esm/server/filter_builder.js
+var Ft = Object.defineProperty, Rt = /* @__PURE__ */ n((e, t, r) => t in e ? Ft(e, t, { enumerable: !0, configurable: !0, writable: !0, value: r }) : e[t] = r, "__defNormalProp"), Ve = /* @__PURE__ */ n((e, t, r) => Rt(e, typeof t != "symbol" ? t + "" : t, r), "__publicField"), te = class {
+  static {
+    n(this, "Expression");
+  }
+  /**
+   * @internal
+   */
+  constructor() {
+    Ve(this, "_isExpression"), Ve(this, "_value");
+  }
+};
+
+// node_modules/convex/dist/esm/server/impl/filter_builder_impl.js
+var qt = Object.defineProperty, jt = /* @__PURE__ */ n((e, t, r) => t in e ? qt(e, t, { enumerable: !0, configurable: !0, writable: !0, value: r }) : e[t] = r, "__defNormalProp"), Bt = /* @__PURE__ */ n((e, t, r) => jt(e, typeof t != "symbol" ? t + "" : t, r), "__publicField"), y = class extends te {
+  static {
+    n(this, "ExpressionImpl");
+  }
+  constructor(t) {
+    super(), Bt(this, "inner"), this.inner = t;
+  }
+  serialize() {
+    return this.inner;
+  }
+};
+function l(e) {
+  return e instanceof y ? e.serialize() : { \$literal: v(e) };
+}
+n(l, "serializeExpression");
+var Le = {
+  //  Comparisons  /////////////////////////////////////////////////////////////
+  eq(e, t) {
+    return new y({
+      \$eq: [l(e), l(t)]
+    });
+  },
+  neq(e, t) {
+    return new y({
+      \$neq: [l(e), l(t)]
+    });
+  },
+  lt(e, t) {
+    return new y({
+      \$lt: [l(e), l(t)]
+    });
+  },
+  lte(e, t) {
+    return new y({
+      \$lte: [l(e), l(t)]
+    });
+  },
+  gt(e, t) {
+    return new y({
+      \$gt: [l(e), l(t)]
+    });
+  },
+  gte(e, t) {
+    return new y({
+      \$gte: [l(e), l(t)]
+    });
+  },
+  //  Arithmetic  //////////////////////////////////////////////////////////////
+  add(e, t) {
+    return new y({
+      \$add: [l(e), l(t)]
+    });
+  },
+  sub(e, t) {
+    return new y({
+      \$sub: [l(e), l(t)]
+    });
+  },
+  mul(e, t) {
+    return new y({
+      \$mul: [l(e), l(t)]
+    });
+  },
+  div(e, t) {
+    return new y({
+      \$div: [l(e), l(t)]
+    });
+  },
+  mod(e, t) {
+    return new y({
+      \$mod: [l(e), l(t)]
+    });
+  },
+  neg(e) {
+    return new y({ \$neg: l(e) });
+  },
+  //  Logic  ///////////////////////////////////////////////////////////////////
+  and(...e) {
+    return new y({ \$and: e.map(l) });
+  },
+  or(...e) {
+    return new y({ \$or: e.map(l) });
+  },
+  not(e) {
+    return new y({ \$not: l(e) });
+  },
+  //  Other  ///////////////////////////////////////////////////////////////////
+  field(e) {
+    return new y({ \$field: e });
+  }
+};
+
+// node_modules/convex/dist/esm/server/index_range_builder.js
+var Mt = Object.defineProperty, Ut = /* @__PURE__ */ n((e, t, r) => t in e ? Mt(e, t, { enumerable: !0, configurable: !0, writable: !0, value: r }) : e[t] = r, "__defNormalProp"), Jt = /* @__PURE__ */ n((e, t, r) => Ut(e, typeof t != "symbol" ? t + "" : t, r), "__publicField"), re = class {
+  static {
+    n(this, "IndexRange");
+  }
+  /**
+   * @internal
+   */
+  constructor() {
+    Jt(this, "_isIndexRange");
+  }
+};
+
+// node_modules/convex/dist/esm/server/impl/index_range_builder_impl.js
+var Vt = Object.defineProperty, Lt = /* @__PURE__ */ n((e, t, r) => t in e ? Vt(e, t, { enumerable: !0, configurable: !0, writable: !0, value: r }) : e[t] = r, "__defNormalProp"), ke = /* @__PURE__ */ n((e, t, r) => Lt(e, typeof t != "symbol" ? t + "" : t, r), "__publicField"), ne = class e extends re {
+  static {
+    n(this, "IndexRangeBuilderImpl");
+  }
+  constructor(t) {
+    super(), ke(this, "rangeExpressions"), ke(this, "isConsumed"), this.rangeExpressions = t, this.isConsumed = !1;
+  }
+  static new() {
+    return new e([]);
+  }
+  consume() {
+    if (this.isConsumed)
+      throw new Error(
+        "IndexRangeBuilder has already been used! Chain your method calls like \`q => q.eq(...).eq(...)\`. See https://docs.convex.dev/using/indexes"
+      );
+    this.isConsumed = !0;
+  }
+  eq(t, r) {
+    return this.consume(), new e(
+      this.rangeExpressions.concat({
+        type: "Eq",
+        fieldPath: t,
+        value: v(r)
+      })
+    );
+  }
+  gt(t, r) {
+    return this.consume(), new e(
+      this.rangeExpressions.concat({
+        type: "Gt",
+        fieldPath: t,
+        value: v(r)
+      })
+    );
+  }
+  gte(t, r) {
+    return this.consume(), new e(
+      this.rangeExpressions.concat({
+        type: "Gte",
+        fieldPath: t,
+        value: v(r)
+      })
+    );
+  }
+  lt(t, r) {
+    return this.consume(), new e(
+      this.rangeExpressions.concat({
+        type: "Lt",
+        fieldPath: t,
+        value: v(r)
+      })
+    );
+  }
+  lte(t, r) {
+    return this.consume(), new e(
+      this.rangeExpressions.concat({
+        type: "Lte",
+        fieldPath: t,
+        value: v(r)
+      })
+    );
+  }
+  export() {
+    return this.consume(), this.rangeExpressions;
+  }
+};
+
+// node_modules/convex/dist/esm/server/search_filter_builder.js
+var kt = Object.defineProperty, Dt = /* @__PURE__ */ n((e, t, r) => t in e ? kt(e, t, { enumerable: !0, configurable: !0, writable: !0, value: r }) : e[t] = r, "__defNormalProp"), Gt = /* @__PURE__ */ n((e, t, r) => Dt(e, typeof t != "symbol" ? t + "" : t, r), "__publicField"), oe = class {
+  static {
+    n(this, "SearchFilter");
+  }
+  /**
+   * @internal
+   */
+  constructor() {
+    Gt(this, "_isSearchFilter");
+  }
+};
+
+// node_modules/convex/dist/esm/server/impl/search_filter_builder_impl.js
+var Qt = Object.defineProperty, Ht = /* @__PURE__ */ n((e, t, r) => t in e ? Qt(e, t, { enumerable: !0, configurable: !0, writable: !0, value: r }) : e[t] = r, "__defNormalProp"), De = /* @__PURE__ */ n((e, t, r) => Ht(e, typeof t != "symbol" ? t + "" : t, r), "__publicField"), se = class e extends oe {
+  static {
+    n(this, "SearchFilterBuilderImpl");
+  }
+  constructor(t) {
+    super(), De(this, "filters"), De(this, "isConsumed"), this.filters = t, this.isConsumed = !1;
+  }
+  static new() {
+    return new e([]);
+  }
+  consume() {
+    if (this.isConsumed)
+      throw new Error(
+        "SearchFilterBuilder has already been used! Chain your method calls like \`q => q.search(...).eq(...)\`."
+      );
+    this.isConsumed = !0;
+  }
+  search(t, r) {
+    return u(t, 1, "search", "fieldName"), u(r, 2, "search", "query"), this.consume(), new e(
+      this.filters.concat({
+        type: "Search",
+        fieldPath: t,
+        value: r
+      })
+    );
+  }
+  eq(t, r) {
+    return u(t, 1, "eq", "fieldName"), arguments.length !== 2 && u(r, 2, "search", "value"), this.consume(), new e(
+      this.filters.concat({
+        type: "Eq",
+        fieldPath: t,
+        value: v(r)
+      })
+    );
+  }
+  export() {
+    return this.consume(), this.filters;
+  }
+};
+
+// node_modules/convex/dist/esm/server/impl/query_impl.js
+var zt = Object.defineProperty, Wt = /* @__PURE__ */ n((e, t, r) => t in e ? zt(e, t, { enumerable: !0, configurable: !0, writable: !0, value: r }) : e[t] = r, "__defNormalProp"), me = /* @__PURE__ */ n((e, t, r) => Wt(e, typeof t != "symbol" ? t + "" : t, r), "__publicField"), Ge = 256, \$ = class {
+  static {
+    n(this, "QueryInitializerImpl");
+  }
+  constructor(t) {
+    me(this, "tableName"), this.tableName = t;
+  }
+  withIndex(t, r) {
+    u(t, 1, "withIndex", "indexName");
+    let o = ne.new();
+    return r !== void 0 && (o = r(o)), new T({
+      source: {
+        type: "IndexRange",
+        indexName: this.tableName + "." + t,
+        range: o.export(),
+        order: null
+      },
+      operators: []
+    });
+  }
+  withSearchIndex(t, r) {
+    u(t, 1, "withSearchIndex", "indexName"), u(r, 2, "withSearchIndex", "searchFilter");
+    let o = se.new();
+    return new T({
+      source: {
+        type: "Search",
+        indexName: this.tableName + "." + t,
+        filters: r(o).export()
+      },
+      operators: []
+    });
+  }
+  fullTableScan() {
+    return new T({
+      source: {
+        type: "FullTableScan",
+        tableName: this.tableName,
+        order: null
+      },
+      operators: []
+    });
+  }
+  order(t) {
+    return this.fullTableScan().order(t);
+  }
+  // This is internal API and should not be exposed to developers yet.
+  async count() {
+    let t = await p("1.0/count", {
+      table: this.tableName
+    });
+    return w(t);
+  }
+  filter(t) {
+    return this.fullTableScan().filter(t);
+  }
+  limit(t) {
+    return this.fullTableScan().limit(t);
+  }
+  collect() {
+    return this.fullTableScan().collect();
+  }
+  take(t) {
+    return this.fullTableScan().take(t);
+  }
+  paginate(t) {
+    return this.fullTableScan().paginate(t);
+  }
+  first() {
+    return this.fullTableScan().first();
+  }
+  unique() {
+    return this.fullTableScan().unique();
+  }
+  [Symbol.asyncIterator]() {
+    return this.fullTableScan()[Symbol.asyncIterator]();
+  }
+};
+function Qe(e) {
+  throw new Error(
+    e === "consumed" ? "This query is closed and can't emit any more values." : "This query has been chained with another operator and can't be reused."
+  );
+}
+n(Qe, "throwClosedError");
+var T = class e {
+  static {
+    n(this, "QueryImpl");
+  }
+  constructor(t) {
+    me(this, "state"), me(this, "tableNameForErrorMessages"), this.state = { type: "preparing", query: t }, t.source.type === "FullTableScan" ? this.tableNameForErrorMessages = t.source.tableName : this.tableNameForErrorMessages = t.source.indexName.split(".")[0];
+  }
+  takeQuery() {
+    if (this.state.type !== "preparing")
+      throw new Error(
+        "A query can only be chained once and can't be chained after iteration begins."
+      );
+    let t = this.state.query;
+    return this.state = { type: "closed" }, t;
+  }
+  startQuery() {
+    if (this.state.type === "executing")
+      throw new Error("Iteration can only begin on a query once.");
+    (this.state.type === "closed" || this.state.type === "consumed") && Qe(this.state.type);
+    let t = this.state.query, { queryId: r } = M("1.0/queryStream", { query: t, version: x });
+    return this.state = { type: "executing", queryId: r }, r;
+  }
+  closeQuery() {
+    if (this.state.type === "executing") {
+      let t = this.state.queryId;
+      M("1.0/queryCleanup", { queryId: t });
+    }
+    this.state = { type: "consumed" };
+  }
+  order(t) {
+    u(t, 1, "order", "order");
+    let r = this.takeQuery();
+    if (r.source.type === "Search")
+      throw new Error(
+        "Search queries must always be in relevance order. Can not set order manually."
+      );
+    if (r.source.order !== null)
+      throw new Error("Queries may only specify order at most once");
+    return r.source.order = t, new e(r);
+  }
+  filter(t) {
+    u(t, 1, "filter", "predicate");
+    let r = this.takeQuery();
+    if (r.operators.length >= Ge)
+      throw new Error(
+        \`Can't construct query with more than \${Ge} operators\`
+      );
+    return r.operators.push({
+      filter: l(t(Le))
+    }), new e(r);
+  }
+  limit(t) {
+    u(t, 1, "limit", "n");
+    let r = this.takeQuery();
+    return r.operators.push({ limit: t }), new e(r);
+  }
+  [Symbol.asyncIterator]() {
+    return this.startQuery(), this;
+  }
+  async next() {
+    (this.state.type === "closed" || this.state.type === "consumed") && Qe(this.state.type);
+    let t = this.state.type === "preparing" ? this.startQuery() : this.state.queryId, { value: r, done: o } = await p("1.0/queryStreamNext", {
+      queryId: t
+    });
+    return o && this.closeQuery(), { value: w(r), done: o };
+  }
+  return() {
+    return this.closeQuery(), Promise.resolve({ done: !0, value: void 0 });
+  }
+  async paginate(t) {
+    if (u(t, 1, "paginate", "options"), typeof t?.numItems != "number" || t.numItems < 0)
+      throw new Error(
+        \`\\\`options.numItems\\\` must be a positive number. Received \\\`\${t?.numItems}\\\`.\`
+      );
+    let r = this.takeQuery(), o = t.numItems, s = t.cursor, a = t?.endCursor ?? null, i = t.maximumRowsRead ?? null, { page: f, isDone: m, continueCursor: N, splitCursor: ct, pageStatus: ut } = await p("1.0/queryPage", {
+      query: r,
+      cursor: s,
+      endCursor: a,
+      pageSize: o,
+      maximumRowsRead: i,
+      maximumBytesRead: t.maximumBytesRead,
+      version: x
+    });
+    return {
+      page: f.map((lt) => w(lt)),
+      isDone: m,
+      continueCursor: N,
+      splitCursor: ct,
+      pageStatus: ut
+    };
+  }
+  async collect() {
+    let t = [];
+    for await (let r of this)
+      t.push(r);
+    return t;
+  }
+  async take(t) {
+    return u(t, 1, "take", "n"), Je(t, 1, "take", "n"), this.limit(t).collect();
+  }
+  async first() {
+    let t = await this.take(1);
+    return t.length === 0 ? null : t[0];
+  }
+  async unique() {
+    let t = await this.take(2);
+    if (t.length === 0)
+      return null;
+    if (t.length === 2)
+      throw new Error(\`unique() query returned more than one result from table \${this.tableNameForErrorMessages}:
+ [\${t[0]._id}, \${t[1]._id}, ...]\`);
+    return t[0];
+  }
+};
+
+// node_modules/convex/dist/esm/server/impl/database_impl.js
+async function ye(e, t, r) {
+  if (u(t, 1, "get", "id"), typeof t != "string")
+    throw new Error(
+      \`Invalid argument \\\`id\\\` for \\\`db.get\\\`, expected string but got '\${typeof t}': \${t}\`
+    );
+  let o = {
+    id: h(t),
+    isSystem: r,
+    version: x,
+    table: e
+  }, s = await p("1.0/get", o);
+  return w(s);
+}
+n(ye, "get");
+function ve() {
+  let e = /* @__PURE__ */ n((s = !1) => ({
+    get: /* @__PURE__ */ n(async (a, i) => i !== void 0 ? await ye(a, i, s) : await ye(void 0, a, s), "get"),
+    query: /* @__PURE__ */ n((a) => new J(a, s).query(), "query"),
+    normalizeId: /* @__PURE__ */ n((a, i) => {
+      u(a, 1, "normalizeId", "tableName"), u(i, 2, "normalizeId", "id");
+      let f = a.startsWith("_");
+      if (f !== s)
+        throw new Error(
+          \`\${f ? "System" : "User"} tables can only be accessed from db.\${s ? "" : "system."}normalizeId().\`
+        );
+      let m = M("1.0/db/normalizeId", {
+        table: a,
+        idString: i
+      });
+      return w(m).id;
+    }, "normalizeId"),
+    // We set the system reader on the next line
+    system: null,
+    table: /* @__PURE__ */ n((a) => new J(a, s), "table")
+  }), "reader"), { system: t, ...r } = e(!0), o = e();
+  return o.system = r, o;
+}
+n(ve, "setupReader");
+async function He(e, t) {
+  if (e.startsWith("_"))
+    throw new Error("System tables (prefixed with \`_\`) are read-only.");
+  u(e, 1, "insert", "table"), u(t, 2, "insert", "value");
+  let r = await p("1.0/insert", {
+    table: e,
+    value: h(t)
+  });
+  return w(r)._id;
+}
+n(He, "insert");
+async function we(e, t, r) {
+  u(t, 1, "patch", "id"), u(r, 2, "patch", "value"), await p("1.0/shallowMerge", {
+    id: h(t),
+    value: qe(r),
+    table: e
+  });
+}
+n(we, "patch");
+async function xe(e, t, r) {
+  u(t, 1, "replace", "id"), u(r, 2, "replace", "value"), await p("1.0/replace", {
+    id: h(t),
+    value: h(r),
+    table: e
+  });
+}
+n(xe, "replace");
+async function ge(e, t) {
+  u(t, 1, "delete", "id"), await p("1.0/remove", {
+    id: h(t),
+    table: e
+  });
+}
+n(ge, "delete_");
+function ze() {
+  let e = ve();
+  return {
+    get: e.get,
+    query: e.query,
+    normalizeId: e.normalizeId,
+    system: e.system,
+    insert: /* @__PURE__ */ n(async (t, r) => await He(t, r), "insert"),
+    patch: /* @__PURE__ */ n(async (t, r, o) => o !== void 0 ? await we(t, r, o) : await we(void 0, t, r), "patch"),
+    replace: /* @__PURE__ */ n(async (t, r, o) => o !== void 0 ? await xe(t, r, o) : await xe(void 0, t, r), "replace"),
+    delete: /* @__PURE__ */ n(async (t, r) => r !== void 0 ? await ge(t, r) : await ge(void 0, t), "delete"),
+    table: /* @__PURE__ */ n((t) => new be(t, !1), "table")
+  };
+}
+n(ze, "setupWriter");
+var J = class {
+  static {
+    n(this, "TableReader");
+  }
+  constructor(t, r) {
+    this.tableName = t, this.isSystem = r;
+  }
+  async get(t) {
+    return ye(this.tableName, t, this.isSystem);
+  }
+  query() {
+    let t = this.tableName.startsWith("_");
+    if (t !== this.isSystem)
+      throw new Error(
+        \`\${t ? "System" : "User"} tables can only be accessed from db.\${this.isSystem ? "" : "system."}query().\`
+      );
+    return new \$(this.tableName);
+  }
+}, be = class extends J {
+  static {
+    n(this, "TableWriter");
+  }
+  async insert(t) {
+    return He(this.tableName, t);
+  }
+  async patch(t, r) {
+    return we(this.tableName, t, r);
+  }
+  async replace(t, r) {
+    return xe(this.tableName, t, r);
+  }
+  async delete(t) {
+    return ge(this.tableName, t);
+  }
+};
+
+// node_modules/convex/dist/esm/server/impl/scheduler_impl.js
+function We() {
+  return {
+    runAfter: /* @__PURE__ */ n(async (e, t, r) => {
+      let o = Yt(e, t, r);
+      return await p("1.0/schedule", o);
+    }, "runAfter"),
+    runAt: /* @__PURE__ */ n(async (e, t, r) => {
+      let o = Xt(
+        e,
+        t,
+        r
+      );
+      return await p("1.0/schedule", o);
+    }, "runAt"),
+    cancel: /* @__PURE__ */ n(async (e) => {
+      u(e, 1, "cancel", "id");
+      let t = { id: h(e) };
+      await p("1.0/cancel_job", t);
+    }, "cancel")
+  };
+}
+n(We, "setupMutationScheduler");
+function Yt(e, t, r) {
+  if (typeof e != "number")
+    throw new Error("\`delayMs\` must be a number");
+  if (!isFinite(e))
+    throw new Error("\`delayMs\` must be a finite number");
+  if (e < 0)
+    throw new Error("\`delayMs\` must be non-negative");
+  let o = I(r), s = E(t), a = (Date.now() + e) / 1e3;
+  return {
+    ...s,
+    ts: a,
+    args: h(o),
+    version: x
+  };
+}
+n(Yt, "runAfterSyscallArgs");
+function Xt(e, t, r) {
+  let o;
+  if (e instanceof Date)
+    o = e.valueOf() / 1e3;
+  else if (typeof e == "number")
+    o = e / 1e3;
+  else
+    throw new Error("The invoke time must a Date or a timestamp");
+  let s = E(t), a = I(r);
+  return {
+    ...s,
+    ts: o,
+    args: h(a),
+    version: x
+  };
+}
+n(Xt, "runAtSyscallArgs");
+
+// node_modules/convex/dist/esm/server/impl/storage_impl.js
+function Ae(e) {
+  return {
+    getUrl: /* @__PURE__ */ n(async (t) => (u(t, 1, "getUrl", "storageId"), await p("1.0/storageGetUrl", {
+      requestId: e,
+      version: x,
+      storageId: t
+    })), "getUrl"),
+    getMetadata: /* @__PURE__ */ n(async (t) => await p("1.0/storageGetMetadata", {
+      requestId: e,
+      version: x,
+      storageId: t
+    }), "getMetadata")
+  };
+}
+n(Ae, "setupStorageReader");
+function Ye(e) {
+  let t = Ae(e);
+  return {
+    generateUploadUrl: /* @__PURE__ */ n(async () => await p("1.0/storageGenerateUploadUrl", {
+      requestId: e,
+      version: x
+    }), "generateUploadUrl"),
+    delete: /* @__PURE__ */ n(async (r) => {
+      await p("1.0/storageDelete", {
+        requestId: e,
+        version: x,
+        storageId: r
+      });
+    }, "delete"),
+    getUrl: t.getUrl,
+    getMetadata: t.getMetadata
+  };
+}
+n(Ye, "setupStorageWriter");
+
+// node_modules/convex/dist/esm/server/impl/registration_impl.js
+async function Zt(e, t) {
+  let o = w(JSON.parse(t)), s = {
+    db: ze(),
+    auth: he(""),
+    storage: Ye(""),
+    scheduler: We(),
+    runQuery: /* @__PURE__ */ n((i, f) => Ee("query", i, f), "runQuery"),
+    runMutation: /* @__PURE__ */ n((i, f) => Ee("mutation", i, f), "runMutation")
+  }, a = await Ke(e, s, o);
+  return Xe(a), JSON.stringify(h(a === void 0 ? null : a));
+}
+n(Zt, "invokeMutation");
+function Xe(e) {
+  if (e instanceof \$ || e instanceof T)
+    throw new Error(
+      "Return value is a Query. Results must be retrieved with \`.collect()\`, \`.take(n), \`.unique()\`, or \`.first()\`."
+    );
+}
+n(Xe, "validateReturnValue");
+async function Ke(e, t, r) {
+  let o;
+  try {
+    o = await Promise.resolve(e(t, ...r));
+  } catch (s) {
+    throw er(s);
+  }
+  return o;
+}
+n(Ke, "invokeFunction");
+function Ze(e, t) {
+  return (r, o) => (globalThis.console.warn(
+    \`Convex functions should not directly call other Convex functions. Consider calling a helper function instead. e.g. \\\`export const foo = \${e}(...); await foo(ctx);\\\` is not supported. See https://docs.convex.dev/production/best-practices/#use-helper-functions-to-write-shared-code\`
+  ), t(r, o));
+}
+n(Ze, "dontCallDirectly");
+function er(e) {
+  if (typeof e == "object" && e !== null && /* @__PURE__ */ Symbol.for("ConvexError") in e) {
+    let t = e;
+    return t.data = JSON.stringify(
+      h(t.data === void 0 ? null : t.data)
+    ), t.ConvexErrorSymbol = /* @__PURE__ */ Symbol.for("ConvexError"), t;
+  } else
+    return e;
+}
+n(er, "serializeConvexErrorData");
+function et() {
+  if (typeof window > "u" || window.__convexAllowFunctionsInBrowser)
+    return;
+  (Object.getOwnPropertyDescriptor(globalThis, "window")?.get?.toString().includes("[native code]") ?? !1) && console.error(
+    "Convex functions should not be imported in the browser. This will throw an error in future versions of \`convex\`. If this is a false negative, please report it to Convex support."
+  );
+}
+n(et, "assertNotBrowser");
+function tt(e, t) {
+  if (t === void 0)
+    throw new Error(
+      \`A validator is undefined for field "\${e}". This is often caused by circular imports. See https://docs.convex.dev/error#undefined-validator for details.\`
+    );
+  return t;
+}
+n(tt, "strictReplacer");
+function rt(e) {
+  return () => {
+    let t = c.any();
+    return typeof e == "object" && e.args !== void 0 && (t = Z(e.args)), JSON.stringify(t.json, tt);
+  };
+}
+n(rt, "exportArgs");
+function nt(e) {
+  return () => {
+    let t;
+    return typeof e == "object" && e.returns !== void 0 && (t = Z(e.returns)), JSON.stringify(t ? t.json : null, tt);
+  };
+}
+n(nt, "exportReturns");
+var Se = /* @__PURE__ */ n(((e) => {
+  let t = typeof e == "function" ? e : e.handler, r = Ze("mutation", t);
+  return et(), r.isMutation = !0, r.isPublic = !0, r.invokeMutation = (o) => Zt(t, o), r.exportArgs = rt(e), r.exportReturns = nt(e), r._handler = t, r;
+}), "mutationGeneric");
+async function tr(e, t) {
+  let o = w(JSON.parse(t)), s = {
+    db: ve(),
+    auth: he(""),
+    storage: Ae(""),
+    runQuery: /* @__PURE__ */ n((i, f) => Ee("query", i, f), "runQuery")
+  }, a = await Ke(e, s, o);
+  return Xe(a), JSON.stringify(h(a === void 0 ? null : a));
+}
+n(tr, "invokeQuery");
+var _e = /* @__PURE__ */ n(((e) => {
+  let t = typeof e == "function" ? e : e.handler, r = Ze("query", t);
+  return et(), r.isQuery = !0, r.isPublic = !0, r.invokeQuery = (o) => tr(t, o), r.exportArgs = rt(e), r.exportReturns = nt(e), r._handler = t, r;
+}), "queryGeneric");
+async function Ee(e, t, r) {
+  let o = I(r), s = {
+    udfType: e,
+    args: h(o),
+    ...E(t)
+  }, a = await p("1.0/runUdf", s);
+  return w(a);
+}
+n(Ee, "runUdf");
+
+// node_modules/convex/dist/esm/server/pagination.js
+var Jo = c.object({
+  numItems: c.number(),
+  cursor: c.union(c.string(), c.null()),
+  endCursor: c.optional(c.union(c.string(), c.null())),
+  id: c.optional(c.number()),
+  maximumRowsRead: c.optional(c.number()),
+  maximumBytesRead: c.optional(c.number())
+});
+
+// node_modules/convex/dist/esm/server/api.js
+function ot(e = []) {
+  let t = {
+    get(r, o) {
+      if (typeof o == "string") {
+        let s = [...e, o];
+        return ot(s);
+      } else if (o === U) {
+        if (e.length < 2) {
+          let i = ["api", ...e].join(".");
+          throw new Error(
+            \`API path is expected to be of the form \\\`api.moduleName.functionName\\\`. Found: \\\`\${i}\\\`\`
+          );
+        }
+        let s = e.slice(0, -1).join("/"), a = e[e.length - 1];
+        return a === "default" ? s : s + ":" + a;
+      } else return o === Symbol.toStringTag ? "FunctionReference" : void 0;
+    }
+  };
+  return new Proxy({}, t);
+}
+n(ot, "createApi");
+var rr = ot();
+
+// node_modules/convex/dist/esm/server/schema.js
+var or = Object.defineProperty, sr = /* @__PURE__ */ n((e, t, r) => t in e ? or(e, t, { enumerable: !0, configurable: !0, writable: !0, value: r }) : e[t] = r, "__defNormalProp"), S = /* @__PURE__ */ n((e, t, r) => sr(e, typeof t != "symbol" ? t + "" : t, r), "__publicField"), ie = class {
+  static {
+    n(this, "TableDefinition");
+  }
+  /**
+   * @internal
+   */
+  constructor(t) {
+    S(this, "indexes"), S(this, "stagedDbIndexes"), S(this, "searchIndexes"), S(this, "stagedSearchIndexes"), S(this, "vectorIndexes"), S(this, "stagedVectorIndexes"), S(this, "validator"), this.indexes = [], this.stagedDbIndexes = [], this.searchIndexes = [], this.stagedSearchIndexes = [], this.vectorIndexes = [], this.stagedVectorIndexes = [], this.validator = t;
+  }
+  /**
+   * This API is experimental: it may change or disappear.
+   *
+   * Returns indexes defined on this table.
+   * Intended for the advanced use cases of dynamically deciding which index to use for a query.
+   * If you think you need this, please chime in on ths issue in the Convex JS GitHub repo.
+   * https://github.com/get-convex/convex-js/issues/49
+   */
+  " indexes"() {
+    return this.indexes;
+  }
+  index(t, r) {
+    return Array.isArray(r) ? this.indexes.push({
+      indexDescriptor: t,
+      fields: r
+    }) : r.staged ? this.stagedDbIndexes.push({
+      indexDescriptor: t,
+      fields: r.fields
+    }) : this.indexes.push({
+      indexDescriptor: t,
+      fields: r.fields
+    }), this;
+  }
+  searchIndex(t, r) {
+    return r.staged ? this.stagedSearchIndexes.push({
+      indexDescriptor: t,
+      searchField: r.searchField,
+      filterFields: r.filterFields || []
+    }) : this.searchIndexes.push({
+      indexDescriptor: t,
+      searchField: r.searchField,
+      filterFields: r.filterFields || []
+    }), this;
+  }
+  vectorIndex(t, r) {
+    return r.staged ? this.stagedVectorIndexes.push({
+      indexDescriptor: t,
+      vectorField: r.vectorField,
+      dimensions: r.dimensions,
+      filterFields: r.filterFields || []
+    }) : this.vectorIndexes.push({
+      indexDescriptor: t,
+      vectorField: r.vectorField,
+      dimensions: r.dimensions,
+      filterFields: r.filterFields || []
+    }), this;
+  }
+  /**
+   * Work around for https://github.com/microsoft/TypeScript/issues/57035
+   */
+  self() {
+    return this;
+  }
+  /**
+   * Export the contents of this definition.
+   *
+   * This is called internally by the Convex framework.
+   * @internal
+   */
+  export() {
+    let t = this.validator.json;
+    if (typeof t != "object")
+      throw new Error(
+        "Invalid validator: please make sure that the parameter of \`defineTable\` is valid (see https://docs.convex.dev/database/schemas)"
+      );
+    return {
+      indexes: this.indexes,
+      stagedDbIndexes: this.stagedDbIndexes,
+      searchIndexes: this.searchIndexes,
+      stagedSearchIndexes: this.stagedSearchIndexes,
+      vectorIndexes: this.vectorIndexes,
+      stagedVectorIndexes: this.stagedVectorIndexes,
+      documentType: t
+    };
+  }
+};
+function Ie(e) {
+  return pe(e) ? new ie(e) : new ie(c.object(e));
+}
+n(Ie, "defineTable");
+var Oe = class {
+  static {
+    n(this, "SchemaDefinition");
+  }
+  /**
+   * @internal
+   */
+  constructor(t, r) {
+    S(this, "tables"), S(this, "strictTableNameTypes"), S(this, "schemaValidation"), this.tables = t, this.schemaValidation = r?.schemaValidation === void 0 ? !0 : r.schemaValidation;
+  }
+  /**
+   * Export the contents of this definition.
+   *
+   * This is called internally by the Convex framework.
+   * @internal
+   */
+  export() {
+    return JSON.stringify({
+      tables: Object.entries(this.tables).map(([t, r]) => {
+        let {
+          indexes: o,
+          stagedDbIndexes: s,
+          searchIndexes: a,
+          stagedSearchIndexes: i,
+          vectorIndexes: f,
+          stagedVectorIndexes: m,
+          documentType: N
+        } = r.export();
+        return {
+          tableName: t,
+          indexes: o,
+          stagedDbIndexes: s,
+          searchIndexes: a,
+          stagedSearchIndexes: i,
+          vectorIndexes: f,
+          stagedVectorIndexes: m,
+          documentType: N
+        };
+      }),
+      schemaValidation: this.schemaValidation
+    });
+  }
+};
+function st(e, t) {
+  return new Oe(e, t);
+}
+n(st, "defineSchema");
+var ls = st({
+  _scheduled_functions: Ie({
+    name: c.string(),
+    args: c.array(c.any()),
+    scheduledTime: c.float64(),
+    completedTime: c.optional(c.float64()),
+    state: c.union(
+      c.object({ kind: c.literal("pending") }),
+      c.object({ kind: c.literal("inProgress") }),
+      c.object({ kind: c.literal("success") }),
+      c.object({ kind: c.literal("failed"), error: c.string() }),
+      c.object({ kind: c.literal("canceled") })
+    )
+  }),
+  _storage: Ie({
+    sha256: c.string(),
+    size: c.float64(),
+    contentType: c.optional(c.string())
+  })
+});
+
+// convex/_generated/server.js
+var it = _e;
+var at = Se;
+
+// convex/reactions.ts
+var Vs = it({
+  args: { videoShortCode: c.string() },
+  handler: /* @__PURE__ */ n(async (e, t) => await e.db.query("reactions").withIndex(
+    "by_video_short_code",
+    (r) => r.eq("video_short_code", t.videoShortCode)
+  ).collect(), "handler")
+}), Ls = at({
+  args: {
+    video_short_code: c.string(),
+    emoji: c.string(),
+    timestamp: c.number()
+  },
+  handler: /* @__PURE__ */ n(async (e, t) => await e.db.insert("reactions", {
+    video_short_code: t.video_short_code,
+    emoji: t.emoji,
+    timestamp: t.timestamp,
+    created_at: (/* @__PURE__ */ new Date()).toISOString()
+  }), "handler")
+});
+export {
+  Ls as add,
+  Vs as listByVideo
+};
+`
+export const HTTP_BUNDLE = `var Ve = Object.defineProperty;
+var n = (e, t) => Ve(e, "name", { value: t, configurable: !0 });
+
+// node_modules/convex/dist/esm/values/base64.js
+var A = [], w = [], ke = Uint8Array, oe = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+for (E = 0, we = oe.length; E < we; ++E)
+  A[E] = oe[E], w[oe.charCodeAt(E)] = E;
+var E, we;
+w[45] = 62;
+w[95] = 63;
+function Ge(e) {
+  var t = e.length;
+  if (t % 4 > 0)
+    throw new Error("Invalid string. Length must be a multiple of 4");
+  var r = e.indexOf("=");
+  r === -1 && (r = t);
+  var o = r === t ? 0 : 4 - r % 4;
+  return [r, o];
+}
+n(Ge, "getLens");
+function De(e, t, r) {
+  return (t + r) * 3 / 4 - r;
+}
+n(De, "_byteLength");
+function P(e) {
+  var t, r = Ge(e), o = r[0], s = r[1], a = new ke(De(e, o, s)), i = 0, l = s > 0 ? o - 4 : o, d;
+  for (d = 0; d < l; d += 4)
+    t = w[e.charCodeAt(d)] << 18 | w[e.charCodeAt(d + 1)] << 12 | w[e.charCodeAt(d + 2)] << 6 | w[e.charCodeAt(d + 3)], a[i++] = t >> 16 & 255, a[i++] = t >> 8 & 255, a[i++] = t & 255;
+  return s === 2 && (t = w[e.charCodeAt(d)] << 2 | w[e.charCodeAt(d + 1)] >> 4, a[i++] = t & 255), s === 1 && (t = w[e.charCodeAt(d)] << 10 | w[e.charCodeAt(d + 1)] << 4 | w[e.charCodeAt(d + 2)] >> 2, a[i++] = t >> 8 & 255, a[i++] = t & 255), a;
+}
+n(P, "toByteArray");
+function Qe(e) {
+  return A[e >> 18 & 63] + A[e >> 12 & 63] + A[e >> 6 & 63] + A[e & 63];
+}
+n(Qe, "tripletToBase64");
+function He(e, t, r) {
+  for (var o, s = [], a = t; a < r; a += 3)
+    o = (e[a] << 16 & 16711680) + (e[a + 1] << 8 & 65280) + (e[a + 2] & 255), s.push(Qe(o));
+  return s.join("");
+}
+n(He, "encodeChunk");
+function R(e) {
+  for (var t, r = e.length, o = r % 3, s = [], a = 16383, i = 0, l = r - o; i < l; i += a)
+    s.push(
+      He(
+        e,
+        i,
+        i + a > l ? l : i + a
+      )
+    );
+  return o === 1 ? (t = e[r - 1], s.push(A[t >> 2] + A[t << 4 & 63] + "==")) : o === 2 && (t = (e[r - 2] << 8) + e[r - 1], s.push(
+    A[t >> 10] + A[t >> 4 & 63] + A[t << 2 & 63] + "="
+  )), s.join("");
+}
+n(R, "fromByteArray");
+
+// node_modules/convex/dist/esm/common/index.js
+function T(e) {
+  if (e === void 0)
+    return {};
+  if (!U(e))
+    throw new Error(
+      \`The arguments to a Convex function must be an object. Received: \${e}\`
+    );
+  return e;
+}
+n(T, "parseArgs");
+function U(e) {
+  let t = typeof e == "object", r = Object.getPrototypeOf(e), o = r === null || r === Object.prototype || // Objects generated from other contexts (e.g. across Node.js \`vm\` modules) will not satisfy the previous
+  // conditions but are still simple objects.
+  r?.constructor?.name === "Object";
+  return t && o;
+}
+n(U, "isSimpleObject");
+
+// node_modules/convex/dist/esm/values/value.js
+var ve = !0, N = BigInt("-9223372036854775808"), ue = BigInt("9223372036854775807"), ie = BigInt("0"), ze = BigInt("8"), We = BigInt("256");
+function Ae(e) {
+  return Number.isNaN(e) || !Number.isFinite(e) || Object.is(e, -0);
+}
+n(Ae, "isSpecial");
+function Ye(e) {
+  e < ie && (e -= N + N);
+  let t = e.toString(16);
+  t.length % 2 === 1 && (t = "0" + t);
+  let r = new Uint8Array(new ArrayBuffer(8)), o = 0;
+  for (let s of t.match(/.{2}/g).reverse())
+    r.set([parseInt(s, 16)], o++), e >>= ze;
+  return R(r);
+}
+n(Ye, "slowBigIntToBase64");
+function Xe(e) {
+  let t = P(e);
+  if (t.byteLength !== 8)
+    throw new Error(
+      \`Received \${t.byteLength} bytes, expected 8 for \$integer\`
+    );
+  let r = ie, o = ie;
+  for (let s of t)
+    r += BigInt(s) * We ** o, o++;
+  return r > ue && (r += N + N), r;
+}
+n(Xe, "slowBase64ToBigInt");
+function Ke(e) {
+  if (e < N || ue < e)
+    throw new Error(
+      \`BigInt \${e} does not fit into a 64-bit signed integer.\`
+    );
+  let t = new ArrayBuffer(8);
+  return new DataView(t).setBigInt64(0, e, !0), R(new Uint8Array(t));
+}
+n(Ke, "modernBigIntToBase64");
+function Ze(e) {
+  let t = P(e);
+  if (t.byteLength !== 8)
+    throw new Error(
+      \`Received \${t.byteLength} bytes, expected 8 for \$integer\`
+    );
+  return new DataView(t.buffer).getBigInt64(0, !0);
+}
+n(Ze, "modernBase64ToBigInt");
+var et = DataView.prototype.setBigInt64 ? Ke : Ye, tt = DataView.prototype.getBigInt64 ? Ze : Xe, xe = 1024;
+function ae(e) {
+  if (e.length > xe)
+    throw new Error(
+      \`Field name \${e} exceeds maximum field name length \${xe}.\`
+    );
+  if (e.startsWith("\$"))
+    throw new Error(\`Field name \${e} starts with a '\$', which is reserved.\`);
+  for (let t = 0; t < e.length; t += 1) {
+    let r = e.charCodeAt(t);
+    if (r < 32 || r >= 127)
+      throw new Error(
+        \`Field name \${e} has invalid character '\${e[t]}': Field names can only contain non-control ASCII characters\`
+      );
+  }
+}
+n(ae, "validateObjectField");
+function g(e) {
+  if (e === null || typeof e == "boolean" || typeof e == "number" || typeof e == "string")
+    return e;
+  if (Array.isArray(e))
+    return e.map((o) => g(o));
+  if (typeof e != "object")
+    throw new Error(\`Unexpected type of \${e}\`);
+  let t = Object.entries(e);
+  if (t.length === 1) {
+    let o = t[0][0];
+    if (o === "\$bytes") {
+      if (typeof e.\$bytes != "string")
+        throw new Error(\`Malformed \$bytes field on \${e}\`);
+      return P(e.\$bytes).buffer;
+    }
+    if (o === "\$integer") {
+      if (typeof e.\$integer != "string")
+        throw new Error(\`Malformed \$integer field on \${e}\`);
+      return tt(e.\$integer);
+    }
+    if (o === "\$float") {
+      if (typeof e.\$float != "string")
+        throw new Error(\`Malformed \$float field on \${e}\`);
+      let s = P(e.\$float);
+      if (s.byteLength !== 8)
+        throw new Error(
+          \`Received \${s.byteLength} bytes, expected 8 for \$float\`
+        );
+      let i = new DataView(s.buffer).getFloat64(0, ve);
+      if (!Ae(i))
+        throw new Error(\`Float \${i} should be encoded as a number\`);
+      return i;
+    }
+    if (o === "\$set")
+      throw new Error(
+        "Received a Set which is no longer supported as a Convex type."
+      );
+    if (o === "\$map")
+      throw new Error(
+        "Received a Map which is no longer supported as a Convex type."
+      );
+  }
+  let r = {};
+  for (let [o, s] of Object.entries(e))
+    ae(o), r[o] = g(s);
+  return r;
+}
+n(g, "jsonToConvex");
+var be = 16384;
+function I(e) {
+  let t = JSON.stringify(e, (r, o) => o === void 0 ? "undefined" : typeof o == "bigint" ? \`\${o.toString()}n\` : o);
+  if (t.length > be) {
+    let r = "[...truncated]", o = be - r.length, s = t.codePointAt(o - 1);
+    return s !== void 0 && s > 65535 && (o -= 1), t.substring(0, o) + r;
+  }
+  return t;
+}
+n(I, "stringifyValueForError");
+function L(e, t, r, o) {
+  if (e === void 0) {
+    let i = r && \` (present at path \${r} in original object \${I(
+      t
+    )})\`;
+    throw new Error(
+      \`undefined is not a valid Convex value\${i}. To learn about Convex's supported types, see https://docs.convex.dev/using/types.\`
+    );
+  }
+  if (e === null)
+    return e;
+  if (typeof e == "bigint") {
+    if (e < N || ue < e)
+      throw new Error(
+        \`BigInt \${e} does not fit into a 64-bit signed integer.\`
+      );
+    return { \$integer: et(e) };
+  }
+  if (typeof e == "number")
+    if (Ae(e)) {
+      let i = new ArrayBuffer(8);
+      return new DataView(i).setFloat64(0, e, ve), { \$float: R(new Uint8Array(i)) };
+    } else
+      return e;
+  if (typeof e == "boolean" || typeof e == "string")
+    return e;
+  if (e instanceof ArrayBuffer)
+    return { \$bytes: R(new Uint8Array(e)) };
+  if (Array.isArray(e))
+    return e.map(
+      (i, l) => L(i, t, r + \`[\${l}]\`, !1)
+    );
+  if (e instanceof Set)
+    throw new Error(
+      se(r, "Set", [...e], t)
+    );
+  if (e instanceof Map)
+    throw new Error(
+      se(r, "Map", [...e], t)
+    );
+  if (!U(e)) {
+    let i = e?.constructor?.name, l = i ? \`\${i} \` : "";
+    throw new Error(
+      se(r, l, e, t)
+    );
+  }
+  let s = {}, a = Object.entries(e);
+  a.sort(([i, l], [d, J]) => i === d ? 0 : i < d ? -1 : 1);
+  for (let [i, l] of a)
+    l !== void 0 ? (ae(i), s[i] = L(l, t, r + \`.\${i}\`, !1)) : o && (ae(i), s[i] = Se(
       l,
       t,
       r + \`.\${i}\`
     ));
   return s;
 }
-n(q, "convexToJsonInternal");
-function K(e, t, r, o) {
-  return e ? \`\${t}\${A(
+n(L, "convexToJsonInternal");
+function se(e, t, r, o) {
+  return e ? \`\${t}\${I(
     r
-  )} is not a supported Convex type (present at path \${e} in original object \${A(
+  )} is not a supported Convex type (present at path \${e} in original object \${I(
     o
-  )}). To learn about Convex's supported types, see https://docs.convex.dev/using/types.\` : \`\${t}\${A(
+  )}). To learn about Convex's supported types, see https://docs.convex.dev/using/types.\` : \`\${t}\${I(
     r
   )} is not a supported Convex type.\`;
 }
-n(K, "errorMessageForUnsupportedType");
-function Me(e, t, r) {
+n(se, "errorMessageForUnsupportedType");
+function Se(e, t, r) {
   if (e === void 0)
     return { \$undefined: null };
   if (t === void 0)
     throw new Error(
-      \`Programming error. Current value is \${A(
+      \`Programming error. Current value is \${I(
         e
       )} but original value is undefined\`
     );
-  return q(e, t, r, !1);
+  return L(e, t, r, !1);
 }
-n(Me, "convexOrUndefinedToJsonInternal");
-function x(e) {
-  return q(e, e, "", !1);
+n(Se, "convexOrUndefinedToJsonInternal");
+function y(e) {
+  return L(e, e, "", !1);
 }
-n(x, "convexToJson");
+n(y, "convexToJson");
+function F(e) {
+  return Se(e, e, "");
+}
+n(F, "convexOrUndefinedToJson");
 
 // node_modules/convex/dist/esm/values/validators.js
-var Ue = Object.defineProperty, Je = /* @__PURE__ */ n((e, t, r) => t in e ? Ue(e, t, { enumerable: !0, configurable: !0, writable: !0, value: r }) : e[t] = r, "__defNormalProp"), c = /* @__PURE__ */ n((e, t, r) => Je(e, typeof t != "symbol" ? t + "" : t, r), "__publicField"), Le = "https://docs.convex.dev/error#undefined-validator";
-function _(e, t) {
+var rt = Object.defineProperty, nt = /* @__PURE__ */ n((e, t, r) => t in e ? rt(e, t, { enumerable: !0, configurable: !0, writable: !0, value: r }) : e[t] = r, "__defNormalProp"), c = /* @__PURE__ */ n((e, t, r) => nt(e, typeof t != "symbol" ? t + "" : t, r), "__publicField"), ot = "https://docs.convex.dev/error#undefined-validator";
+function q(e, t) {
   let r = t !== void 0 ? \` for field "\${t}"\` : "";
   throw new Error(
-    \`A validator is undefined\${r} in \${e}. This is often caused by circular imports. See \${Le} for details.\`
+    \`A validator is undefined\${r} in \${e}. This is often caused by circular imports. See \${ot} for details.\`
   );
 }
-n(_, "throwUndefinedValidatorError");
-var d = class {
+n(q, "throwUndefinedValidatorError");
+var m = class {
   static {
     n(this, "BaseValidator");
   }
   constructor({ isOptional: t }) {
     c(this, "type"), c(this, "fieldPaths"), c(this, "isOptional"), c(this, "isConvexValidator"), this.isOptional = t, this.isConvexValidator = !0;
   }
-}, j = class e extends d {
+}, V = class e extends m {
   static {
     n(this, "VId");
   }
@@ -3452,7 +5357,7 @@ var d = class {
       tableName: this.tableName
     });
   }
-}, C = class e extends d {
+}, j = class e extends m {
   static {
     n(this, "VFloat64");
   }
@@ -3469,7 +5374,7 @@ var d = class {
       isOptional: "optional"
     });
   }
-}, N = class e extends d {
+}, B = class e extends m {
   static {
     n(this, "VInt64");
   }
@@ -3484,7 +5389,7 @@ var d = class {
   asOptional() {
     return new e({ isOptional: "optional" });
   }
-}, B = class e extends d {
+}, k = class e extends m {
   static {
     n(this, "VBoolean");
   }
@@ -3501,7 +5406,7 @@ var d = class {
       isOptional: "optional"
     });
   }
-}, M = class e extends d {
+}, G = class e extends m {
   static {
     n(this, "VBytes");
   }
@@ -3516,7 +5421,7 @@ var d = class {
   asOptional() {
     return new e({ isOptional: "optional" });
   }
-}, U = class e extends d {
+}, D = class e extends m {
   static {
     n(this, "VString");
   }
@@ -3533,7 +5438,7 @@ var d = class {
       isOptional: "optional"
     });
   }
-}, J = class e extends d {
+}, Q = class e extends m {
   static {
     n(this, "VNull");
   }
@@ -3548,7 +5453,7 @@ var d = class {
   asOptional() {
     return new e({ isOptional: "optional" });
   }
-}, L = class e extends d {
+}, H = class e extends m {
   static {
     n(this, "VAny");
   }
@@ -3567,7 +5472,7 @@ var d = class {
       isOptional: "optional"
     });
   }
-}, V = class e extends d {
+}, z = class e extends m {
   static {
     n(this, "VObject");
   }
@@ -3579,7 +5484,7 @@ var d = class {
     fields: r
   }) {
     super({ isOptional: t }), c(this, "fields"), c(this, "kind", "object"), globalThis.Object.entries(r).forEach(([o, s]) => {
-      if (s === void 0 && _("v.object()", o), !s.isConvexValidator)
+      if (s === void 0 && q("v.object()", o), !s.isConvexValidator)
         throw new Error("v.object() entries must be validators");
     }), this.fields = r;
   }
@@ -3653,7 +5558,7 @@ var d = class {
       fields: { ...this.fields, ...t }
     });
   }
-}, k = class e extends d {
+}, W = class e extends m {
   static {
     n(this, "VLiteral");
   }
@@ -3669,7 +5574,7 @@ var d = class {
   get json() {
     return {
       type: this.kind,
-      value: x(this.value)
+      value: y(this.value)
     };
   }
   /** @internal */
@@ -3679,7 +5584,7 @@ var d = class {
       value: this.value
     });
   }
-}, D = class e extends d {
+}, Y = class e extends m {
   static {
     n(this, "VArray");
   }
@@ -3690,7 +5595,7 @@ var d = class {
     isOptional: t,
     element: r
   }) {
-    super({ isOptional: t }), c(this, "element"), c(this, "kind", "array"), r === void 0 && _("v.array()"), this.element = r;
+    super({ isOptional: t }), c(this, "element"), c(this, "kind", "array"), r === void 0 && q("v.array()"), this.element = r;
   }
   /** @internal */
   get json() {
@@ -3706,7 +5611,7 @@ var d = class {
       element: this.element
     });
   }
-}, Q = class e extends d {
+}, X = class e extends m {
   static {
     n(this, "VRecord");
   }
@@ -3718,7 +5623,7 @@ var d = class {
     key: r,
     value: o
   }) {
-    if (super({ isOptional: t }), c(this, "key"), c(this, "value"), c(this, "kind", "record"), r === void 0 && _("v.record()", "key"), o === void 0 && _("v.record()", "value"), r.isOptional === "optional")
+    if (super({ isOptional: t }), c(this, "key"), c(this, "value"), c(this, "kind", "record"), r === void 0 && q("v.record()", "key"), o === void 0 && q("v.record()", "value"), r.isOptional === "optional")
       throw new Error("Record validator cannot have optional keys");
     if (o.isOptional === "optional")
       throw new Error("Record validator cannot have optional values");
@@ -3746,7 +5651,7 @@ var d = class {
       value: this.value
     });
   }
-}, H = class e extends d {
+}, K = class e extends m {
   static {
     n(this, "VUnion");
   }
@@ -3755,7 +5660,7 @@ var d = class {
    */
   constructor({ isOptional: t, members: r }) {
     super({ isOptional: t }), c(this, "members"), c(this, "kind", "union"), r.forEach((o, s) => {
-      if (o === void 0 && _("v.union()", \`member at index \${s}\`), !o.isConvexValidator)
+      if (o === void 0 && q("v.union()", \`member at index \${s}\`), !o.isConvexValidator)
         throw new Error("All members of v.union() must be validators");
     }), this.members = r;
   }
@@ -3776,11 +5681,11 @@ var d = class {
 };
 
 // node_modules/convex/dist/esm/values/validator.js
-function he(e) {
+function Oe(e) {
   return !!e.isConvexValidator;
 }
-n(he, "isValidator");
-var a = {
+n(Oe, "isValidator");
+var u = {
   /**
    * Validates that the value is a document ID for the given table.
    *
@@ -3794,7 +5699,7 @@ var a = {
    *
    * @param tableName The name of the table.
    */
-  id: /* @__PURE__ */ n((e) => new j({
+  id: /* @__PURE__ */ n((e) => new V({
     isOptional: "required",
     tableName: e
   }), "id"),
@@ -3805,7 +5710,7 @@ var a = {
    * JavaScript \`undefined\` is not a valid Convex value, it is automatically
    * converted to \`null\`.
    */
-  null: /* @__PURE__ */ n(() => new J({ isOptional: "required" }), "null"),
+  null: /* @__PURE__ */ n(() => new Q({ isOptional: "required" }), "null"),
   /**
    * Validates that the value is a JavaScript \`number\` (Convex Float64).
    *
@@ -3814,17 +5719,17 @@ var a = {
    *
    * Alias for \`v.float64()\`.
    */
-  number: /* @__PURE__ */ n(() => new C({ isOptional: "required" }), "number"),
+  number: /* @__PURE__ */ n(() => new j({ isOptional: "required" }), "number"),
   /**
    * Validates that the value is a JavaScript \`number\` (Convex Float64).
    *
    * Supports all IEEE-754 double-precision floating point numbers.
    */
-  float64: /* @__PURE__ */ n(() => new C({ isOptional: "required" }), "float64"),
+  float64: /* @__PURE__ */ n(() => new j({ isOptional: "required" }), "float64"),
   /**
    * @deprecated Use \`v.int64()\` instead.
    */
-  bigint: /* @__PURE__ */ n(() => new N({ isOptional: "required" }), "bigint"),
+  bigint: /* @__PURE__ */ n(() => new B({ isOptional: "required" }), "bigint"),
   /**
    * Validates that the value is a JavaScript \`bigint\` (Convex Int64).
    *
@@ -3836,24 +5741,24 @@ var a = {
    * // Usage: createDoc({ timestamp: 1234567890n })
    * \`\`\`
    */
-  int64: /* @__PURE__ */ n(() => new N({ isOptional: "required" }), "int64"),
+  int64: /* @__PURE__ */ n(() => new B({ isOptional: "required" }), "int64"),
   /**
    * Validates that the value is a \`boolean\`.
    */
-  boolean: /* @__PURE__ */ n(() => new B({ isOptional: "required" }), "boolean"),
+  boolean: /* @__PURE__ */ n(() => new k({ isOptional: "required" }), "boolean"),
   /**
    * Validates that the value is a \`string\`.
    *
    * Strings are stored as UTF-8 and their storage size is calculated as their
    * UTF-8 encoded size.
    */
-  string: /* @__PURE__ */ n(() => new U({ isOptional: "required" }), "string"),
+  string: /* @__PURE__ */ n(() => new D({ isOptional: "required" }), "string"),
   /**
    * Validates that the value is an \`ArrayBuffer\` (Convex Bytes).
    *
    * Use for binary data.
    */
-  bytes: /* @__PURE__ */ n(() => new M({ isOptional: "required" }), "bytes"),
+  bytes: /* @__PURE__ */ n(() => new G({ isOptional: "required" }), "bytes"),
   /**
    * Validates that the value is exactly equal to the given literal.
    *
@@ -3870,7 +5775,7 @@ var a = {
    *
    * @param literal The literal value to compare against.
    */
-  literal: /* @__PURE__ */ n((e) => new k({ isOptional: "required", value: e }), "literal"),
+  literal: /* @__PURE__ */ n((e) => new W({ isOptional: "required", value: e }), "literal"),
   /**
    * Validates that the value is an \`Array\` where every element matches the
    * given validator.
@@ -3886,7 +5791,7 @@ var a = {
    *
    * @param element The validator for the elements of the array.
    */
-  array: /* @__PURE__ */ n((e) => new D({ isOptional: "required", element: e }), "array"),
+  array: /* @__PURE__ */ n((e) => new Y({ isOptional: "required", element: e }), "array"),
   /**
    * Validates that the value is an \`Object\` with the specified properties.
    *
@@ -3907,7 +5812,7 @@ var a = {
    *
    * @param fields An object mapping property names to their validators.
    */
-  object: /* @__PURE__ */ n((e) => new V({ isOptional: "required", fields: e }), "object"),
+  object: /* @__PURE__ */ n((e) => new z({ isOptional: "required", fields: e }), "object"),
   /**
    * Validates that the value is a \`Record\` (object with dynamic keys).
    *
@@ -3927,7 +5832,7 @@ var a = {
    * @param keys The validator for the keys of the record.
    * @param values The validator for the values of the record.
    */
-  record: /* @__PURE__ */ n((e, t) => new Q({
+  record: /* @__PURE__ */ n((e, t) => new X({
     isOptional: "required",
     key: e,
     value: t
@@ -3952,7 +5857,7 @@ var a = {
    *
    * @param members The validators to match against.
    */
-  union: /* @__PURE__ */ n((...e) => new H({
+  union: /* @__PURE__ */ n((...e) => new K({
     isOptional: "required",
     members: e
   }), "union"),
@@ -3962,7 +5867,7 @@ var a = {
    * Prefer using specific validators when possible for better type safety
    * and runtime validation.
    */
-  any: /* @__PURE__ */ n(() => new L({ isOptional: "required" }), "any"),
+  any: /* @__PURE__ */ n(() => new H({ isOptional: "required" }), "any"),
   /**
    * Makes a property optional in an object validator.
    *
@@ -4003,71 +5908,429 @@ var a = {
    * // Invalid: { name: "Alice" }  - deletedAt is required
    * \`\`\`
    */
-  nullable: /* @__PURE__ */ n((e) => a.union(e, a.null()), "nullable")
+  nullable: /* @__PURE__ */ n((e) => u.union(e, u.null()), "nullable")
 };
 
 // node_modules/convex/dist/esm/values/errors.js
-var Ve = Object.defineProperty, ke = /* @__PURE__ */ n((e, t, r) => t in e ? Ve(e, t, { enumerable: !0, configurable: !0, writable: !0, value: r }) : e[t] = r, "__defNormalProp"), te = /* @__PURE__ */ n((e, t, r) => ke(e, typeof t != "symbol" ? t + "" : t, r), "__publicField"), me, ye, De = /* @__PURE__ */ Symbol.for("ConvexError"), re = class extends (ye = Error, me = De, ye) {
+var st = Object.defineProperty, it = /* @__PURE__ */ n((e, t, r) => t in e ? st(e, t, { enumerable: !0, configurable: !0, writable: !0, value: r }) : e[t] = r, "__defNormalProp"), ce = /* @__PURE__ */ n((e, t, r) => it(e, typeof t != "symbol" ? t + "" : t, r), "__publicField"), Ee, Te, at = /* @__PURE__ */ Symbol.for("ConvexError"), Z = class extends (Te = Error, Ee = at, Te) {
   static {
     n(this, "ConvexError");
   }
   constructor(t) {
-    super(typeof t == "string" ? t : A(t)), te(this, "name", "ConvexError"), te(this, "data"), te(this, me, !0), this.data = t;
+    super(typeof t == "string" ? t : I(t)), ce(this, "name", "ConvexError"), ce(this, "data"), ce(this, Ee, !0), this.data = t;
   }
 };
 
 // node_modules/convex/dist/esm/values/compare_utf8.js
-var we = /* @__PURE__ */ n(() => Array.from({ length: 4 }, () => 0), "arr"), gt = we(), xt = we();
+var Ie = /* @__PURE__ */ n(() => Array.from({ length: 4 }, () => 0), "arr"), er = Ie(), tr = Ie();
+
+// node_modules/convex/dist/esm/index.js
+var h = "1.32.0";
 
 // node_modules/convex/dist/esm/server/impl/syscall.js
-function P(e, t) {
+async function f(e, t) {
+  if (typeof Convex > "u" || Convex.asyncSyscall === void 0)
+    throw new Error(
+      "The Convex database and auth objects are being used outside of a Convex backend. Did you mean to use \`useQuery\` or \`useMutation\` to call a Convex function?"
+    );
+  let r;
+  try {
+    r = await Convex.asyncSyscall(e, JSON.stringify(t));
+  } catch (o) {
+    if (o.data !== void 0) {
+      let s = new Z(o.message);
+      throw s.data = g(o.data), s;
+    }
+    throw new Error(o.message);
+  }
+  return JSON.parse(r);
+}
+n(f, "performAsyncSyscall");
+function _(e, t) {
   if (typeof Convex > "u" || Convex.jsSyscall === void 0)
     throw new Error(
       "The Convex database and auth objects are being used outside of a Convex backend. Did you mean to use \`useQuery\` or \`useMutation\` to call a Convex function?"
     );
   return Convex.jsSyscall(e, t);
 }
-n(P, "performJsSyscall");
+n(_, "performJsSyscall");
 
 // node_modules/convex/dist/esm/server/functionName.js
-var ne = /* @__PURE__ */ Symbol.for("functionName");
+var M = /* @__PURE__ */ Symbol.for("functionName");
+
+// node_modules/convex/dist/esm/server/components/paths.js
+var _e = /* @__PURE__ */ Symbol.for("toReferencePath");
+function ct(e) {
+  return e[_e] ?? null;
+}
+n(ct, "extractReferencePath");
+function lt(e) {
+  return e.startsWith("function://");
+}
+n(lt, "isFunctionHandle");
+function S(e) {
+  let t;
+  if (typeof e == "string")
+    lt(e) ? t = { functionHandle: e } : t = { name: e };
+  else if (e[M])
+    t = { name: e[M] };
+  else {
+    let r = ct(e);
+    if (!r)
+      throw new Error(\`\${e} is not a functionReference\`);
+    t = { reference: r };
+  }
+  return t;
+}
+n(S, "getFunctionAddress");
+
+// node_modules/convex/dist/esm/server/impl/actions_impl.js
+function le(e, t, r) {
+  return {
+    ...S(t),
+    args: y(T(r)),
+    version: h,
+    requestId: e
+  };
+}
+n(le, "syscallArgs");
+function Ce(e) {
+  return {
+    runQuery: /* @__PURE__ */ n(async (t, r) => {
+      let o = await f(
+        "1.0/actions/query",
+        le(e, t, r)
+      );
+      return g(o);
+    }, "runQuery"),
+    runMutation: /* @__PURE__ */ n(async (t, r) => {
+      let o = await f(
+        "1.0/actions/mutation",
+        le(e, t, r)
+      );
+      return g(o);
+    }, "runMutation"),
+    runAction: /* @__PURE__ */ n(async (t, r) => {
+      let o = await f(
+        "1.0/actions/action",
+        le(e, t, r)
+      );
+      return g(o);
+    }, "runAction")
+  };
+}
+n(Ce, "setupActionCalls");
+
+// node_modules/convex/dist/esm/server/vector_search.js
+var ft = Object.defineProperty, dt = /* @__PURE__ */ n((e, t, r) => t in e ? ft(e, t, { enumerable: !0, configurable: !0, writable: !0, value: r }) : e[t] = r, "__defNormalProp"), Ne = /* @__PURE__ */ n((e, t, r) => dt(e, typeof t != "symbol" ? t + "" : t, r), "__publicField"), ee = class {
+  static {
+    n(this, "FilterExpression");
+  }
+  /**
+   * @internal
+   */
+  constructor() {
+    Ne(this, "_isExpression"), Ne(this, "_value");
+  }
+};
+
+// node_modules/convex/dist/esm/server/impl/validate.js
+function x(e, t, r, o) {
+  if (e === void 0)
+    throw new TypeError(
+      \`Must provide arg \${t} \\\`\${o}\\\` to \\\`\${r}\\\`\`
+    );
+}
+n(x, "validateArg");
+
+// node_modules/convex/dist/esm/server/impl/vector_search_impl.js
+var pt = Object.defineProperty, ht = /* @__PURE__ */ n((e, t, r) => t in e ? pt(e, t, { enumerable: !0, configurable: !0, writable: !0, value: r }) : e[t] = r, "__defNormalProp"), fe = /* @__PURE__ */ n((e, t, r) => ht(e, typeof t != "symbol" ? t + "" : t, r), "__publicField");
+function \$e(e) {
+  return async (t, r, o) => {
+    if (x(t, 1, "vectorSearch", "tableName"), x(r, 2, "vectorSearch", "indexName"), x(o, 3, "vectorSearch", "query"), !o.vector || !Array.isArray(o.vector) || o.vector.length === 0)
+      throw Error("\`vector\` must be a non-empty Array in vectorSearch");
+    return await new de(
+      e,
+      t + "." + r,
+      o
+    ).collect();
+  };
+}
+n(\$e, "setupActionVectorSearch");
+var de = class {
+  static {
+    n(this, "VectorQueryImpl");
+  }
+  constructor(t, r, o) {
+    fe(this, "requestId"), fe(this, "state"), this.requestId = t;
+    let s = o.filter ? te(o.filter(mt)) : null;
+    this.state = {
+      type: "preparing",
+      query: {
+        indexName: r,
+        limit: o.limit,
+        vector: o.vector,
+        expressions: s
+      }
+    };
+  }
+  async collect() {
+    if (this.state.type === "consumed")
+      throw new Error("This query is closed and can't emit any more values.");
+    let t = this.state.query;
+    this.state = { type: "consumed" };
+    let { results: r } = await f("1.0/actions/vectorSearch", {
+      requestId: this.requestId,
+      version: h,
+      query: t
+    });
+    return r;
+  }
+}, \$ = class extends ee {
+  static {
+    n(this, "ExpressionImpl");
+  }
+  constructor(t) {
+    super(), fe(this, "inner"), this.inner = t;
+  }
+  serialize() {
+    return this.inner;
+  }
+};
+function te(e) {
+  return e instanceof \$ ? e.serialize() : { \$literal: F(e) };
+}
+n(te, "serializeExpression");
+var mt = {
+  //  Comparisons  /////////////////////////////////////////////////////////////
+  eq(e, t) {
+    if (typeof e != "string")
+      throw new Error("The first argument to \`q.eq\` must be a field name.");
+    return new \$({
+      \$eq: [
+        te(new \$({ \$field: e })),
+        te(t)
+      ]
+    });
+  },
+  //  Logic  ///////////////////////////////////////////////////////////////////
+  or(...e) {
+    return new \$({ \$or: e.map(te) });
+  }
+};
+
+// node_modules/convex/dist/esm/server/impl/authentication_impl.js
+function Pe(e) {
+  return {
+    getUserIdentity: /* @__PURE__ */ n(async () => await f("1.0/getUserIdentity", {
+      requestId: e
+    }), "getUserIdentity")
+  };
+}
+n(Pe, "setupAuth");
+
+// node_modules/convex/dist/esm/server/impl/scheduler_impl.js
+function Re(e) {
+  return {
+    runAfter: /* @__PURE__ */ n(async (t, r, o) => {
+      let s = {
+        requestId: e,
+        ...gt(t, r, o)
+      };
+      return await f("1.0/actions/schedule", s);
+    }, "runAfter"),
+    runAt: /* @__PURE__ */ n(async (t, r, o) => {
+      let s = {
+        requestId: e,
+        ...xt(t, r, o)
+      };
+      return await f("1.0/actions/schedule", s);
+    }, "runAt"),
+    cancel: /* @__PURE__ */ n(async (t) => {
+      x(t, 1, "cancel", "id");
+      let r = {
+        requestId: e,
+        id: y(t)
+      };
+      return await f("1.0/actions/cancel_job", r);
+    }, "cancel")
+  };
+}
+n(Re, "setupActionScheduler");
+function gt(e, t, r) {
+  if (typeof e != "number")
+    throw new Error("\`delayMs\` must be a number");
+  if (!isFinite(e))
+    throw new Error("\`delayMs\` must be a finite number");
+  if (e < 0)
+    throw new Error("\`delayMs\` must be non-negative");
+  let o = T(r), s = S(t), a = (Date.now() + e) / 1e3;
+  return {
+    ...s,
+    ts: a,
+    args: y(o),
+    version: h
+  };
+}
+n(gt, "runAfterSyscallArgs");
+function xt(e, t, r) {
+  let o;
+  if (e instanceof Date)
+    o = e.valueOf() / 1e3;
+  else if (typeof e == "number")
+    o = e / 1e3;
+  else
+    throw new Error("The invoke time must a Date or a timestamp");
+  let s = S(t), a = T(r);
+  return {
+    ...s,
+    ts: o,
+    args: y(a),
+    version: h
+  };
+}
+n(xt, "runAtSyscallArgs");
+
+// node_modules/convex/dist/esm/server/impl/storage_impl.js
+function Fe(e) {
+  return {
+    getUrl: /* @__PURE__ */ n(async (t) => (x(t, 1, "getUrl", "storageId"), await f("1.0/storageGetUrl", {
+      requestId: e,
+      version: h,
+      storageId: t
+    })), "getUrl"),
+    getMetadata: /* @__PURE__ */ n(async (t) => await f("1.0/storageGetMetadata", {
+      requestId: e,
+      version: h,
+      storageId: t
+    }), "getMetadata")
+  };
+}
+n(Fe, "setupStorageReader");
+function qe(e) {
+  let t = Fe(e);
+  return {
+    generateUploadUrl: /* @__PURE__ */ n(async () => await f("1.0/storageGenerateUploadUrl", {
+      requestId: e,
+      version: h
+    }), "generateUploadUrl"),
+    delete: /* @__PURE__ */ n(async (r) => {
+      await f("1.0/storageDelete", {
+        requestId: e,
+        version: h,
+        storageId: r
+      });
+    }, "delete"),
+    getUrl: t.getUrl,
+    getMetadata: t.getMetadata
+  };
+}
+n(qe, "setupStorageWriter");
+function je(e) {
+  return {
+    ...qe(e),
+    store: /* @__PURE__ */ n(async (r, o) => await _("storage/storeBlob", {
+      requestId: e,
+      version: h,
+      blob: r,
+      options: o
+    }), "store"),
+    get: /* @__PURE__ */ n(async (r) => await _("storage/getBlob", {
+      requestId: e,
+      version: h,
+      storageId: r
+    }), "get")
+  };
+}
+n(je, "setupStorageActionWriter");
+
+// node_modules/convex/dist/esm/server/impl/registration_impl.js
+async function bt(e, t, r) {
+  let o;
+  try {
+    o = await Promise.resolve(e(t, ...r));
+  } catch (s) {
+    throw At(s);
+  }
+  return o;
+}
+n(bt, "invokeFunction");
+function vt(e, t) {
+  return (r, o) => (globalThis.console.warn(
+    \`Convex functions should not directly call other Convex functions. Consider calling a helper function instead. e.g. \\\`export const foo = \${e}(...); await foo(ctx);\\\` is not supported. See https://docs.convex.dev/production/best-practices/#use-helper-functions-to-write-shared-code\`
+  ), t(r, o));
+}
+n(vt, "dontCallDirectly");
+function At(e) {
+  if (typeof e == "object" && e !== null && /* @__PURE__ */ Symbol.for("ConvexError") in e) {
+    let t = e;
+    return t.data = JSON.stringify(
+      y(t.data === void 0 ? null : t.data)
+    ), t.ConvexErrorSymbol = /* @__PURE__ */ Symbol.for("ConvexError"), t;
+  } else
+    return e;
+}
+n(At, "serializeConvexErrorData");
+function St() {
+  if (typeof window > "u" || window.__convexAllowFunctionsInBrowser)
+    return;
+  (Object.getOwnPropertyDescriptor(globalThis, "window")?.get?.toString().includes("[native code]") ?? !1) && console.error(
+    "Convex functions should not be imported in the browser. This will throw an error in future versions of \`convex\`. If this is a false negative, please report it to Convex support."
+  );
+}
+n(St, "assertNotBrowser");
+async function Ot(e, t) {
+  let s = {
+    ...Ce(""),
+    auth: Pe(""),
+    storage: je(""),
+    scheduler: Re(""),
+    vectorSearch: \$e("")
+  };
+  return await bt(e, s, [t]);
+}
+n(Ot, "invokeHttpAction");
+var pe = /* @__PURE__ */ n((e) => {
+  let t = vt("httpAction", e);
+  return St(), t.isHttp = !0, t.invokeHttpAction = (r) => Ot(e, r), t._handler = e, t;
+}, "httpActionGeneric");
 
 // node_modules/convex/dist/esm/server/pagination.js
-var Hn = a.object({
-  numItems: a.number(),
-  cursor: a.union(a.string(), a.null()),
-  endCursor: a.optional(a.union(a.string(), a.null())),
-  id: a.optional(a.number()),
-  maximumRowsRead: a.optional(a.number()),
-  maximumBytesRead: a.optional(a.number())
+var vo = u.object({
+  numItems: u.number(),
+  cursor: u.union(u.string(), u.null()),
+  endCursor: u.optional(u.union(u.string(), u.null())),
+  id: u.optional(u.number()),
+  maximumRowsRead: u.optional(u.number()),
+  maximumBytesRead: u.optional(u.number())
 });
 
 // node_modules/convex/dist/esm/server/api.js
-function ge(e = []) {
+function Be(e = []) {
   let t = {
     get(r, o) {
       if (typeof o == "string") {
         let s = [...e, o];
-        return ge(s);
-      } else if (o === ne) {
+        return Be(s);
+      } else if (o === M) {
         if (e.length < 2) {
           let i = ["api", ...e].join(".");
           throw new Error(
             \`API path is expected to be of the form \\\`api.moduleName.functionName\\\`. Found: \\\`\${i}\\\`\`
           );
         }
-        let s = e.slice(0, -1).join("/"), u = e[e.length - 1];
-        return u === "default" ? s : s + ":" + u;
+        let s = e.slice(0, -1).join("/"), a = e[e.length - 1];
+        return a === "default" ? s : s + ":" + a;
       } else return o === Symbol.toStringTag ? "FunctionReference" : void 0;
     }
   };
   return new Proxy({}, t);
 }
-n(ge, "createApi");
-var ze = ge();
+n(Be, "createApi");
+var Et = Be();
 
 // node_modules/convex/dist/esm/server/router.js
-var Ye = Object.defineProperty, Xe = /* @__PURE__ */ n((e, t, r) => t in e ? Ye(e, t, { enumerable: !0, configurable: !0, writable: !0, value: r }) : e[t] = r, "__defNormalProp"), S = /* @__PURE__ */ n((e, t, r) => Xe(e, typeof t != "symbol" ? t + "" : t, r), "__publicField"), xe = [
+var It = Object.defineProperty, _t = /* @__PURE__ */ n((e, t, r) => t in e ? It(e, t, { enumerable: !0, configurable: !0, writable: !0, value: r }) : e[t] = r, "__defNormalProp"), C = /* @__PURE__ */ n((e, t, r) => _t(e, typeof t != "symbol" ? t + "" : t, r), "__publicField"), Me = [
   "GET",
   "POST",
   "PUT",
@@ -4075,20 +6338,20 @@ var Ye = Object.defineProperty, Xe = /* @__PURE__ */ n((e, t, r) => t in e ? Ye(
   "OPTIONS",
   "PATCH"
 ];
-function Ke(e) {
+function Ct(e) {
   return e === "HEAD" ? "GET" : e;
 }
-n(Ke, "normalizeMethod");
-var ie = /* @__PURE__ */ n(() => new G(), "httpRouter"), G = class {
+n(Ct, "normalizeMethod");
+var he = /* @__PURE__ */ n(() => new re(), "httpRouter"), re = class {
   static {
     n(this, "HttpRouter");
   }
   constructor() {
-    S(this, "exactRoutes", /* @__PURE__ */ new Map()), S(this, "prefixRoutes", /* @__PURE__ */ new Map()), S(this, "isRouter", !0), S(this, "route", (t) => {
+    C(this, "exactRoutes", /* @__PURE__ */ new Map()), C(this, "prefixRoutes", /* @__PURE__ */ new Map()), C(this, "isRouter", !0), C(this, "route", (t) => {
       if (!t.handler) throw new Error("route requires handler");
       if (!t.method) throw new Error("route requires method");
       let { method: r, handler: o } = t;
-      if (!xe.includes(r))
+      if (!Me.includes(r))
         throw new Error(
           \`'\${r}' is not an allowed HTTP method (like GET, POST, PUT etc.)\`
         );
@@ -4126,56 +6389,56 @@ var ie = /* @__PURE__ */ n(() => new G(), "httpRouter"), G = class {
         throw new Error(
           "Invalid httpRouter route entry: must contain either field 'path' or 'pathPrefix'"
         );
-    }), S(this, "getRoutes", () => {
+    }), C(this, "getRoutes", () => {
       let r = [...this.exactRoutes.keys()].sort().flatMap(
-        (u) => [...this.exactRoutes.get(u).keys()].sort().map(
-          (i) => [u, i, this.exactRoutes.get(u).get(i)]
+        (a) => [...this.exactRoutes.get(a).keys()].sort().map(
+          (i) => [a, i, this.exactRoutes.get(a).get(i)]
         )
       ), s = [...this.prefixRoutes.keys()].sort().flatMap(
-        (u) => [...this.prefixRoutes.get(u).keys()].sort().map(
+        (a) => [...this.prefixRoutes.get(a).keys()].sort().map(
           (i) => [
             \`\${i}*\`,
-            u,
-            this.prefixRoutes.get(u).get(i)
+            a,
+            this.prefixRoutes.get(a).get(i)
           ]
         )
       );
       return [...r, ...s];
-    }), S(this, "lookup", (t, r) => {
-      r = Ke(r);
+    }), C(this, "lookup", (t, r) => {
+      r = Ct(r);
       let o = this.exactRoutes.get(t)?.get(r);
       if (o) return [o, r, t];
-      let u = [...(this.prefixRoutes.get(r) || /* @__PURE__ */ new Map()).entries()].sort(
-        ([i, l], [f, F]) => f.length - i.length
+      let a = [...(this.prefixRoutes.get(r) || /* @__PURE__ */ new Map()).entries()].sort(
+        ([i, l], [d, J]) => d.length - i.length
       );
-      for (let [i, l] of u)
+      for (let [i, l] of a)
         if (t.startsWith(i))
           return [l, r, \`\${i}*\`];
       return null;
-    }), S(this, "runRequest", async (t, r) => {
-      let o = P("requestFromConvexJson", {
+    }), C(this, "runRequest", async (t, r) => {
+      let o = _("requestFromConvexJson", {
         convexJson: JSON.parse(t)
       }), s = r;
       (!s || typeof s != "string") && (s = new URL(o.url).pathname);
-      let u = o.method, i = this.lookup(s, u);
+      let a = o.method, i = this.lookup(s, a);
       if (!i) {
-        let Ae = new Response(\`No HttpAction routed for \${s}\`, {
+        let Le = new Response(\`No HttpAction routed for \${s}\`, {
           status: 404
         });
         return JSON.stringify(
-          P("convexJsonFromResponse", { response: Ae })
+          _("convexJsonFromResponse", { response: Le })
         );
       }
-      let [l, f, F] = i, ve = await l.invokeHttpAction(o);
+      let [l, d, J] = i, Ue = await l.invokeHttpAction(o);
       return JSON.stringify(
-        P("convexJsonFromResponse", { response: ve })
+        _("convexJsonFromResponse", { response: Ue })
       );
     });
   }
 };
 
 // node_modules/convex/dist/esm/server/schema.js
-var Ze = Object.defineProperty, et = /* @__PURE__ */ n((e, t, r) => t in e ? Ze(e, t, { enumerable: !0, configurable: !0, writable: !0, value: r }) : e[t] = r, "__defNormalProp"), w = /* @__PURE__ */ n((e, t, r) => et(e, typeof t != "symbol" ? t + "" : t, r), "__publicField"), z = class {
+var Nt = Object.defineProperty, \$t = /* @__PURE__ */ n((e, t, r) => t in e ? Nt(e, t, { enumerable: !0, configurable: !0, writable: !0, value: r }) : e[t] = r, "__defNormalProp"), O = /* @__PURE__ */ n((e, t, r) => \$t(e, typeof t != "symbol" ? t + "" : t, r), "__publicField"), ne = class {
   static {
     n(this, "TableDefinition");
   }
@@ -4183,7 +6446,7 @@ var Ze = Object.defineProperty, et = /* @__PURE__ */ n((e, t, r) => t in e ? Ze(
    * @internal
    */
   constructor(t) {
-    w(this, "indexes"), w(this, "stagedDbIndexes"), w(this, "searchIndexes"), w(this, "stagedSearchIndexes"), w(this, "vectorIndexes"), w(this, "stagedVectorIndexes"), w(this, "validator"), this.indexes = [], this.stagedDbIndexes = [], this.searchIndexes = [], this.stagedSearchIndexes = [], this.vectorIndexes = [], this.stagedVectorIndexes = [], this.validator = t;
+    O(this, "indexes"), O(this, "stagedDbIndexes"), O(this, "searchIndexes"), O(this, "stagedSearchIndexes"), O(this, "vectorIndexes"), O(this, "stagedVectorIndexes"), O(this, "validator"), this.indexes = [], this.stagedDbIndexes = [], this.searchIndexes = [], this.stagedSearchIndexes = [], this.vectorIndexes = [], this.stagedVectorIndexes = [], this.validator = t;
   }
   /**
    * This API is experimental: it may change or disappear.
@@ -4261,11 +6524,11 @@ var Ze = Object.defineProperty, et = /* @__PURE__ */ n((e, t, r) => t in e ? Ze(
     };
   }
 };
-function ae(e) {
-  return he(e) ? new z(e) : new z(a.object(e));
+function me(e) {
+  return Oe(e) ? new ne(e) : new ne(u.object(e));
 }
-n(ae, "defineTable");
-var ue = class {
+n(me, "defineTable");
+var ye = class {
   static {
     n(this, "SchemaDefinition");
   }
@@ -4273,7 +6536,7 @@ var ue = class {
    * @internal
    */
   constructor(t, r) {
-    w(this, "tables"), w(this, "strictTableNameTypes"), w(this, "schemaValidation"), this.tables = t, this.schemaValidation = r?.schemaValidation === void 0 ? !0 : r.schemaValidation;
+    O(this, "tables"), O(this, "strictTableNameTypes"), O(this, "schemaValidation"), this.tables = t, this.schemaValidation = r?.schemaValidation === void 0 ? !0 : r.schemaValidation;
   }
   /**
    * Export the contents of this definition.
@@ -4287,58 +6550,61 @@ var ue = class {
         let {
           indexes: o,
           stagedDbIndexes: s,
-          searchIndexes: u,
+          searchIndexes: a,
           stagedSearchIndexes: i,
           vectorIndexes: l,
-          stagedVectorIndexes: f,
-          documentType: F
+          stagedVectorIndexes: d,
+          documentType: J
         } = r.export();
         return {
           tableName: t,
           indexes: o,
           stagedDbIndexes: s,
-          searchIndexes: u,
+          searchIndexes: a,
           stagedSearchIndexes: i,
           vectorIndexes: l,
-          stagedVectorIndexes: f,
-          documentType: F
+          stagedVectorIndexes: d,
+          documentType: J
         };
       }),
       schemaValidation: this.schemaValidation
     });
   }
 };
-function be(e, t) {
-  return new ue(e, t);
+function Je(e, t) {
+  return new ye(e, t);
 }
-n(be, "defineSchema");
-var go = be({
-  _scheduled_functions: ae({
-    name: a.string(),
-    args: a.array(a.any()),
-    scheduledTime: a.float64(),
-    completedTime: a.optional(a.float64()),
-    state: a.union(
-      a.object({ kind: a.literal("pending") }),
-      a.object({ kind: a.literal("inProgress") }),
-      a.object({ kind: a.literal("success") }),
-      a.object({ kind: a.literal("failed"), error: a.string() }),
-      a.object({ kind: a.literal("canceled") })
+n(Je, "defineSchema");
+var Do = Je({
+  _scheduled_functions: me({
+    name: u.string(),
+    args: u.array(u.any()),
+    scheduledTime: u.float64(),
+    completedTime: u.optional(u.float64()),
+    state: u.union(
+      u.object({ kind: u.literal("pending") }),
+      u.object({ kind: u.literal("inProgress") }),
+      u.object({ kind: u.literal("success") }),
+      u.object({ kind: u.literal("failed"), error: u.string() }),
+      u.object({ kind: u.literal("canceled") })
     )
   }),
-  _storage: ae({
-    sha256: a.string(),
-    size: a.float64(),
-    contentType: a.optional(a.string())
+  _storage: me({
+    sha256: u.string(),
+    size: u.float64(),
+    contentType: u.optional(u.string())
   })
 });
 
+// convex/_generated/server.js
+var b = pe;
+
 // convex/http.ts
-var m = ie();
-m.route({
+var v = he();
+v.route({
   path: "/v",
   method: "GET",
-  handler: g(async (e, t) => {
+  handler: b(async (e, t) => {
     let o = new URL(t.url).searchParams.get("code");
     if (!o)
       return new Response(JSON.stringify({ error: "code is required" }), {
@@ -4352,21 +6618,30 @@ m.route({
     });
   })
 });
-m.route({
+v.route({
   path: "/view",
   method: "POST",
-  handler: g(async (e, t) => {
-    let o = (await t.json()).code;
+  handler: b(async (e, t) => {
+    let r;
+    try {
+      r = await t.json();
+    } catch {
+      return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
+        status: 400,
+        headers: p()
+      });
+    }
+    let o = r.code;
     return o ? (await e.runMutation("videos:incrementViewCount", { shortCode: o }), new Response(JSON.stringify({ ok: !0 }), { headers: p() })) : new Response(JSON.stringify({ error: "code is required" }), {
       status: 400,
       headers: p()
     });
   })
 });
-m.route({
+v.route({
   path: "/reactions",
   method: "GET",
-  handler: g(async (e, t) => {
+  handler: b(async (e, t) => {
     let o = new URL(t.url).searchParams.get("code");
     if (!o)
       return new Response(JSON.stringify({ error: "code is required" }), {
@@ -4379,39 +6654,57 @@ m.route({
     return new Response(JSON.stringify(s), { headers: p() });
   })
 });
-m.route({
+v.route({
   path: "/reactions/add",
   method: "POST",
-  handler: g(async (e, t) => {
-    let r = await t.json(), { code: o, emoji: s, timestamp: u } = r;
-    return !o || !s || typeof u != "number" ? new Response(
+  handler: b(async (e, t) => {
+    let r;
+    try {
+      r = await t.json();
+    } catch {
+      return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
+        status: 400,
+        headers: p()
+      });
+    }
+    let { code: o, emoji: s, timestamp: a } = r;
+    return !o || !s || typeof a != "number" ? new Response(
       JSON.stringify({ error: "code, emoji, and timestamp are required" }),
       { status: 400, headers: p() }
     ) : (await e.runMutation("reactions:add", {
       video_short_code: o,
       emoji: s,
-      timestamp: u
+      timestamp: a
     }), new Response(JSON.stringify({ ok: !0 }), {
       status: 201,
       headers: p()
     }));
   })
 });
-m.route({
+v.route({
   path: "/video",
   method: "GET",
-  handler: g(async (e, t) => {
+  handler: b(async (e, t) => {
     let o = new URL(t.url).searchParams.get("code");
     if (!o)
-      return new Response("code is required", { status: 400 });
+      return new Response(JSON.stringify({ error: "code is required" }), {
+        status: 400,
+        headers: p()
+      });
     let s = await e.runQuery("videos:getByShortCode", { shortCode: o });
     if (!s || !s.storage_id)
-      return new Response("Video not found", { status: 404 });
-    let u = await e.storage.getUrl(s.storage_id);
-    return u ? new Response(null, {
+      return new Response(JSON.stringify({ error: "Video not found" }), {
+        status: 404,
+        headers: p()
+      });
+    let a = await e.storage.getUrl(s.storage_id);
+    return a ? new Response(null, {
       status: 302,
-      headers: { Location: u, "Cache-Control": "no-cache" }
-    }) : new Response("Storage URL not available", { status: 404 });
+      headers: { Location: a, "Cache-Control": "no-cache" }
+    }) : new Response(JSON.stringify({ error: "Storage URL not available" }), {
+      status: 404,
+      headers: p()
+    });
   })
 });
 function p() {
@@ -4423,33 +6716,33 @@ function p() {
   };
 }
 n(p, "corsHeaders");
-m.route({
+v.route({
   path: "/v",
   method: "OPTIONS",
-  handler: g(async () => new Response(null, { status: 204, headers: p() }))
+  handler: b(async () => new Response(null, { status: 204, headers: p() }))
 });
-m.route({
+v.route({
   path: "/view",
   method: "OPTIONS",
-  handler: g(async () => new Response(null, { status: 204, headers: p() }))
+  handler: b(async () => new Response(null, { status: 204, headers: p() }))
 });
-m.route({
+v.route({
   path: "/reactions",
   method: "OPTIONS",
-  handler: g(async () => new Response(null, { status: 204, headers: p() }))
+  handler: b(async () => new Response(null, { status: 204, headers: p() }))
 });
-m.route({
+v.route({
   path: "/reactions/add",
   method: "OPTIONS",
-  handler: g(async () => new Response(null, { status: 204, headers: p() }))
+  handler: b(async () => new Response(null, { status: 204, headers: p() }))
 });
-m.route({
+v.route({
   path: "/video",
   method: "OPTIONS",
-  handler: g(async () => new Response(null, { status: 204, headers: p() }))
+  handler: b(async () => new Response(null, { status: 204, headers: p() }))
 });
-var ss = m;
+var xs = v;
 export {
-  ss as default
+  xs as default
 };
 `

@@ -32,7 +32,15 @@ http.route({
   path: "/view",
   method: "POST",
   handler: httpAction(async (ctx, request) => {
-    const body = await request.json();
+    let body: any;
+    try {
+      body = await request.json();
+    } catch {
+      return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
+        status: 400,
+        headers: corsHeaders(),
+      });
+    }
     const code = (body as any).code;
     if (!code) {
       return new Response(JSON.stringify({ error: "code is required" }), {
@@ -70,7 +78,15 @@ http.route({
   path: "/reactions/add",
   method: "POST",
   handler: httpAction(async (ctx, request) => {
-    const body = await request.json();
+    let body: any;
+    try {
+      body = await request.json();
+    } catch {
+      return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
+        status: 400,
+        headers: corsHeaders(),
+      });
+    }
     const { code, emoji, timestamp } = body as any;
     if (!code || !emoji || typeof timestamp !== "number") {
       return new Response(
@@ -98,15 +114,24 @@ http.route({
     const url = new URL(request.url);
     const code = url.searchParams.get("code");
     if (!code) {
-      return new Response("code is required", { status: 400 });
+      return new Response(JSON.stringify({ error: "code is required" }), {
+        status: 400,
+        headers: corsHeaders(),
+      });
     }
     const video = await ctx.runQuery("videos:getByShortCode" as any, { shortCode: code });
     if (!video || !video.storage_id) {
-      return new Response("Video not found", { status: 404 });
+      return new Response(JSON.stringify({ error: "Video not found" }), {
+        status: 404,
+        headers: corsHeaders(),
+      });
     }
     const storageUrl = await ctx.storage.getUrl(video.storage_id);
     if (!storageUrl) {
-      return new Response("Storage URL not available", { status: 404 });
+      return new Response(JSON.stringify({ error: "Storage URL not available" }), {
+        status: 404,
+        headers: corsHeaders(),
+      });
     }
     return new Response(null, {
       status: 302,

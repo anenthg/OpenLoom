@@ -53,6 +53,7 @@ export function chromeMockScript(config: MockConfig): void {
       { id: 'push-functions', label: 'Pushing schema & functions...', status: 'pending' },
       { id: 'wait-schema', label: 'Validating schema...', status: 'pending' },
       { id: 'finalize', label: 'Finalizing deployment...', status: 'pending' },
+      { id: 'validate', label: 'Validating deployed functions...', status: 'pending' },
     ]
 
     const advance = (index: number, delay: number) => {
@@ -81,6 +82,7 @@ export function chromeMockScript(config: MockConfig): void {
       { id: 'push-functions', label: 'Pushing schema & functions...', status: 'pending' },
       { id: 'wait-schema', label: 'Validating schema...', status: 'pending' },
       { id: 'finalize', label: 'Finalizing deployment...', status: 'pending' },
+      { id: 'validate', label: 'Validating deployed functions...', status: 'pending' },
     ]
 
     setTimeout(() => {
