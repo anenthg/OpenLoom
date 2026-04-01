@@ -319,6 +319,7 @@ export default function VideoViewerPage({
         import("plyr").then((mod) => {
           if (destroyed || !videoRef.current) return;
           const PlyrConstructor = mod.default ?? mod;
+          const speedOptions = [0.8, 1, 1.2, 1.5, 1.7, 2, 2.5];
           const player = new PlyrConstructor(videoRef.current, {
             controls: [
               "play-large",
@@ -328,14 +329,72 @@ export default function VideoViewerPage({
               "duration",
               "mute",
               "volume",
-              "settings",
               "pip",
               "fullscreen",
             ],
-            settings: ["speed"],
-            speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2] },
+            speed: { selected: 1, options: speedOptions },
           });
           plyrRef.current = player;
+
+          // Inject custom speed button into Plyr controls bar
+          const controlsBar = videoRef.current
+            ?.closest(".plyr")
+            ?.querySelector(".plyr__controls");
+          if (controlsBar) {
+            const wrapper = document.createElement("div");
+            wrapper.className = "plyr__speed-toggle";
+
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "plyr__controls__item plyr__speed-btn";
+            btn.setAttribute("aria-label", "Speed");
+            btn.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="15" r="7"/><path d="M12 15l2.5-4.5"/><path d="M8.5 8.5L7 7"/><path d="M15.5 8.5L17 7"/><path d="M12 8V6"/></svg>`;
+
+            const menu = document.createElement("div");
+            menu.className = "plyr__speed-menu";
+            for (const spd of speedOptions) {
+              const opt = document.createElement("button");
+              opt.type = "button";
+              opt.textContent = spd === 1 ? "Normal" : `${spd}x`;
+              opt.dataset.speed = String(spd);
+              if (spd === 1) opt.dataset.active = "";
+              opt.addEventListener("click", () => {
+                player.speed = spd;
+                menu.querySelectorAll("button").forEach((b) => delete b.dataset.active);
+                opt.dataset.active = "";
+                wrapper.classList.remove("plyr__speed-toggle--open");
+              });
+              menu.appendChild(opt);
+            }
+
+            btn.addEventListener("click", (e) => {
+              e.stopPropagation();
+              wrapper.classList.toggle("plyr__speed-toggle--open");
+            });
+
+            wrapper.appendChild(btn);
+            wrapper.appendChild(menu);
+
+            // Insert before PiP button
+            const pipBtn = controlsBar.querySelector('[data-plyr="pip"]');
+            if (pipBtn) {
+              controlsBar.insertBefore(wrapper, pipBtn);
+            } else {
+              controlsBar.appendChild(wrapper);
+            }
+
+            // Close when clicking outside
+            const closeMenu = (e: MouseEvent) => {
+              if (!wrapper.contains(e.target as Node)) {
+                wrapper.classList.remove("plyr__speed-toggle--open");
+              }
+            };
+            document.addEventListener("click", closeMenu);
+            // Store cleanup ref on the element
+            (wrapper as unknown as Record<string, () => void>)._cleanup = () =>
+              document.removeEventListener("click", closeMenu);
+          }
+
           setPlayerReady(true);
         });
       };
@@ -362,6 +421,11 @@ export default function VideoViewerPage({
 
     return () => {
       destroyed = true;
+      // Clean up custom speed button's document listener
+      const speedToggle = videoRef.current
+        ?.closest(".plyr")
+        ?.querySelector(".plyr__speed-toggle") as unknown as Record<string, () => void> | null;
+      speedToggle?._cleanup?.();
       if (plyrRef.current) {
         (plyrRef.current as { destroy: () => void }).destroy();
         plyrRef.current = null;
