@@ -437,6 +437,75 @@ body {
 }
 
 /* ------------------------------------------------------------------ */
+/* Custom speed control                                                */
+/* ------------------------------------------------------------------ */
+
+.plyr__speed-toggle {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.plyr__speed-btn {
+  background: transparent;
+  border: 0;
+  color: var(--plyr-video-control-color);
+  cursor: pointer;
+  padding: 7px;
+  border-radius: var(--plyr-control-radius);
+  transition: background 0.15s, color 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.plyr__speed-btn:hover {
+  background: var(--plyr-video-control-background-hover);
+  color: var(--plyr-video-control-color-hover);
+}
+
+.plyr__speed-menu {
+  display: none !important;
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--plyr-menu-background);
+  border-radius: 8px;
+  box-shadow: var(--plyr-menu-shadow);
+  padding: 4px;
+  min-width: 80px;
+  z-index: 10;
+}
+
+.plyr__speed-toggle--open > .plyr__speed-menu {
+  display: flex !important;
+  flex-direction: column;
+}
+
+.plyr__speed-menu button {
+  background: transparent;
+  border: 0;
+  color: var(--plyr-menu-color);
+  font-family: var(--plyr-font-family);
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.15s;
+}
+
+.plyr__speed-menu button:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.plyr__speed-menu button[data-active] {
+  background: var(--crimson);
+  color: #fff;
+}
+
+/* ------------------------------------------------------------------ */
 /* Download dialog animations                                          */
 /* ------------------------------------------------------------------ */
 
