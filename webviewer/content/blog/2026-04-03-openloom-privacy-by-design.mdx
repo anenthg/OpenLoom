@@ -1,0 +1,242 @@
+---
+title: "Privacy by Design: How OpenLoom Protects Your Recordings"
+description: "A technical look at OpenLoom's privacy architecture: no telemetry, no middleman servers, AES-256 encryption, and why we don't even have the ability to see your videos."
+date: "2026-04-03"
+author: "OpenLoom Team"
+tags: ["privacy", "security", "architecture", "encryption"]
+---
+
+# Privacy by Design: How OpenLoom Protects Your Recordings
+
+Screen recordings often contain sensitive content — unreleased features, customer data, internal discussions, login credentials accidentally visible. Most recording tools treat privacy as a checkbox in settings. We built OpenLoom so we *can't* access your videos even if we wanted to.
+
+Here's exactly how.
+
+---
+
+## The Core Principle: We're Not in the Data Path
+
+With Loom, Vidyard, or CloudApp:
+
+```
+You → Their Servers → Viewer
+```
+
+With OpenLoom:
+
+```
+You → Your Supabase → Viewer
+```
+
+There's no OpenLoom server that touches your video. The extension uploads directly to your Supabase storage bucket. The web viewer fetches directly from your Supabase. We provide the software; you provide the infrastructure.
+
+This isn't a feature. It's the architecture.
+
+---
+
+## Zero Telemetry in the Extension
+
+The Chrome extension collects **nothing**:
+
+- No analytics
+- No error reporting to us
+- No usage tracking
+- No "anonymous" metrics
+- No phone-home requests
+
+You can verify this yourself — the extension is open-source. Grep for any network requests that don't go to your configured Supabase URL:
+
+```bash
+git clone https://github.com/anenthg/OpenLoom.git
+grep -r "fetch\|axios\|http" extension/src/ | grep -v supabase
+```
+
+The only external requests are:
+1. To your Supabase project (uploads, metadata, auth)
+2. Chrome Web Store API (for update checks, handled by Chrome itself)
+
+That's it.
+
+---
+
+## The Web Viewer Analytics Story
+
+The marketing site at openloom.live uses [GoatCounter](https://www.goatcounter.com) — a privacy-friendly, cookieless, open-source analytics tool. We can see page views, not people.
+
+But here's the important part: **video player pages are excluded**.
+
+```javascript
+// In the viewer, we explicitly skip analytics on /v/* routes
+if (pathname.startsWith('/v/')) {
+  return; // No tracking on video pages
+}
+```
+
+When someone watches your video, we don't know:
+- That they watched it
+- How long they watched
+- Where they're located
+- What device they're using
+
+The viewer page fetches your video directly from your Supabase bucket. We're not in that request chain.
+
+---
+
+## Password Protection: AES-256-GCM
+
+For sensitive videos, OpenLoom offers password protection. Here's how it works:
+
+### Encryption (when you set a password)
+
+```
+1. You set password "hunter2"
+2. Extension derives a key using PBKDF2 (100,000 iterations, SHA-256)
+3. Video is encrypted with AES-256-GCM
+4. Encrypted blob uploads to Supabase
+5. Salt and IV stored in video metadata (not the key)
+```
+
+### Decryption (when viewer enters password)
+
+```
+1. Viewer enters "hunter2"
+2. Browser derives the same key using stored salt
+3. Video decrypts in the viewer's browser
+4. Decrypted video plays locally — never sent anywhere
+```
+
+### What this means
+
+- **We can't decrypt your video** — we don't have the password
+- **Supabase can't decrypt your video** — they only store encrypted bytes
+- **Someone with the direct storage URL can't watch** — it's encrypted garbage without the password
+- **The password never leaves the browser** — key derivation happens client-side
+
+The encryption happens before upload. The decryption happens in the viewer's browser. The plaintext video only exists on endpoints you control.
+
+---
+
+## What Supabase Sees
+
+Since your videos live on Supabase, let's be clear about what they can access:
+
+| Data | Supabase Access |
+|------|-----------------|
+| Encrypted videos | ✅ Can see encrypted bytes |
+| Unencrypted videos | ✅ Can see video content |
+| Video metadata | ✅ Can see titles, durations |
+| Your Supabase credentials | ✅ They're the provider |
+| Passwords | ❌ Never sent to them |
+| Decryption keys | ❌ Derived client-side |
+
+If you're recording content that absolutely cannot be on any third-party infrastructure, use password protection. The encrypted blob is meaningless without the key.
+
+For maximum paranoia, you could:
+1. Self-host Supabase (it's open-source)
+2. Use password protection
+3. Run your own web viewer instance
+
+At that point, your videos never leave infrastructure you physically control.
+
+---
+
+## No Account Required
+
+You don't create an "OpenLoom account." There's no:
+
+- Email collection
+- User profiles on our servers
+- Authentication through us
+- "Sign in with Google" that routes through our backend
+
+The extension authenticates directly with your Supabase project. Your identity is whatever Supabase knows about you (which can be nothing if you use anon access).
+
+---
+
+## What We *Do* Know
+
+In the interest of full transparency, here's what we can see:
+
+1. **GitHub stars and forks** — public repo metrics
+2. **Marketing site traffic** — GoatCounter shows page views (not users) on openloom.live, excluding /v/* routes
+3. **Chrome Web Store installs** — if we publish there, Google shows aggregate install counts
+4. **Bug reports you choose to file** — if you open a GitHub issue
+
+We cannot see:
+- How many videos you've recorded
+- What's in your videos
+- Who watches your videos
+- Your Supabase project details
+- Anything about your usage
+
+---
+
+## Compliance Implications
+
+This architecture has real implications for regulated industries:
+
+### GDPR
+- No personal data flows to OpenLoom
+- Your Supabase project = your data processor relationship
+- Right to deletion = delete from your Supabase bucket
+
+### HIPAA
+- For healthcare, you'd need a BAA with Supabase (they offer this on paid plans)
+- Or self-host Supabase on HIPAA-compliant infrastructure
+- OpenLoom software processes data locally — we're not a covered entity
+
+### SOC 2 / Enterprise
+- Your videos are on infrastructure you control
+- Audit logs are in your Supabase project
+- Access controls are your Supabase RLS policies
+
+We're not saying "we're HIPAA compliant" — that's not how it works. We're saying: your compliance burden is with your infrastructure provider, not with us, because we don't have your data.
+
+---
+
+## The Tradeoff
+
+This privacy architecture has a cost: we can't offer some features that require server-side processing:
+
+| Feature | Requires Server | OpenLoom Status |
+|---------|-----------------|-----------------|
+| Automatic transcription | Usually yes | ❌ Not built-in (DIY with Whisper) |
+| AI summaries | Yes | ❌ Not available |
+| View analytics | Yes | ❌ Basic only (Supabase logs) |
+| Team admin dashboards | Yes | ❌ Not yet |
+| Thumbnail generation | Sometimes | ✅ Done client-side |
+| Video encoding | Sometimes | ✅ Done client-side (MediaRecorder) |
+
+We've pushed as much as possible to the client. But some features genuinely need server-side processing. When we add them (transcription is on the roadmap), they'll run in your Supabase Edge Functions or as optional self-hosted services — not on our servers.
+
+---
+
+## Verify It Yourself
+
+Don't trust this blog post. The code is open:
+
+- **Extension source**: [github.com/anenthg/OpenLoom/tree/main/extension](https://github.com/anenthg/OpenLoom/tree/main/extension)
+- **Web viewer source**: [github.com/anenthg/OpenLoom/tree/main/webviewer](https://github.com/anenthg/OpenLoom/tree/main/webviewer)
+- **Privacy policy**: [openloom.live/privacy](https://openloom.live/privacy)
+
+Audit the network requests. Read the encryption implementation. Check what data goes where.
+
+That's the point of open-source: trust, but verify.
+
+---
+
+## Summary
+
+| Claim | How We Deliver It |
+|-------|-------------------|
+| We can't see your videos | You upload to your Supabase, not our servers |
+| We can't track your usage | Zero telemetry in the extension |
+| We can't decrypt protected videos | Encryption key derived client-side from your password |
+| We don't know who watches | Video pages excluded from analytics |
+| We can't lock you out | Your data is on your infrastructure |
+
+Privacy isn't a feature we bolted on. It's a constraint we designed around.
+
+---
+
+**[Get OpenLoom →](https://github.com/anenthg/OpenLoom)**
